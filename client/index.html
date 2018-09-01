@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=640,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <title>face-detection-node-opencv</title>
+
+    <link rel="stylesheet" type="text/css" href="./styles/normalize.css">
+    <link rel="stylesheet" type="text/css" href="./styles/styles.css">
+</head>
+<body>
+<div class="container center">
+    <div id="show">
+        <video id="video"></video>
+        <canvas id="canvas" style="display: none"></canvas>
+        <canvas id="canvas-face"></canvas>
+    </div>
+</div>
+
+<script src="./build/three.js"></script>
+<script src="./renderers/CanvasRenderer.js"></script>
+<script src="./renderers/Projector.js"></script>
+<script src="./renderers/RaytracingRenderer.js"></script>
+
+<script type="text/javascript" src="./socket.io/socket.io.js"></script>
+<script type="text/javascript" src="./receiver.js"></script>
+<script type="text/javascript" src="./sender.js"></script>
+
+
+<!--使用惯性传感器对于马的控制-->
+<!--<script src="./controlModle.js"></script>-->
+</body>
+</html>
