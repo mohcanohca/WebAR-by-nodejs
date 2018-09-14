@@ -197,7 +197,6 @@ function calVisionStatus(pose) {
 }
 
 //卡尔曼滤波
-
 function KalmanFilter() {
     /**
      * 卡尔曼滤波器
@@ -257,7 +256,7 @@ function KalmanFilter() {
  * @param period
  * @returns {{rMat: Mat, tMat: {tx: number, ty: number, tz: number}}}
  */
-function calTransformByIMU(rotation, period) {
+/*function calTransformByIMU(rotation, period) {
     console.log('imu加速度：' + rotation.accelerate.x, rotation.accelerate.y, rotation.accelerate.z);
     console.log('imu旋转角速度：' + rotation.rx, rotation.ry, rotation.rz);
     
@@ -321,7 +320,7 @@ function calTransformByIMU(rotation, period) {
             tz
         }
     };
-}
+}*/
 
 module.exports = function (socket) {
     //旋转矩阵
@@ -329,9 +328,9 @@ module.exports = function (socket) {
     let initial_flag = true;
     let initial_rotation = null;
     let initial_transition = null;
-    
-    let pre_time = null;//上一次收到imu信息的时间
-    let pre_imu = null;//上一次收到的imu信息
+
+   /* let pre_time = null;//上一次收到imu信息的时间
+    let pre_imu = null;//上一次收到的imu信息*/
     
     socket.on('VIDEO_MESS', function (data) {
         let json = JSON.parse(data);
@@ -459,7 +458,7 @@ module.exports = function (socket) {
         ;
     });
     
-    //处理IMU信息：旋转角度
+/*    //处理IMU信息：旋转角度
     socket.on('IMU_MESS', function (data) {
         //    1. 将各个轴的旋转角转换成旋转矩阵，再相乘得到最终的旋转矩阵
         let cur_imu = JSON.parse(data);
@@ -471,13 +470,10 @@ module.exports = function (socket) {
         let period = cur_time - pre_time;
         //根据各个轴的旋转角速度，单重积分，计算各个轴的旋转角
         let transform = calTransformByIMU(pre_imu, period);
-        
-        
-        
+
         pre_time = cur_time;//计算完成后更新上一时刻的时间
         pre_imu = cur_imu;//更新上一次的旋转信息
         
         //    直接使用计算出的旋转信息作为计算状态转移矩阵φ的输入。
-        
-    });
+    });*/
 }

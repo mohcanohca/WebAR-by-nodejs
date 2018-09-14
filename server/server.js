@@ -14,9 +14,8 @@ const options = {
     /*    pfx:fs.readFileSync('../certificate/server.pfx'),
         passphrase:'123456'*/
 };
-
 // configuration files
-var configServer = require('./lib/config/server');
+var configServer = require('./lib/config/server_config');
 
 // app parameters
 var app = express();
@@ -42,7 +41,7 @@ io.on('connection', require('./lib/routes/socket'));
 let sserver = https.createServer(options, app);
 sserver.listen(8081, function () {
     console.log('HTTPS server listening on port 8081');
-})
+});
 
 // WebSocket server
 var sio = require('socket.io')(sserver);

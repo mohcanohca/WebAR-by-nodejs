@@ -42,6 +42,95 @@ function handleMotion(event) {
     imu.accelerate = accelerate;
 }
 
+function squareMatrixMultiply(A, B) {
+    var n = A.length;
+    var C = [];
+    for (var i = 0; i < n; i++) {
+        C[i] = [];
+        for (var j = 0; j < n; j++) {
+            C[i][j] = 0;
+            for (var k = 0; k < n; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return C;
+}
+
+/**
+ * 根据imu信息计算转换信息
+ * @param rotation imu旋转信息
+ * @param period
+ * @returns {{rMat: Mat, tMat: {tx: number, ty: number, tz: number}}}
+ */
+function calTransformByIMU(rotation, period) {
+    console.log('imu加速度：' + rotation.accelerate.x, rotation.accelerate.y, rotation.accelerate.z);
+    console.log('imu旋转角速度：' + rotation.rx, rotation.ry, rotation.rz);
+
+    //a. 根据绕各个轴的加速度，双重积分得出在各个轴的平移量
+    let tx = rotation.accelerate.x * period * Math.pow(0.100, 2) / 2;
+    let ty = rotation.accelerate.y * period * Math.pow(0.100, 2) / 2;
+    let tz = rotation.accelerate.z * period * Math.pow(0.100, 2) / 2;
+
+    //b. 计算旋转角，旋转速率是度/s
+    let angle_z = rotation.rz * period;
+    let angle_y = rotation.ry * period;
+    let angle_x = rotation.rx * period;
+
+    console.log('imu平移量：' + tx, ty, tz);
+    console.log('imu旋转角度：' + angle_x, angle_y, angle_z);
+
+    //由在x轴的旋转角计算在x轴的旋转矩阵
+    let arr_x = [
+        [1, 0, 0],
+        [0, Math.cos(angle_x), -Math.sin(angle_x)],
+        [0, Math.sin(angle_x), Math.cos(angle_x)],
+    ];
+
+    //由在y轴的旋转角计算在y轴的旋转矩阵
+    let arr_y = [
+        [Math.cos(angle_y), 0, Math.sin(angle_y)],
+        [0, 1, 0],
+        [-Math.sin(angle_y), 0, Math.cos(angle_y)],
+    ];
+
+    //由在z轴的旋转角计算在z轴的旋转矩阵
+    let arr_z = [
+        [Math.cos(angle_z), -Math.sin(angle_z), 0],
+        [Math.sin(angle_z), Math.cos(angle_z), 0],
+        [0, 0, 1],
+    ];
+
+    //上面三个旋转矩阵相乘，得出最终的旋转矩阵（由于不知道矩阵乘法如何使用，此处手动计算相乘结果，直接设置了结果）
+   /* let temRot = new cv.Mat(3, 3, cv.CV_64F);
+    temRot.set(0, 0, Math.cos(angle_y) * Math.cos(angle_z));
+    temRot.set(0, 1, -Math.cos(angle_y) * Math.sin(angle_z));
+    temRot.set(0, 2, Math.sin(angle_y));
+    temRot.set(1, 0, Math.sin(angle_x) * Math.sin(angle_y) * Math.cos(angle_z) + Math.cos(angle_x) * Math.sin(angle_z));
+    temRot.set(1, 1, -Math.sin(angle_x) * Math.sin(angle_y) * Math.sin(angle_z) * Math.cos(angle_z) + Math.cos(angle_x) * Math.cos(angle_z));
+    temRot.set(1, 2, -Math.sin(angle_x) * Math.cos(angle_y));
+    temRot.set(2, 0, -Math.cos(angle_x) * Math.sin(angle_y) * Math.cos(angle_z) + Math.sin(angle_x) * Math.sin(angle_z));
+    temRot.set(2, 1, Math.cos(angle_x) * Math.sin(angle_y) * Math.sin(angle_z) + Math.sin(angle_x) * Math.cos(angle_z));
+    temRot.set(2, 2, Math.cos(angle_x) * Math.cos(angle_y));*/
+
+   let temRot=squareMatrixMultiply(squareMatrixMultiply(arr_x,arr_y),angle_z);
+
+
+    //打印出由imu旋转角得到的旋转信息，mat3x3
+    for (let i = 0; i < temRot.length; i++) {
+        console.log(temRot[i,0], temRot[i,1], temRot[i,2]);
+    }
+
+    return {
+        rMat: temRot,
+        tMat: {
+            tx,
+            ty,
+            tz
+        }
+    };
+}
+
 //发送视频帧
 function sendVideoData(video) {
     var canvas = document.getElementById('canvas');
@@ -59,6 +148,8 @@ function sendVideoData(video) {
         let data = {
             imgData: theDataURL,
         };
+
+        let start_time=(new Date()).getTime();
         //使用websocket进行图像传输
         socket.emit('VIDEO_MESS', JSON.stringify(data));
     }
@@ -97,9 +188,6 @@ function compatibleNavigator() {
         navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
     }
 }
-
-
-
 
 (function () {
     compatibleNavigator();
@@ -153,7 +241,7 @@ function compatibleNavigator() {
                     }, video_period);
 
                     //定时传送IMU数据
-                    setInterval(sendIMUData, 100);//interval=16
+                    // setInterval(sendIMUData, 100);//interval=16
                 };
 
             })
