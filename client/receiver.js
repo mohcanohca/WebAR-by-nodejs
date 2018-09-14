@@ -3,19 +3,22 @@
 // var socket = io.connect('https://10.208.25.199:8081');
 var socket = io.connect('https://127.0.0.1:8081');
 
+//获取用于绘制目标图像位置的canvas画布
 var canvasFace = document.getElementById('canvas-face');
-
-
 var ctx = canvasFace.getContext('2d');
 
-let rotation = null, transition = null;
+socket.on('frame', handlePosition);
 
-socket.on('frame', function (data) {
+function handlePosition(data) {
+    let canvasFace = document.getElementById('canvas-face');
+    let ctx = canvasFace.getContext('2d');
+
+    let rotation = null, transition = null;
     ctx.clearRect(0, 0, canvasFace.width, canvasFace.height);
     ctx.strokeStyle = "red";
     rotation = data.rotation;
     transition = data.transition;
-    
+
     let points = data.position;
     if (!points) return;
     ctx.beginPath();
@@ -27,7 +30,7 @@ socket.on('frame', function (data) {
     }
     ctx.stroke();
     ctx.closePath();
-});
+}
 
 function controlModule() {
     var container;
@@ -150,3 +153,7 @@ function controlModule() {
         
     }
 }
+
+
+
+

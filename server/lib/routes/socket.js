@@ -470,7 +470,6 @@ module.exports = function (socket) {
         
         let period = cur_time - pre_time;
         //根据各个轴的旋转角速度，单重积分，计算各个轴的旋转角
-        
         let transform = calTransformByIMU(pre_imu, period);
         
         
