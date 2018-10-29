@@ -1,27 +1,27 @@
-var socket = io.connect('https://10.108.166.159:8081');
-let send_time,receive_time;
-send_time=receive_time=(new Date()).getTime();
+var socket = io.connect('https://10.108.164.203:8081');
+let send_time, receive_time;
+send_time = receive_time = (new Date()).getTime();
 
 //获取用于绘制目标图像位置的canvas画布
 var canvasFace = document.getElementById('canvas-face');
 var ctx = canvasFace.getContext('2d');
 
-var test=document.getElementById('test');
+var test = document.getElementById('test');
 socket.on('frame', handlePosition);
 
 function handlePosition(data) {
-    receive_time=(new Date()).getTime();
-    let period=receive_time-send_time;
-    test.innerText='时间差：'+period+'\n'+test.innerText;
+    receive_time = (new Date()).getTime();
+    let period = receive_time - send_time;
+    test.innerText = '时间差：' + period + '\n' + test.innerText;
     // console.log('时间差：'+period);
-    calTransformByIMU(imu,period);
-/*    let canvasFace = document.getElementById('canvas-face');
-    let ctx = canvasFace.getContext('2d');*/
+    calTransformByIMU(imu, period);
+    /*    let canvasFace = document.getElementById('canvas-face');
+        let ctx = canvasFace.getContext('2d');*/
     // let rotation = null, transition = null;
     ctx.clearRect(0, 0, canvasFace.width, canvasFace.height);
     ctx.strokeStyle = "red";
-/*    rotation = data.rotation;
-    transition = data.transition;*/
+    /*    rotation = data.rotation;
+        transition = data.transition;*/
 
     let points = data.position;
     if (!points) return;
@@ -54,8 +54,8 @@ let devicePosition = {
 let imu = {};//存储设备的运动信息
 let interval = 0;
 
-let width=640;//设置默认值
-let height=480;
+let width = 640;//设置默认值
+let height = 480;
 
 function handleOrientation(event) {
     deviceOrientation.thetax = event.beta;
@@ -115,7 +115,7 @@ function calTransformByIMU(rotation, period) {
     let angle_y = rotation.ry * period;
     let angle_x = rotation.rx * period;
 
-    test.innerText='imu平移量：' + tx/*+''+ty+''+tz*/+'\n'+test.innerText;
+    test.innerText = 'imu平移量：' + tx/*+''+ty+''+tz*/ + '\n' + test.innerText;
     console.log('imu平移量：' + tx, ty, tz);
     console.log('imu旋转角度：' + angle_x, angle_y, angle_z);
 
@@ -152,12 +152,12 @@ function calTransformByIMU(rotation, period) {
      temRot.set(2, 1, Math.cos(angle_x) * Math.sin(angle_y) * Math.sin(angle_z) + Math.sin(angle_x) * Math.cos(angle_z));
      temRot.set(2, 2, Math.cos(angle_x) * Math.cos(angle_y));*/
 
-    let temRot=squareMatrixMultiply(squareMatrixMultiply(arr_x,arr_y),angle_z);
+    let temRot = squareMatrixMultiply(squareMatrixMultiply(arr_x, arr_y), angle_z);
 
 
     //打印出由imu旋转角得到的旋转信息，mat3x3
     for (let i = 0; i < temRot.length; i++) {
-        console.log(temRot[i,0], temRot[i,1], temRot[i,2]);
+        console.log(temRot[i, 0], temRot[i, 1], temRot[i, 2]);
     }
 
     return {
@@ -173,7 +173,7 @@ function calTransformByIMU(rotation, period) {
 //发送视频帧
 function sendVideoData(video) {
     var canvas = document.getElementById('canvas');
-    console.log(video.width,video.height);
+    console.log(video.width, video.height);
     if (width && height) {
         canvas.width = width;
         canvas.height = height;
@@ -188,7 +188,7 @@ function sendVideoData(video) {
             imgData: theDataURL,
         };
 
-        send_time=(new Date()).getTime();
+        send_time = (new Date()).getTime();
         //使用websocket进行图像传输
         socket.emit('VIDEO_MESS', JSON.stringify(data));
     }
