@@ -1,6 +1,6 @@
 var socket = io.connect('https://10.108.164.203:8081');
-let send_time, receive_time;
-send_time = receive_time = (new Date()).getTime();
+// let send_time, receive_time;
+// send_time = receive_time = (new Date()).getTime();
 
 //获取用于绘制目标图像位置的canvas画布
 var canvasFace = document.getElementById('canvas-face');
@@ -9,31 +9,116 @@ var ctx = canvasFace.getContext('2d');
 var test = document.getElementById('test');
 socket.on('frame', handlePosition);
 
+var loadGeometry;
+
 function handlePosition(data) {
-    receive_time = (new Date()).getTime();
-    let period = receive_time - send_time;
-    test.innerText = '时间差：' + period + '\n' + test.innerText;
-    // console.log('时间差：'+period);
-    calTransformByIMU(imu, period);
-    /*    let canvasFace = document.getElementById('canvas-face');
-        let ctx = canvasFace.getContext('2d');*/
+
+    // calTransformByIMU(imu, period);
     // let rotation = null, transition = null;
-    ctx.clearRect(0, 0, canvasFace.width, canvasFace.height);
-    ctx.strokeStyle = "red";
+    ctx.clearRect(0, 0, 640, 480);
+    ctx.fillStyle = "red";
     /*    rotation = data.rotation;
         transition = data.transition;*/
 
     let points = data.position;
     if (!points) return;
-    ctx.beginPath();
-    for (let point of points) {
-        let x = point.x;
-        let y = point.y;
-        // ctx.arc(x, y, 5, 0, Math.PI * 2, true); // 绘制
-        ctx.lineTo(x, y);
+
+    let center;
+    let sumx = 0;
+    let sumy = 0;
+    let count = 0;
+    for (let p of points) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+        if (points.x < 0 || points.x > 640 || points.y < 0 || points.y > 480) continue;
+        sumx += p.x;
+        sumy += p.y;
+        count++;
     }
-    ctx.stroke();
-    ctx.closePath();
+    center = {
+        x: sumx / count,
+        y: sumy / count
+    };
+    console.log(center.x, center.y);
+    loadGeometry(center);
+    /* ctx.beginPath();
+     for (let point of points) {
+         let x = point.x;
+         let y = point.y;
+         // ctx.arc(x, y, 5, 0, Math.PI * 2, true); // 绘制
+         ctx.lineTo(x, y);
+     }
+     ctx.stroke();
+     ctx.closePath();*/
+}
+
+//初始化three.js相关环境
+function initThree() {
+    // 创建一个场景，它能放置所有元素，如网格对象、摄像机、灯光等
+    var scene = new THREE.Scene();
+    scene.background = 'transparent';
+
+    // 创建一个摄像机
+    //arg1：摄像机能看到的视野，推荐默认值为50
+    //arg2：渲染结果的横向尺寸和纵向尺寸的比值
+    //arg3：从距离摄像机多近的距离开始渲染，推荐默认值0.1
+    //arg4：摄像机从它所处的位置开始能看到多远。若过小，那么场景中的远处不会被渲染，推荐默认值1000
+    var camera = new THREE.PerspectiveCamera(45, 4 / 3, 0.1, 1000);
+
+    // 设置摄像机位置，并将其朝向场景中心
+    camera.position.x = 0
+    camera.position.y = 0
+    camera.position.z = 200
+    camera.lookAt(scene.position);
+    scene.add(camera);
+
+    // 添加环境光，用于提亮场景
+    var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+    scene.add(ambientLight);
+
+    // 添加聚光灯
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(-40, 60, -10);
+
+    scene.add(spotLight);
+
+    // 创建一个渲染器，并设置其清除颜色和大小
+    // var renderer = new THREE.WebGLRenderer({alpha: true});
+    var renderer = new THREE.CanvasRenderer({alpha: true});
+    // renderer.setClearColor(0xffffff, 1.0);
+    // renderer.setClearAlpha(new THREE.)
+    renderer.setSize(640, 480);
+
+    // 创建一个立方体
+    var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
+    var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
+    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+    // 将渲染器的输出（canvas）插入到特定 DOM 元素下
+    document.getElementById("WebGL-output").appendChild(renderer.domElement);
+    render();
+
+    function render() {
+        // render using requestAnimationFrame
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+
+    return function (center) {
+        if (cube) scene.remove(cube);
+        cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        // 设置立方体的位置
+        cube.position.x = (center.x - 320) / 2;
+        cube.position.y = (center.y - 240) / 2;
+        // cube.position.x = 20;
+        // cube.position.y = 10;
+        cube.position.z = 0;
+        console.log(cube.position.x, cube.position.y, cube.position.z)
+
+        // 添加立方体至场景
+        scene.add(cube);
+    };
 }
 
 //存储设备的方向信息
@@ -45,11 +130,11 @@ let deviceOrientation = {
 };
 
 //存储设备的位置
-let devicePosition = {
+/*let devicePosition = {
     x: 0,
     y: 0,
     z: 0
-};
+};*/
 
 let imu = {};//存储设备的运动信息
 let interval = 0;
@@ -173,13 +258,12 @@ function calTransformByIMU(rotation, period) {
 //发送视频帧
 function sendVideoData(video) {
     var canvas = document.getElementById('canvas');
-    console.log(video.width, video.height);
     if (width && height) {
         canvas.width = width;
         canvas.height = height;
         let context = canvas.getContext('2d');
-        /*        canvasFace.width = width;
-                canvasFace.height = height;*/
+        canvasFace.width = width;
+        canvasFace.height = height;
 
         context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
         let jpgQuality = 0.6;
@@ -188,7 +272,7 @@ function sendVideoData(video) {
             imgData: theDataURL,
         };
 
-        send_time = (new Date()).getTime();
+        // send_time = (new Date()).getTime();
         //使用websocket进行图像传输
         socket.emit('VIDEO_MESS', JSON.stringify(data));
     }
@@ -288,4 +372,6 @@ function compatibleNavigator() {
                 alert(err.name + ": " + err.message);
             });
     }
+
+    loadGeometry = initThree();
 })();
