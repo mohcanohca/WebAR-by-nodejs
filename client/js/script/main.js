@@ -2,16 +2,18 @@ require.config({
     paths: {
         io: '../libs/socket.io/socket.io',
         eventManager: '../libs/event',
-        mediaDevices: '../script/webrtc'
+        mediaDevices: '../script/webrtc',
     }
 });
 
 require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, mediaDevices) {
+
     let loadModel = initThree(640, 480, document.getElementById('WebGL-output'));
+
     //监听到后台返回的目标对象的位置信息的处理
     eventManager.listen('position', handlePosition);
     //打开摄像头后的处理
-    eventManager.listen('camera', sendData);
+    eventManager.listen('cameraOpened', sendData);
     //显示虚拟物体
     eventManager.listen('showModel', loadModel);
 
@@ -32,6 +34,7 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
     let defaultThreeHeight = 480;
 
 
+    //响应后台返回的位置信息
     function handlePosition(data) {
         // calTransformByIMU(imu, period);
         // let rotation = null, transition = null;
@@ -60,7 +63,6 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
             x: sumx / count,
             y: sumy / count
         };
-
         eventManager.trigger('showModel', center)
     }
 
@@ -79,6 +81,9 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
         width = width || defaultThreeWidth;
         height = height || defaultThreeHeight;
         let camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+
+        // 初始化摄像机插件（用于拖拽旋转摄像机，产生交互效果）
+        let orbitControls = new THREE.OrbitControls(camera);
 
         // 设置摄像机位置，并将其朝向场景中心
         camera.position.x = 0
@@ -128,6 +133,7 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
         }
 
         let originModel;
+
         return function (center, model) {
             if (originModel) scene.remove(originModel);
 
@@ -153,17 +159,8 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
         };
     }
 
-    /*
-    //存储设备的位置
-    let devicePosition = {
-        x: 0,
-        y: 0,
-        z: 0
-    };
-  */
     let imu = {};//存储设备的运动信息
     let interval = 0;
-
 
     //存储设备的方向信息
     let deviceOrientation = {
@@ -209,11 +206,11 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
             }
         });
     }).then(function () {
-        eventManager.trigger('camera');
+        eventManager.trigger('cameraOpened', cameraDeviceIds);
     });
 
     //前后端通信
-    function sendData(videoConstraints, video_period) {
+    function sendData(cameraDeviceIds, videoConstraints, video_period) {
 
         let defaultVideoConstraints = {
             width: defaultVideoWidth,
