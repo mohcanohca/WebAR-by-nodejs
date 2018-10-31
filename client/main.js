@@ -7,12 +7,13 @@ var canvasFace = document.getElementById('canvas-face');
 var ctx = canvasFace.getContext('2d');
 
 var test = document.getElementById('test');
-socket.on('frame', handlePosition);
-
+let width = 640;//设置默认值
+let height = 480;
 var loadGeometry;
 
-function handlePosition(data) {
+socket.on('frame', handlePosition);
 
+function handlePosition(data) {
     // calTransformByIMU(imu, period);
     // let rotation = null, transition = null;
     ctx.clearRect(0, 0, 640, 480);
@@ -42,15 +43,6 @@ function handlePosition(data) {
     };
     console.log(center.x, center.y);
     loadGeometry(center);
-    /* ctx.beginPath();
-     for (let point of points) {
-         let x = point.x;
-         let y = point.y;
-         // ctx.arc(x, y, 5, 0, Math.PI * 2, true); // 绘制
-         ctx.lineTo(x, y);
-     }
-     ctx.stroke();
-     ctx.closePath();*/
 }
 
 //初始化three.js相关环境
@@ -121,6 +113,7 @@ function initThree() {
     };
 }
 
+/*
 //存储设备的方向信息
 let deviceOrientation = {
     thetax: 0,
@@ -130,17 +123,15 @@ let deviceOrientation = {
 };
 
 //存储设备的位置
-/*let devicePosition = {
+let devicePosition = {
     x: 0,
     y: 0,
     z: 0
-};*/
+};
 
 let imu = {};//存储设备的运动信息
 let interval = 0;
-
-let width = 640;//设置默认值
-let height = 480;
+*/
 
 function handleOrientation(event) {
     deviceOrientation.thetax = event.beta;
@@ -312,66 +303,65 @@ function compatibleNavigator() {
     }
 }
 
+//向服务端传送imu信息
+function sendIMUData() {
+    socket.emit('IMU_MESS', JSON.stringify(imu));
+}
+
+//前后端通信
+function sendData() {
+    let videoConstraints = {
+        width: 640,
+        height: 480,
+        deviceId: cameraDeviceIds[1]
+    };
+
+    let constraints = {video: videoConstraints};
+    let video_period = 100;
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(function (stream) {
+            var video = document.getElementById('video');
+            // 旧的浏览器可能没有srcObject
+            if ("srcObject" in video) {
+                video.srcObject = stream;
+            } else {
+                // 防止再新的浏览器里使用它，应为它已经不再支持了
+                video.src = window.URL.createObjectURL(stream);
+            }
+            video.onloadedmetadata = function (e) {
+                video.play();
+                width = video.videoWidth;
+                height = video.videoHeight;
+
+                //定时向后端传输图像数据和imu数据
+                setInterval(function () {
+                    sendVideoData(video);
+                }, video_period);
+
+                //定时传送IMU数据
+                // setInterval(sendIMUData, 100);//interval=16
+            };
+
+        }).catch(function (err) {
+        console.log(err.name + ": " + err.message);
+    });
+}
+
 (function () {
     compatibleNavigator();
-    window.addEventListener("deviceorientation", handleOrientation, true);
-    window.addEventListener("devicemotion", handleMotion, true);
-
-    function sendIMUData() {
-        socket.emit('IMU_MESS', JSON.stringify(imu));
-    }
+    loadGeometry = initThree();
+    // window.addEventListener("deviceorientation", handleOrientation, true);
+    // window.addEventListener("devicemotion", handleMotion, true);
 
     let cameraDeviceIds = [];
+
     navigator.mediaDevices.enumerateDevices().then(function (mediaDevices) {
         //获取设备信息
         mediaDevices.forEach(mediaDevice => {
             if (mediaDevice.kind === 'videoinput') {
-                // const option = document.createElement('option');
                 cameraDeviceIds.push(mediaDevice.deviceId);
             }
         });
     }).then(sendData);
-
-    //前后端通信
-    function sendData() {
-        let videoConstraints = {
-            width: 640,
-            height: 480,
-            deviceId: cameraDeviceIds[1]
-        };
-
-        let constraints = {video: videoConstraints};
-        let video_period = 1000;
-
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then(function (stream) {
-                var video = document.getElementById('video');
-                // 旧的浏览器可能没有srcObject
-                if ("srcObject" in video) {
-                    video.srcObject = stream;
-                } else {
-                    // 防止再新的浏览器里使用它，应为它已经不再支持了
-                    video.src = window.URL.createObjectURL(stream);
-                }
-                video.onloadedmetadata = function (e) {
-                    video.play();
-                    width = video.videoWidth;
-                    height = video.videoHeight;
-
-                    //定时向后端传输图像数据和imu数据
-                    setInterval(function () {
-                        sendVideoData(video);
-                    }, video_period);
-
-                    //定时传送IMU数据
-                    // setInterval(sendIMUData, 100);//interval=16
-                };
-
-            })
-            .catch(function (err) {
-                alert(err.name + ": " + err.message);
-            });
-    }
-
-    loadGeometry = initThree();
 })();
