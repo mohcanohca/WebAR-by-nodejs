@@ -7,10 +7,13 @@ require.config({
 });
 
 require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, mediaDevices) {
+    let loadModel = initThree(640, 480, document.getElementById('WebGL-output'));
     //监听到后台返回的目标对象的位置信息的处理
     eventManager.listen('position', handlePosition);
     //打开摄像头后的处理
     eventManager.listen('camera', sendData);
+    //显示虚拟物体
+    eventManager.listen('showModel', loadModel);
 
 
     //连接服务器端，传输数据
@@ -28,7 +31,6 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
     let defaultThreeWidth = 640;
     let defaultThreeHeight = 480;
 
-    let loadGeometry = initThree(640, 480, document.getElementById('WebGL-output'));
 
     function handlePosition(data) {
         // calTransformByIMU(imu, period);
@@ -58,7 +60,8 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
             x: sumx / count,
             y: sumy / count
         };
-        loadGeometry(center);
+
+        eventManager.trigger('showModel', center)
     }
 
     //初始化three.js相关环境
@@ -100,11 +103,6 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
         // renderer.setClearColor(0xffffff, 1.0);
         renderer.setSize(width, height);
 
-        // 创建一个立方体
-        var cubeGeometry = new THREE.BoxGeometry(40, 40, 40);
-        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
         // 将渲染器的输出（canvas）插入到特定 DOM 元素下
         if (container) {
             container.appendChild(renderer.domElement);
@@ -121,8 +119,6 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
             body.appendChild(container);
             container.appendChild(renderer.domElement);
         }
-
-
         render();
 
         function render() {
@@ -131,19 +127,29 @@ require(['io', 'eventManager', 'mediaDevices'], function (io, eventManager, medi
             requestAnimationFrame(render);
         }
 
-        return function (center) {
-            if (cube) scene.remove(cube);
-            cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        let originModel;
+        return function (center, model) {
+            if (originModel) scene.remove(originModel);
+
+            if (!model) {
+                // 创建一个立方体
+                let cubeGeometry = new THREE.BoxGeometry(40, 40, 40);
+                let cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
+                originModel = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            } else {
+                originModel = model;
+            }
+            // model = model;
             // 设置立方体的位置
-            cube.position.x = (center.x - width / 2) / 2;
-            cube.position.y = (center.y - height / 2) / 2;
+            originModel.position.x = (center.x - width / 2) / 2;
+            originModel.position.y = (center.y - height / 2) / 2;
             // cube.position.x = 20;
             // cube.position.y = 10;
-            cube.position.z = 0;
-            console.log(cube.position.x, cube.position.y, cube.position.z)
+            originModel.position.z = 0;
+            console.log(originModel.position.x, originModel.position.y, originModel.position.z)
 
-            // 添加立方体至场景
-            scene.add(cube);
+            // 添加虚拟物体至场景
+            scene.add(originModel);
         };
     }
 
