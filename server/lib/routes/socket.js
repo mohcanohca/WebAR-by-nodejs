@@ -134,7 +134,7 @@ module.exports = function (socket) {
 
         if (!dstPosition)
             return;
-        let points = [];//存储模板图四个角点的坐标，顺时针存储，返回前端四个点的坐标，用来测试
+        let corners = [];//存储模板图四个角点的坐标，顺时针存储，返回前端四个点的坐标，用来测试
 
         let imageCorners = [];//存储模板图四个角点的坐标，顺时针存储
 
@@ -146,7 +146,7 @@ module.exports = function (socket) {
                 imageCorners.push(
                     new cv.Point2(dstPosition.at(i, j).x, dstPosition.at(i, j).y)
                 );
-                points.push({
+                corners.push({
                     x: dstPosition.at(i, j).x,
                     y: dstPosition.at(i, j).y
                 })
@@ -166,9 +166,6 @@ module.exports = function (socket) {
             tempMat.set(0, 0, pose.rvec.x);
             tempMat.set(0, 1, pose.rvec.y);
             tempMat.set(0, 2, pose.rvec.z);
-
-            console.log("旋转向量：")
-            console.log(pose.rvec);
 
 
             //5. 将输出的旋转向量转变为旋转矩阵
@@ -234,12 +231,10 @@ module.exports = function (socket) {
         ];
 
         socket.emit('frame', {
-            position: points,
+            corners: corners,
             pose: pose,
             rotation: rotation,
-            // rotation: rotation_matrix,//旋转矩阵
             transition: pose.tvec//平移向量
-
         })
         ;
     });

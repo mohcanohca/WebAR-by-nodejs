@@ -3,26 +3,27 @@ require.config({
         io: '../libs/socket.io/socket.io',
         eventManager: './event',
         mediaDevices: './webrtc',
-        control_model: './control_model'
+        modelController: './controlModel'
     }
 });
 
-require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, eventManager, mediaDevices, control_model) {
+require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io, eventManager, mediaDevices, modelController) {
+    console.log(modelController);
 
-    let loadModel = control_model.init(640, 480, document.getElementById('WebGL-output'));
+    // let loadmodel = modelController.init(640, 480, document.getElementById('WebGL-output'));
 
     //监听到后台返回的目标对象的位置信息的处理
     eventManager.listen('position', handlePosition);
     //打开摄像头后的处理
     eventManager.listen('cameraOpened', sendData);
     //显示虚拟物体
-    eventManager.listen('showModel', loadModel);
+    eventManager.listen('showModel', modelController.update);
 
 
     //连接服务器端，传输数据
     const socket = io.connect('https://10.108.164.203:8081');
-    socket.on('frame', function (pos) {
-        eventManager.trigger('position', pos);
+    socket.on('frame', function (data) {
+        eventManager.trigger('position', data);
     });
 
     let canvas = document.getElementById('canvas');//用于绘制摄像头捕捉内容
@@ -31,8 +32,6 @@ require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, e
 
     let defaultVideoWidth = 640;//设置默认值
     let defaultVideoHeight = 480;
-    let defaultThreeWidth = 640;
-    let defaultThreeHeight = 480;
 
 
     //响应后台返回的位置信息
@@ -41,126 +40,32 @@ require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, e
         // let rotation = null, transition = null;
         ctx.clearRect(0, 0, 640, 480);
         ctx.fillStyle = "red";
-        /*    rotation = data.rotation;
-            transition = data.transition;*/
 
-        let points = data.position;
-        if (!points) return;
+        let corners = data.corners;
+        if (!corners) return;
 
         let center;
         let sumx = 0;
         let sumy = 0;
         let count = 0;
-        for (let p of points) {
+        for (let corner of corners) {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
+            ctx.arc(corner.x, corner.y, 3, 0, 2 * Math.PI);
             ctx.fill();
-            if (points.x < 0 || points.x > 640 || points.y < 0 || points.y > 480) continue;
-            sumx += p.x;
-            sumy += p.y;
+            // if (corner.x < 0 || corner.x > 640 || corner.y < 0 || corner.y > 480) continue;
+            sumx += corner.x;
+            sumy += corner.y;
             count++;
         }
         center = {
             x: sumx / count,
             y: sumy / count
         };
-        eventManager.trigger('showModel', center)
+        // eventManager.trigger('showModel', center)
+        eventManager.trigger('showModel', corners)
     }
 
-    /* //初始化three.js相关环境
-     function initThree(width, height, container) {
-         // 创建一个场景，它能放置所有元素，如网格对象、摄像机、灯光等
-         let scene = new THREE.Scene();
-         scene.background = 'transparent';
-
-         // 创建一个摄像机
-         //arg1：摄像机能看到的视野，推荐默认值为50
-         //arg2：渲染结果的横向尺寸和纵向尺寸的比值
-         //arg3：从距离摄像机多近的距离开始渲染，推荐默认值0.1
-         //arg4：摄像机从它所处的位置开始能看到多远。若过小，那么场景中的远处不会被渲染，推荐默认值1000
-
-         width = width || defaultThreeWidth;
-         height = height || defaultThreeHeight;
-         let camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-
-         // 初始化摄像机插件（用于拖拽旋转摄像机，产生交互效果）
-         let orbitControls = new THREE.OrbitControls(camera);
-
-         // 设置摄像机位置，并将其朝向场景中心
-         camera.position.x = 0
-         camera.position.y = 0
-         camera.position.z = 200
-         camera.lookAt(scene.position);
-         scene.add(camera);
-
-         // 添加环境光，用于提亮场景
-         let ambientLight = new THREE.AmbientLight(0x0c0c0c);
-         scene.add(ambientLight);
-
-         // 添加聚光灯
-         let spotLight = new THREE.SpotLight(0xffffff);
-         spotLight.position.set(-40, 60, -10);
-
-         scene.add(spotLight);
-
-         // 创建一个渲染器，并设置其清除颜色和大小
-         // var renderer = new THREE.WebGLRenderer({alpha: true});
-         var renderer = new THREE.CanvasRenderer({alpha: true});
-         // renderer.setClearColor(0xffffff, 1.0);
-         renderer.setSize(width, height);
-
-         // 将渲染器的输出（canvas）插入到特定 DOM 元素下
-         if (container) {
-             container.appendChild(renderer.domElement);
-         } else {
-             //若没有提供three.js的输出容器，创建一个容器
-             let body = document.body;
-             container = document.createElement('div');
-             container.style.width = width + 'px';
-             container.style.height = height + 'px';
-             container.style.position = 'absolute';
-             container.style.top = '0px';
-             container.style.left = '0px';
-             container.style.zIndex = 999;
-             body.appendChild(container);
-             container.appendChild(renderer.domElement);
-         }
-         render();
-
-         function render() {
-             // render using requestAnimationFrame
-             renderer.render(scene, camera);
-             requestAnimationFrame(render);
-         }
-
-         let originModel;
-
-         return function (center, model) {
-             if (originModel) scene.remove(originModel);
-
-             if (!model) {
-                 // 创建一个立方体
-                 let cubeGeometry = new THREE.BoxGeometry(40, 40, 40);
-                 let cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-                 originModel = new THREE.Mesh(cubeGeometry, cubeMaterial);
-             } else {
-                 originModel = model;
-             }
-             // model = model;
-             // 设置立方体的位置
-             originModel.position.x = (center.x - width / 2) / 2;
-             originModel.position.y = (center.y - height / 2) / 2;
-             // cube.position.x = 20;
-             // cube.position.y = 10;
-             originModel.position.z = 0;
-             console.log(originModel.position.x, originModel.position.y, originModel.position.z)
-
-             // 添加虚拟物体至场景
-             scene.add(originModel);
-         };
-     }*/
-
-    let imu = {};//存储设备的运动信息
+    /*let imu = {};//存储设备的运动信息
     let interval = 0;
 
     //存储设备的方向信息
@@ -192,7 +97,7 @@ require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, e
         imu.rz = rz;
         imu.interval = interval;
         imu.accelerate = accelerate;
-    }
+    }*/
 
     // window.addEventListener("deviceorientation", handleOrientation, true);
     // window.addEventListener("devicemotion", handleMotion, true);
@@ -236,6 +141,9 @@ require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, e
                     // width = video.videoWidth;
                     // height = video.videoHeight;
 
+                    //初始化webgl相关
+                    modelController.onload(video);
+
                     //定时向后端传输图像数据和imu数据
                     setInterval(function () {
                         sendVideoData(video, video.videoWidth, video.videoHeight);
@@ -258,6 +166,7 @@ require(['io', 'eventManager', 'mediaDevices', 'control_model'], function (io, e
         canvasFace.width = width;
         canvasFace.height = height;
 
+        //绘制当前视频帧
         context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
 
         let jpgQuality = 0.6;
