@@ -53,6 +53,5 @@ define(function () {
         listen: listen,
         trigger: trigger,
         remove: remove,
-        show: show
     }
 });

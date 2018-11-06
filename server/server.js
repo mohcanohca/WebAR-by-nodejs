@@ -8,12 +8,8 @@ const fs = require('fs');
 const options = {
     key: fs.readFileSync('./certificate/private.pem'),//私钥
     cert: [fs.readFileSync('./certificate/csr.crt')],//证书
-    /* key: fs.readFileSync('./cert/ydz-key.pem'),//私钥
-     cert: [fs.readFileSync('./cert/ydz-cert.pem')],//证书*/
-    // cert: fs.readFileSync('../certificate/server-cert.pem')
-    /*    pfx:fs.readFileSync('../certificate/server.pfx'),
-        passphrase:'123456'*/
 };
+
 // configuration files
 var configServer = require('./lib/config/server_config');
 
