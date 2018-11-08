@@ -10,7 +10,7 @@
 <body>
 <div class="container center">
     <div id="show">
-        <video id="video"></video>
+        <video id="video" style="display: none;"></video>
         <canvas id="canvas" style="display: none"></canvas>
         <canvas id="canvas-face"></canvas>
         <div id="WebGL-output"></div>
@@ -19,13 +19,10 @@
 </div>
 
 <script src="js/libs/three.js"></script>
-<script src="js/three.js/renderers/CanvasRenderer.js"></script>
-<script src="js/three.js/renderers/Projector.js"></script>
-<script src="js/three.js/renderers/RaytracingRenderer.js"></script>
-<script src="js/libs/OrbitControls.js"></script>
-<script src="js/script/svd.js"></script>
-<script src="js/script/cv.js"></script>
-<script src="js/script/posit1.js"></script>
+<!--<script src="js/script/OrbitControls.js"></script>-->
+<script src="js/libs/svd.js"></script>
+<script src="js/libs/cv.js"></script>
+<script src="js/libs/posit.js"></script>
 
 <!--<script type="text/javascript" src="./socket.io/socket.io.js"></script>-->
 <script data-main="js/script/main.js" src="js/libs/require.js"></script>

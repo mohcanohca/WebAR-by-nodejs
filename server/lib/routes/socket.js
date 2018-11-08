@@ -174,12 +174,12 @@ module.exports = function (socket) {
                 initial_rotation = rmat;
                 initial_transition = pose.rvec;
                 initial_flag = false;
-                console.log("视觉得到初始旋转矩阵为：");
+                // console.log("视觉得到初始旋转矩阵为：");
                 for (let i = 0; i < 3; i++) {
-                    console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
+                    // console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
                 }
-                console.log("视觉得到初始平移向量为：");
-                console.log(pose.tvec);
+                // console.log("视觉得到初始平移向量为：");
+                // console.log(pose.tvec);
             }
 
             /*for (let i = 0; i < 3; i++) {

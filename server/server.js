@@ -25,7 +25,7 @@ require('./lib/routes').serveIndex(app, configServer.staticFolder);
 // HTTP server
 var server = http.createServer(app);
 server.listen(8080, function () {
-    console.log('HTTP server listening on port ' + app.get('port'));
+    // console.log('HTTP server listening on port ' + app.get('port'));
 });
 
 

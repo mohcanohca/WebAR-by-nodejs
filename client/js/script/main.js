@@ -8,16 +8,15 @@ require.config({
 });
 
 require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io, eventManager, mediaDevices, modelController) {
-    console.log(modelController);
-
+    
     // let loadmodel = modelController.init(640, 480, document.getElementById('WebGL-output'));
 
     //监听到后台返回的目标对象的位置信息的处理
     eventManager.listen('position', handlePosition);
     //打开摄像头后的处理
     eventManager.listen('cameraOpened', sendData);
-    //显示虚拟物体
-    eventManager.listen('showModel', modelController.update);
+    //显示虚拟物体，会将图像的四个角点信息传递给回调函数
+    eventManager.listen('locateModel', modelController.locateModel);
 
 
     //连接服务器端，传输数据
@@ -28,7 +27,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
 
     let canvas = document.getElementById('canvas');//用于绘制摄像头捕捉内容
     let canvasFace = document.getElementById('canvas-face');//用于绘制目标图像出现的位置
-    let ctx = canvasFace.getContext('2d');
+    let context_face = canvasFace.getContext('2d');
 
     let defaultVideoWidth = 640;//设置默认值
     let defaultVideoHeight = 480;
@@ -38,20 +37,27 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     function handlePosition(data) {
         // calTransformByIMU(imu, period);
         // let rotation = null, transition = null;
-        ctx.clearRect(0, 0, 640, 480);
-        ctx.fillStyle = "red";
-
         let corners = data.corners;
         if (!corners) return;
 
+        //绘制目标图像的四个角点
+        // drawCorners(corners);
+
+        // eventManager.trigger('locateModel', center)
+        eventManager.trigger('locateModel', corners)
+    }
+
+    function drawCorners(corners) {
+        context_face.clearRect(0, 0, 640, 480);
+        context_face.fillStyle = "red";
         let center;
         let sumx = 0;
         let sumy = 0;
         let count = 0;
         for (let corner of corners) {
-            ctx.beginPath();
-            ctx.arc(corner.x, corner.y, 3, 0, 2 * Math.PI);
-            ctx.fill();
+            context_face.beginPath();
+            context_face.arc(corner.x, corner.y, 3, 0, 2 * Math.PI);
+            context_face.fill();
             // if (corner.x < 0 || corner.x > 640 || corner.y < 0 || corner.y > 480) continue;
             sumx += corner.x;
             sumy += corner.y;
@@ -61,8 +67,6 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
             x: sumx / count,
             y: sumy / count
         };
-        // eventManager.trigger('showModel', center)
-        eventManager.trigger('showModel', corners)
     }
 
     /*let imu = {};//存储设备的运动信息
