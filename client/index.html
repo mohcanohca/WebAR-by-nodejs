@@ -9,17 +9,24 @@
 </head>
 <body>
 <div class="container center">
+    <div id="controllers">
+        <button id="imageControl">识别</button>
+        <button id="handControl">手动</button>
+        <button id="sensorControl">传感器</button>
+        <button id="audioControl">语音</button>
+    </div>
     <div id="show">
         <video id="video" style="display: none;"></video>
         <canvas id="canvas" style="display: none"></canvas>
-        <canvas id="canvas-face"></canvas>
-        <div id="WebGL-output"></div>
+        <!--<canvas id="canvas-frame"></canvas>-->
+        <!--<div id="WebGL-output"></div>-->
         <div id="three-container"></div>
     </div>
+
+
 </div>
 
 <script src="js/libs/three.js"></script>
-<!--<script src="js/script/OrbitControls.js"></script>-->
 <script src="js/libs/svd.js"></script>
 <script src="js/libs/cv.js"></script>
 <script src="js/libs/posit.js"></script>
