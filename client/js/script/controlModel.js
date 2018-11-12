@@ -1,6 +1,4 @@
-define(['./event'], function (eventManager) {
-
-
+define(function () {
     const OrbitContoller = {
         current: 'orbit',
         level: 1
@@ -15,6 +13,7 @@ define(['./event'], function (eventManager) {
     let preposition, curposition;
     let controller = PosController;//控制器
 
+    let eventManager;
 
     /*    //初始化three.js相关环境
         function initThree(width, height, container) {
@@ -121,7 +120,6 @@ define(['./event'], function (eventManager) {
     var plane1, plane2, model, texture;
     var step = 0.0;
 
-    eventManager.listen('pan', handlePan);
 
     function handlePan() {
         console.log('handlePan')
@@ -254,8 +252,6 @@ define(['./event'], function (eventManager) {
             var lastQuaternion = new THREE.Quaternion();
 
             return function update() {
-
-
                 var position = scope.object.position;
                 console.log('scope.target:');
                 console.log(scope.target);
@@ -1377,7 +1373,11 @@ define(['./event'], function (eventManager) {
     };
 
     //更新场景，根据marker的四个角点的位置放置虚拟物体
-    function updateScenes(markers) {
+    function updateScenes(/*markers*/) {
+        texture.children[0].material.map.needsUpdate = true;
+    };
+
+    function updateModel(markers) {
         var corners, corner, pose, i;
 
         if (controller.current === 'position' && markers.length > 0) {
@@ -1405,9 +1405,7 @@ define(['./event'], function (eventManager) {
 
             model.rotation.z -= step;
         }
-
-        texture.children[0].material.map.needsUpdate = true;
-    };
+    }
 
     function updateObject(object, rotation, translation) {
         object.scale.x = modelSize;
@@ -1423,7 +1421,8 @@ define(['./event'], function (eventManager) {
         object.position.z = -translation[2];
     };
 
-    function onload(srcvideo) {
+    function onload(srcvideo, manager) {
+        eventManager = manager;
         canvas = document.getElementById("canvas");
         context = canvas.getContext("2d");
         canvas.width = defaultThreeWidth;
@@ -1433,26 +1432,31 @@ define(['./event'], function (eventManager) {
         video = srcvideo;
         // 初始化摄像机插件（用于拖拽旋转摄像机，产生交互效果）
 
+        //添加事件
+        // eventManager.listen('pan', handlePan);
+
         createRenderers();
         createScenes();
 
         tick();
     }
 
-    function updateModel(target) {
+    /*
+        function updateModel(target) {
 
-        let marker = [{corners: target}];
-        //告诉浏览器您希望执行动画并请求浏览器在下一次重绘之前调用指定的函数来更新动画。
-        requestAnimationFrame(function () {
-            drawCorners(marker);
-            updateScenes(marker);
-            render();
-        });
-    }
+            let marker = [{corners: target}];
+            //告诉浏览器您希望执行动画并请求浏览器在下一次重绘之前调用指定的函数来更新动画。
+            requestAnimationFrame(function () {
+                drawCorners(marker);
+                updateScenes(marker);
+                render();
+            });
+        }*/
 
 
     function updatePosition(position) {
         curposition = position;
+        console.log(position);
     }
 
 
@@ -1461,13 +1465,20 @@ define(['./event'], function (eventManager) {
         requestAnimationFrame(tick);
 
         console.log("当前controller是PosController？" + controller === PosController);
+
+        updateScenes();
+
+
         if (curposition && preposition !== curposition) {
             let markers = [{corners: curposition}];
-            drawCorners(markers);
-            updateScenes(markers);
-            render();
+            // drawCorners(markers);
+            // updateScenes(markers);
+            updateModel(markers);
+            // render();
             preposition = curposition;
         }
+
+        render();
     };
 
     return {

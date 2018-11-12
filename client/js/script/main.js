@@ -8,7 +8,7 @@ require.config({
 });
 
 require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io, eventManager, mediaDevices, modelController) {
-    
+
     // let loadmodel = modelController.init(640, 480, document.getElementById('WebGL-output'));
 
     //监听到后台返回的目标对象的位置信息的处理
@@ -16,7 +16,11 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     //打开摄像头后的处理
     eventManager.listen('cameraOpened', sendData);
     //显示虚拟物体，会将图像的四个角点信息传递给回调函数
-    eventManager.listen('locateModel', modelController.locateModel);
+    eventManager.listen('locateModel', function (param) {
+        console.log(param);
+        modelController.locateModel(param);
+        // eventManager.remove('locateModel');
+    });
 
 
     //连接服务器端，传输数据
@@ -43,7 +47,6 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
         //绘制目标图像的四个角点
         // drawCorners(corners);
 
-        // eventManager.trigger('locateModel', center)
         eventManager.trigger('locateModel', corners)
     }
 
@@ -146,7 +149,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
                     // height = video.videoHeight;
 
                     //初始化webgl相关
-                    modelController.onload(video);
+                    modelController.onload(video,eventManager);
 
                     //定时向后端传输图像数据和imu数据
                     setInterval(function () {
