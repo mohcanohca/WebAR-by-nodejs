@@ -32,6 +32,9 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
             case 'handControl':
                 handleHandControl()
                 break;
+            case 'fusionControl':
+                handleFusionControl()
+                break;
             case 'sensorControl':
                 handleSensorControl()
                 break;
@@ -87,7 +90,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
 
         //定时向后端传输图像数据
         let timer = setInterval(function () {
-            if (currentController !== 'imageControl') {
+            if ((currentController !== 'imageControl') && (currentController !== 'fusionControl')) {
                 clearInterval(timer);
                 timer = null;
             } else {
@@ -99,7 +102,13 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     //触摸屏、键盘、鼠标控制
     function handleHandControl() {
         console.log('触摸屏、键盘、鼠标控制')
-        modelController.handControl('haha');
+        modelController.handControl();
+    }
+
+    function handleFusionControl() {
+        console.log('图像识别与手动混合控制')
+        handleImageControl();
+        handleHandControl();
     }
 
     //传感器控制
