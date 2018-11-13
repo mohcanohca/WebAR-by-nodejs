@@ -1,7 +1,7 @@
 define(function () {
 
-    let defaultThreeWidth = 640;
-    let defaultThreeHeight = 480;
+    let defaultThreeWidth = window.innerWidth;
+    let defaultThreeHeight = window.innerHeight;
     let preposition, curposition;
     // let controller = PosController;//控制器
 
@@ -111,11 +111,6 @@ define(function () {
     var camera2, camera_bg, camera_model;
     var model, texture;
     var step = 0.0;
-
-
-    function handlePan() {
-        console.log('handlePan')
-    }
 
     //构造函数
     THREE.OrbitControls = function (object, domElement) {
@@ -1219,32 +1214,32 @@ define(function () {
     });
 
 
-    //绘制marker的轮廓和marker的左上角
-    function drawCorners(markers) {
-        var corners, corner, i, j;
+    /* //绘制marker的轮廓和marker的左上角
+     function drawCorners(markers) {
+         var corners, corner, i, j;
 
-        context.lineWidth = 3;
+         context.lineWidth = 3;
 
-        for (i = 0; i < markers.length; ++i) {
-            corners = markers[i].corners;
+         for (i = 0; i < markers.length; ++i) {
+             corners = markers[i].corners;
 
-            context.strokeStyle = "red";
-            context.beginPath();
+             context.strokeStyle = "red";
+             context.beginPath();
 
-            for (j = 0; j < corners.length; ++j) {
-                corner = corners[j];
-                context.moveTo(corner.x, corner.y);
-                corner = corners[(j + 1) % corners.length];
-                context.lineTo(corner.x, corner.y);
-            }
+             for (j = 0; j < corners.length; ++j) {
+                 corner = corners[j];
+                 context.moveTo(corner.x, corner.y);
+                 corner = corners[(j + 1) % corners.length];
+                 context.lineTo(corner.x, corner.y);
+             }
 
-            context.stroke();
-            context.closePath();
+             context.stroke();
+             context.closePath();
 
-            context.strokeStyle = "green";
-            context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
-        }
-    };
+             context.strokeStyle = "green";
+             context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+         }
+     };*/
 
     //创建渲染器和场景
     function createRenderers() {
@@ -1281,15 +1276,11 @@ define(function () {
     };
 
     function render() {
-
         //放置两个场景
         renderer.autoClear = false;
         renderer.clear();
-        // addGeo(scene2);//在scene2中添加几何体
-
         renderer.render(scene_bg, camera_bg);
         renderer.render(scene_model, camera_model);
-        // renderer.render(scene2, camera2);
     };
 
     let originModel;
@@ -1412,9 +1403,6 @@ define(function () {
         //初始化定位方法，参数：模型大小，焦距
         posit = new POS.Posit(modelSize, canvas.width);
         video = srcvideo;
-
-        //添加事件
-        // eventManager.listen('pan', handlePan);
 
         createRenderers();
         createScenes();

@@ -127,8 +127,8 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     // let canvas_frame = canvasFrame.getContext('2d');
 
 
-    let defaultVideoWidth = 640;//设置默认值
-    let defaultVideoHeight = 480;
+    let defaultVideoWidth = window.innerWidth;//设置默认值
+    let defaultVideoHeight = window.innerHeight;
 
 
     function drawCorners(corners) {
