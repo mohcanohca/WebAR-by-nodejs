@@ -114,6 +114,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     //传感器控制
     function handleSensorControl() {
         console.log('传感器控制')
+        modelController.deviceOrientationControl();
     }
 
     //语音控制
@@ -152,44 +153,6 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
             y: sumy / count
         };
     }
-
-    /*let imu = {};//存储设备的运动信息
-    let interval = 0;
-
-    //存储设备的方向信息
-    let deviceOrientation = {
-        thetax: 0,
-        thetay: 0,
-        thetaz: 0,
-        absolute: false
-    };
-
-    function handleOrientation(event) {
-        deviceOrientation.thetax = event.beta;
-        deviceOrientation.thetay = event.gamma;
-        deviceOrientation.thetaz = event.alpha;
-        deviceOrientation.absolute = event.absolute;
-    }
-
-    //监听手机移动事件，更新旋转数据
-    function handleMotion(event) {
-        let rates = event.rotationRate;//旋转速率，度/s
-        let accelerate = event.accelerationIncludingGravity;
-        interval = event.interval;//从底层硬件获取数据的时间间隔，ms
-        let rz = rates.alpha;
-        let ry = rates.gamma;
-        let rx = rates.beta;
-
-        imu.rx = rx;
-        imu.ry = ry;
-        imu.rz = rz;
-        imu.interval = interval;
-        imu.accelerate = accelerate;
-    }*/
-
-    // window.addEventListener("deviceorientation", handleOrientation, true);
-    // window.addEventListener("devicemotion", handleMotion, true);
-
 
     let cameraDeviceIds = [];
     mediaDevices.enumerateDevices().then(function (devices) {

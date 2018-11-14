@@ -6,9 +6,26 @@ html, body {
 }
 
 .container {
+    position: relative;
     width: 100%;
     height: 100%;
 }
+
+#controllers {
+    position: absolute;
+    z-index: 100;
+    left:50%;
+    transform:translate(-50%,0);
+
+}
+
+#controllers button {
+    display: inline-block;
+    border: 0px;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
 
 #show {
     position: relative;
@@ -42,7 +59,7 @@ html, body {
 
 #three-container {
     position: absolute;
-    z-index: 100;
+    z-index: 20;
     /*    width: 100%;
         height: 100%;*/
 }

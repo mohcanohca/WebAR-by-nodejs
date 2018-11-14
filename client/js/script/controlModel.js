@@ -1,105 +1,11 @@
-define(function () {
+define(['../controls/deviceOrientationControls'], function (DeviceOrientationControls) {
 
-    let defaultThreeWidth = window.innerWidth;
-    let defaultThreeHeight = window.innerHeight;
+    let defaultWidth = window.innerWidth;
+    let defaultHeight = window.innerHeight;
     let preposition, curposition;
-    // let controller = PosController;//控制器
+    let controller;//控制器
 
     let eventManager;
-
-    /*    //初始化three.js相关环境
-        function initThree(width, height, container) {
-            // 创建一个场景，它能放置所有元素，如网格对象、摄像机、灯光等
-            let scene = new THREE.Scene();
-            scene.background = 'transparent';
-
-            // 创建一个摄像机
-            //arg1：摄像机能看到的视野，推荐默认值为50
-            //arg2：渲染结果的横向尺寸和纵向尺寸的比值
-            //arg3：从距离摄像机多近的距离开始渲染，推荐默认值0.1
-            //arg4：摄像机从它所处的位置开始能看到多远。若过小，那么场景中的远处不会被渲染，推荐默认值1000
-
-            width = width || defaultThreeWidth;
-            height = height || defaultThreeHeight;
-            let camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-
-            // 初始化摄像机插件（用于拖拽旋转摄像机，产生交互效果）
-            // let orbitControls = new THREE.OrbitControls(camera);
-
-            // 设置摄像机位置，并将其朝向场景中心
-            camera.position.x = 0
-            camera.position.y = 0
-            camera.position.z = 200
-            camera.lookAt(scene.position);
-            scene.add(camera);
-
-            // 添加环境光，用于提亮场景
-            let ambientLight = new THREE.AmbientLight(0x0c0c0c);
-            scene.add(ambientLight);
-
-            // 添加聚光灯
-            let spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(-40, 60, -10);
-
-            scene.add(spotLight);
-
-            // 创建一个渲染器，并设置其清除颜色和大小
-            // var renderer = new THREE.WebGLRenderer({alpha: true});
-            var renderer = new THREE.CanvasRenderer({alpha: true});
-            // renderer.setClearColor(0xffffff, 1.0);
-            renderer.setSize(width, height);
-
-            // 将渲染器的输出（canvas）插入到特定 DOM 元素下
-            if (container) {
-                container.appendChild(renderer.domElement);
-            } else {
-                //若没有提供three.js的输出容器，创建一个容器
-                let body = document.body;
-                container = document.createElement('div');
-                container.style.width = width + 'px';
-                container.style.height = height + 'px';
-                container.style.position = 'absolute';
-                container.style.top = '0px';
-                container.style.left = '0px';
-                container.style.zIndex = 999;
-                body.appendChild(container);
-                container.appendChild(renderer.domElement);
-            }
-            render();
-
-            function render() {
-                // render using requestAnimationFrame
-                renderer.render(scene, camera);
-                requestAnimationFrame(render);
-            }
-
-            let originModel;
-
-            return function (center, model) {
-                if (originModel) scene.remove(originModel);
-
-                if (!model) {
-                    // 创建一个立方体
-                    let cubeGeometry = new THREE.BoxGeometry(40, 40, 40);
-                    let cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-                    originModel = new THREE.Mesh(cubeGeometry, cubeMaterial);
-                } else {
-                    originModel = model;
-                }
-                // model = model;
-                // 设置立方体的位置
-                originModel.position.x = (center.x - width / 2) / 2;
-                originModel.position.y = (center.y - height / 2) / 2;
-                // cube.position.x = 20;
-                // cube.position.y = 10;
-                originModel.position.z = 0;
-                console.log(originModel.position.x, originModel.position.y, originModel.position.z)
-
-                // 添加虚拟物体至场景
-                scene.add(originModel);
-            };
-        }*/
-
 
     var canvas, context, posit;
     var modelSize = 35.0; //millimeters毫米
@@ -107,11 +13,14 @@ define(function () {
 
 
     var renderer;
-    var scene2, scene_bg, scene_model;
-    var camera2, camera_bg, camera_model;
+    var scene_bg, scene_model;
+    var camera_bg, camera_model;
     var model, texture;
     var step = 0.0;
 
+    /*
+    -------------------------OribitControls  Start--------------------------------------
+     */
     //构造函数
     THREE.OrbitControls = function (object, domElement) {
 
@@ -240,8 +149,6 @@ define(function () {
 
             return function update() {
                 var position = scope.object.position;
-                /*console.log('scope.target:');
-                console.log(scope.target);*/
 
                 //计算物体位置与旋转中心的偏移量，其实就是得出在当前球面坐标系中，相机的位置
                 offset.copy(position).sub(scope.target);
@@ -291,8 +198,6 @@ define(function () {
                 //重新计算得到物体的当前位置
                 position.copy(scope.target).add(offset);
 
-                // console.log("updated:")
-                // console.log(scope.target);
 
                 scope.object.lookAt(scope.target);
 
@@ -814,7 +719,6 @@ define(function () {
         function onMouseDown(event) {
 
             if (scope.enabled === false) return;
-            // controller = OrbitContoller;
 
             event.preventDefault();
 
@@ -923,7 +827,6 @@ define(function () {
         function onMouseUp(event) {
 
             if (scope.enabled === false) return;
-            // controller = PosController;
             handleMouseUp(event);
 
             document.removeEventListener('mousemove', onMouseMove, false);
@@ -998,8 +901,6 @@ define(function () {
 
             }
 
-            // controller = OrbitContoller;
-
         }
 
         function onTouchMove(event) {
@@ -1047,7 +948,6 @@ define(function () {
 
             state = STATE.NONE;
 
-            // controller = PosController;
             resetCameraModel();
 
         }
@@ -1213,6 +1113,9 @@ define(function () {
 
     });
 
+    /*
+    ------------------------OrbitControls End-------------------------------------------
+     */
 
     /* //绘制marker的轮廓和marker的左上角
      function drawCorners(markers) {
@@ -1249,16 +1152,6 @@ define(function () {
         renderer.setSize(canvas.width, canvas.height);
         document.getElementById("three-container").appendChild(renderer.domElement);
 
-        /*        scene2 = new THREE.Scene();//用于添加几何体
-                camera2 = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
-                camera2.position.x = 0
-                camera2.position.y = 0
-                camera2.position.z = 200
-                camera2.lookAt(scene2.position);
-                scene2.add(camera2);
-                handControl(camera2);*/
-
-
         //使用正交投影相机
         scene_bg = new THREE.Scene();
         camera_bg = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
@@ -1279,6 +1172,10 @@ define(function () {
         //放置两个场景
         renderer.autoClear = false;
         renderer.clear();
+        if (controller) {
+            controller.update();
+        }
+
         renderer.render(scene_bg, camera_bg);
         renderer.render(scene_model, camera_model);
     };
@@ -1293,14 +1190,12 @@ define(function () {
         let cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
         originModel = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
-        // model = model;
         // 设置立方体的位置
         originModel.position.x = 20;
         originModel.position.y = 10;
         // cube.position.x = 20;
         // cube.position.y = 10;
         originModel.position.z = 0;
-        // console.log(originModel.position.x, originModel.position.y, originModel.position.z)
 
         // 添加虚拟物体至场景
         scene.add(originModel);
@@ -1355,10 +1250,11 @@ define(function () {
         texture.children[0].material.map.needsUpdate = true;
     };
 
+    //根据位置更新模型
     function updateModel(markers) {
         var corners, corner, pose, i;
 
-        if (/*controller.current === 'position' && */markers.length > 0) {
+        if (markers.length > 0) {
             corners = markers[0].corners;
 
             for (i = 0; i < corners.length; ++i) {
@@ -1398,8 +1294,8 @@ define(function () {
         eventManager = manager;
         canvas = document.getElementById("canvas");
         context = canvas.getContext("2d");
-        canvas.width = defaultThreeWidth;
-        canvas.height = defaultThreeHeight;
+        canvas.width = defaultWidth;
+        canvas.height = defaultHeight;
         //初始化定位方法，参数：模型大小，焦距
         posit = new POS.Posit(modelSize, canvas.width);
         video = srcvideo;
@@ -1426,11 +1322,7 @@ define(function () {
     function tick() {
         //告诉浏览器您希望执行动画并请求浏览器在下一次重绘之前调用指定的函数来更新动画
         requestAnimationFrame(tick);
-
-        // console.log("当前controller是PosController？" + controller === PosController);
-
         updateScenes();
-
 
         if (curposition && preposition !== curposition) {
             if (!preposition) {
@@ -1445,6 +1337,7 @@ define(function () {
             preposition = curposition;
         }
 
+
         render();
     };
 
@@ -1454,10 +1347,144 @@ define(function () {
         let orbitController = new THREE.OrbitControls(camera_model);
     }
 
+    //传感器控制
+    function deviceOrientationControl() {
+        /* // scene_model.clear();
+         controller = new THREE.DeviceOrientationControls(camera_model);
+         //创建一个球型几何体
+         var geometry = new THREE.SphereBufferGeometry(50, 60, 40);
+         // invert the geometry on the x-axis so that all of the faces point inward 在x轴上反转几何形状，这样所有的面都指向内
+         geometry.scale(-1, 1, 1);
+
+         var material = new THREE.MeshBasicMaterial({
+             map: new THREE.TextureLoader().load('./js/textures/2294472375_24a3b8ef46_o.jpg')
+         });
+         // var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+
+         var mesh = new THREE.Mesh(geometry, material);
+         scene_model.add(mesh);
+
+         var helperGeometry = new THREE.BoxBufferGeometry(40, 40, 40, 4, 4, 4);
+         var helperMaterial = new THREE.MeshBasicMaterial({color: 0xff00ff, wireframe: true});
+         var helper = new THREE.Mesh(helperGeometry, helperMaterial);
+         scene_model.add(helper);*/
+
+        window.addEventListener('deviceorientation', deviceorientation, false);
+        initObject(scene_model);
+        initCamera(camera_model)
+        var cube;
+
+        function initObject(scene) {
+
+            //坐标轴
+            var xmat = new THREE.LineBasicMaterial({color: 0xff0000});
+            var xgeo = new THREE.Geometry();
+            xgeo.vertices.push(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(300, 0, 0)
+            );
+            var xline = new THREE.Line(xgeo, xmat);
+            scene.add(xline);
+
+            var ymat = new THREE.LineBasicMaterial({color: 0x00ff00});
+            var ygeo = new THREE.Geometry();
+            ygeo.vertices.push(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 300, 0)
+            );
+            var yline = new THREE.Line(ygeo, ymat);
+            scene.add(yline);
+
+            var zmat = new THREE.LineBasicMaterial({color: 0x0000ff});
+            var zgeo = new THREE.Geometry();
+            zgeo.vertices.push(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, 300)
+            );
+            var zline = new THREE.Line(zgeo, zmat);
+            scene.add(zline);
+
+            //正方体
+            var cubegeo = new THREE.BoxGeometry(100, 200, 20);
+            for (var i = 0; i < cubegeo.faces.length; i += 2) {
+                var hex = Math.random() * 0xffffff;
+                cubegeo.faces[i].color.setHex(hex);
+                cubegeo.faces[i + 1].color.setHex(hex);
+            }
+            var cubemat = new THREE.MeshBasicMaterial({vertexColors: THREE.FaceColors});
+            cube = new THREE.Mesh(cubegeo, cubemat);
+            cube.position.y = 0;
+            scene.add(cube);
+        }
+
+        function initCamera(camera) {
+            camera.position.x = 0;
+            camera.position.y = 0;
+            camera.position.z = 600;
+            camera.up.x = 0;//正方向
+            camera.up.y = 1;
+            camera.up.z = 0;
+        }
+
+        //重力感应事件处理
+        function deviceorientation(event) {
+
+            var alpha = event.alpha / 180 * Math.PI;
+            var beta = event.beta / 180 * Math.PI;
+            var gamma = event.gamma / 180 * Math.PI;
+
+            //var alpha = 120/180*Math.PI;
+            //var beta = 0/180*Math.PI;
+            //var gamma = 0/180*Math.PI;
+
+            //反转
+            var matrix = cube.matrix.clone();
+            matrix.getInverse(matrix);
+            cube.applyMatrix(matrix);
+
+            //单个旋转正常
+            //cube.rotateZ(alpha);
+            //cube.rotateX(beta);
+            //cube.rotateY(gamma);
+
+            //使用旋转矩阵
+            var rz = new THREE.Matrix4();
+            rz.set(Math.cos(-alpha), Math.sin(-alpha), 0, 0,
+                -Math.sin(-alpha), Math.cos(-alpha), 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+            //cube.applyMatrix(rz);
+
+            var rx = new THREE.Matrix4();
+            rx.set(1, 0, 0, 0,
+                0, Math.cos(-beta), Math.sin(-beta), 0,
+                0, -Math.sin(-beta), Math.cos(-beta), 0,
+                0, 0, 0, 1);
+            //cube.applyMatrix(rx);
+
+            var ry = new THREE.Matrix4();
+            ry.set(Math.cos(-gamma), 0, -Math.sin(-gamma), 0,
+                0, 1, 0, 0,
+                Math.sin(-gamma), 0, Math.cos(-gamma), 0,
+                0, 0, 0, 1);
+            //cube.applyMatrix(ry);
+
+
+            //欧拉角顺序应该为ZXY，另外需要注意的是前边参数的顺序和后边设置的顺序不是一一对应的，也就是说就算顺序被设置为ZXY，前边三个参数的顺序依然XYZ
+            var euler = new THREE.Euler();
+            euler.set(beta, gamma, alpha, 'ZXY');
+            cube.setRotationFromEuler(euler);
+
+            requestAnimationFrame(tick);
+        }
+    }
+
+
     return {
         onload: onload,
         locateModel: updatePosition,
         handControl: handControl,
+        deviceOrientationControl: deviceOrientationControl,
         reset: resetCameraModel,
     }
 });
