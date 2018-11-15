@@ -3,18 +3,24 @@ require.config({
         io: '../libs/socket.io/socket.io',
         eventManager: './event',
         mediaDevices: './webrtc',
-        modelController: './controlModel'
+        ControlCenter: './ControlCenter'
     }
 });
 
-require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io, eventManager, mediaDevices, modelController) {
+require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, eventManager, mediaDevices, ControlCenter) {
 
-    // let loadmodel = modelController.init(640, 480, document.getElementById('WebGL-output'));
+    // let loadmodel = ControlCenter.init(640, 480, document.getElementById('WebGL-output'));
 
     //打开摄像头后的处理
     eventManager.listen('cameraOpened', renderVideo);
 
     eventManager.listen('changeControl', handleChangeControl);
+
+    eventManager.listen('imageControl', handleImageControl)
+    eventManager.listen('orbitControl', handleOrbitControl)
+    eventManager.listen('fusionControl', handleFusionControl)
+    eventManager.listen('sensorControl', handleSensorControl)
+    eventManager.listen('audioControl', handleAudioControl)
 
     let currentController = 'imageControl';
 
@@ -23,27 +29,28 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
 
 
         currentController = type;
-        modelController.reset();
+        ControlCenter.reset();
 
-        switch (type) {
-            case 'imageControl':
-                handleImageControl()
-                break;
-            case 'handControl':
-                handleHandControl()
-                break;
-            case 'fusionControl':
-                handleFusionControl()
-                break;
-            case 'sensorControl':
-                handleSensorControl()
-                break;
-            case 'audioControl':
-                handleAudioControl()
-                break;
-            default:
-                handleImageControl()
-        }
+        /*        switch (type) {
+                    case 'imageControl':
+                        handleImageControl()
+                        break;
+                    case 'orbitControl':
+                        handleOrbitControl()
+                        break;
+                    case 'fusionControl':
+                        handleFusionControl()
+                        break;
+                    case 'sensorControl':
+                        handleSensorControl()
+                        break;
+                    case 'audioControl':
+                        handleAudioControl()
+                        break;
+                    default:
+                        handleImageControl()
+                }*/
+        eventManager.trigger(type);
         eventManager.listen('changeControl', handleChangeControl);
     }
 
@@ -75,7 +82,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
 
         //显示虚拟物体，会将图像的四个角点信息传递给回调函数
         eventManager.listen('locateModel', function (corners) {
-            modelController.locateModel(corners);
+            ControlCenter.locateModel(corners);
             // eventManager.remove('locateModel');
         });
 
@@ -83,7 +90,8 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
         let video_period = 100;
 
         //连接服务器端，传输数据
-        const socket = io.connect('https://10.108.164.203:8081');
+        // const socket = io.connect('https://10.108.164.203:8081');
+        const socket = io.connect('https://127.0.0.1:8081');
         socket.on('frame', function (data) {
             eventManager.trigger('position', data);
         });
@@ -100,26 +108,27 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
     }
 
     //触摸屏、键盘、鼠标控制
-    function handleHandControl() {
+    function handleOrbitControl() {
         console.log('触摸屏、键盘、鼠标控制')
-        modelController.handControl();
+        ControlCenter.orbitControl();
     }
 
     function handleFusionControl() {
         console.log('图像识别与手动混合控制')
         handleImageControl();
-        handleHandControl();
+        handleOrbitControl();
     }
 
     //传感器控制
     function handleSensorControl() {
         console.log('传感器控制')
-        modelController.deviceOrientationControl();
+        ControlCenter.orientationControl();
     }
 
     //语音控制
     function handleAudioControl() {
         console.log('语音控制')
+        ControlCenter.audioControl();
     }
 
 
@@ -130,29 +139,6 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
 
     let defaultVideoWidth = window.innerWidth;//设置默认值
     let defaultVideoHeight = window.innerHeight;
-
-
-    function drawCorners(corners) {
-        canvas_frame.clearRect(0, 0, 640, 480);
-        canvas_frame.fillStyle = "red";
-        let center;
-        let sumx = 0;
-        let sumy = 0;
-        let count = 0;
-        for (let corner of corners) {
-            canvas_frame.beginPath();
-            canvas_frame.arc(corner.x, corner.y, 3, 0, 2 * Math.PI);
-            canvas_frame.fill();
-            // if (corner.x < 0 || corner.x > 640 || corner.y < 0 || corner.y > 480) continue;
-            sumx += corner.x;
-            sumy += corner.y;
-            count++;
-        }
-        center = {
-            x: sumx / count,
-            y: sumy / count
-        };
-    }
 
     let cameraDeviceIds = [];
     mediaDevices.enumerateDevices().then(function (devices) {
@@ -193,7 +179,7 @@ require(['io', 'eventManager', 'mediaDevices', 'modelController'], function (io,
                     // height = video.videoHeight;
 
                     //初始化webgl相关
-                    modelController.onload(video, eventManager);
+                    ControlCenter.initControl(video, eventManager);
 
                     //定时向后端传输图像数据和imu数据
                     /*setInterval(function () {

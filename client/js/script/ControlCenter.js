@@ -1,4 +1,4 @@
-define(['../controls/deviceOrientationControls'], function (DeviceOrientationControls) {
+define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOrientationControls, mediaDevices) {
 
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
@@ -1117,33 +1117,6 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
     ------------------------OrbitControls End-------------------------------------------
      */
 
-    /* //绘制marker的轮廓和marker的左上角
-     function drawCorners(markers) {
-         var corners, corner, i, j;
-
-         context.lineWidth = 3;
-
-         for (i = 0; i < markers.length; ++i) {
-             corners = markers[i].corners;
-
-             context.strokeStyle = "red";
-             context.beginPath();
-
-             for (j = 0; j < corners.length; ++j) {
-                 corner = corners[j];
-                 context.moveTo(corner.x, corner.y);
-                 corner = corners[(j + 1) % corners.length];
-                 context.lineTo(corner.x, corner.y);
-             }
-
-             context.stroke();
-             context.closePath();
-
-             context.strokeStyle = "green";
-             context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
-         }
-     };*/
-
     //创建渲染器和场景
     function createRenderers() {
         //渲染器
@@ -1172,10 +1145,10 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         //放置两个场景
         renderer.autoClear = false;
         renderer.clear();
-        if (controller) {
+        /*if (controller) {
             controller.update();
         }
-
+*/
         renderer.render(scene_bg, camera_bg);
         renderer.render(scene_model, camera_model);
     };
@@ -1207,11 +1180,7 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         //场景添加纹理，实际添加的是以当前视频流为纹理的对象
         texture = createTexture();
         scene_bg.add(texture);
-
-        //场景添加模型，实际添加以地图图像为贴图的球体
-        model = createModel();
-        // scene_model.add(model);
-    };
+    }
 
     //创建纹理，以视频流为颜色映射对象
     function createTexture() {
@@ -1228,7 +1197,7 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         object.add(mesh);
 
         return object;
-    };
+    }
 
     //创建模型
     function createModel() {
@@ -1241,14 +1210,19 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
             object.add(mesh);
         });
 
-
-        return object;
-    };
+        //场景添加模型，实际添加以地图图像为贴图的球体
+        model = object;
+    }
 
     //更新场景，根据marker的四个角点的位置放置虚拟物体
-    function updateScenes(/*markers*/) {
+    function updateScenes() {
         texture.children[0].material.map.needsUpdate = true;
-    };
+    }
+
+    function imageControl() {
+
+    }
+
 
     //根据位置更新模型
     function updateModel(markers) {
@@ -1266,7 +1240,6 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
 
             // console.log(corners);//Array4 [{x:-1,y:2},{x:-1,y:2},{x:-1,y:2},{x:-1,y:2}]
             pose = posit.pose(corners);
-
 
             updateObject(model, pose.bestRotation, pose.bestTranslation);
 
@@ -1288,9 +1261,9 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         object.position.x = translation[0];
         object.position.y = translation[1];
         object.position.z = -translation[2];
-    };
+    }
 
-    function onload(srcvideo, manager) {
+    function initControl(srcvideo, manager) {
         eventManager = manager;
         canvas = document.getElementById("canvas");
         context = canvas.getContext("2d");
@@ -1302,6 +1275,7 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
 
         createRenderers();
         createScenes();
+        createModel();
 
         tick();
     }
@@ -1318,37 +1292,33 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         camera_model.lookAt(scene_model.position);
     }
 
-
     function tick() {
         //告诉浏览器您希望执行动画并请求浏览器在下一次重绘之前调用指定的函数来更新动画
         requestAnimationFrame(tick);
         updateScenes();
 
+        //判断模型位置是否更新
         if (curposition && preposition !== curposition) {
             if (!preposition) {
                 scene_model.add(model);
             }
 
             let markers = [{corners: curposition}];
-            // drawCorners(markers);
-            // updateScenes(markers);
             updateModel(markers);
-            // render();
             preposition = curposition;
         }
 
-
         render();
-    };
+    }
 
     //用于屏幕触摸，键盘、鼠标控制
-    function handControl() {
+    function orbitControl() {
         // addGeo(scene2);
         let orbitController = new THREE.OrbitControls(camera_model);
     }
 
     //传感器控制
-    function deviceOrientationControl() {
+    function orientationControl() {
         /* // scene_model.clear();
          controller = new THREE.DeviceOrientationControls(camera_model);
          //创建一个球型几何体
@@ -1479,12 +1449,96 @@ define(['../controls/deviceOrientationControls'], function (DeviceOrientationCon
         }
     }
 
+    //语音控制
+    function audioControl() {
+        //成功获取音频流的回调函数
+        var options;
+        var handleSuccess = function (stream) {
+            var start = document.createElement('button');
+            start.innerText = 'start';
+            start.setAttribute('style',"position:absolute;z-index:200;bottom:10px;left:10px");
+
+            var stop = document.createElement('button');
+            stop.innerText = 'stop';
+            stop.setAttribute('style',"position:absolute;z-index:200;bottom:10px;right:10px");
+
+            var recordedChunks = [];
+            var mediaRecorder = new MediaRecorder(stream, options);//创建一个MediaRecord对象
+
+
+            var status;
+
+            var container = document.getElementsByClassName('container')[0];
+            container.appendChild(start);
+            container.appendChild(stop);
+            start.onclick = startRecord;
+            stop.onclick = stopRecord;
+
+            function startRecord(e) {
+                recordedChunks = [];
+                mediaRecorder.start(1000);
+            }
+
+            function stopRecord(e) {
+                mediaRecorder.stop()
+            }
+
+            if (MediaRecorder.isTypeSupported('audio/webm')) {
+                options = {mimeType: 'audio/webm'};
+            } else {
+                options = null;
+            }
+
+
+            mediaRecorder.ondataavailable = function (e) {
+                if (e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.addEventListener('stop', function () {
+                console.log("data available after MediaRecorder.stop() called.")
+                getSpeechRecognition(recordedChunks)
+
+            });
+
+
+        };
+
+        var constraints = {audio: true};
+        mediaDevices.getUserMedia(constraints)
+            .then(handleSuccess)
+            .catch(function (err) {
+                console.log(err.name + ": " + err.message);
+            });
+
+        //请求语音识别结果
+        function getSpeechRecognition(stream) {
+            console.log('get stream')
+            /*$.ajax({
+                url: 'http://api.xfyun.cn/v1/service/v1/iat HTTP/1.1',
+                type: 'POST',
+                dataType: 'JSON',
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                async: false,
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            })*/
+        }
+    }
+
 
     return {
-        onload: onload,
+        initControl: initControl,
         locateModel: updatePosition,
-        handControl: handControl,
-        deviceOrientationControl: deviceOrientationControl,
+        imageControl: imageControl,
+        orbitControl: orbitControl,
+        orientationControl: orientationControl,
+        audioControl: audioControl,
         reset: resetCameraModel,
     }
 });
