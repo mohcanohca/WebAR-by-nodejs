@@ -1,15 +1,26 @@
-define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOrientationControls, mediaDevices) {
+require.config({
+    paths: {
+        io: '../libs/socket.io/socket.io',
+        eventManager: './event',
+        mediaDevices: './webrtc',
+        orientationControls: '../controls/DeviceOrientationControls',
+        orbitControls: '../controls/OrbitControls',
+    }
+});
+
+define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitControls'], function (io, eventManager, mediaDevices, DeviceOrientationControls, orbitControls) {
 
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
     let preposition, curposition;
-    let controller;//控制器
+    let currentController;//控制器
+    let controller;
 
-    let eventManager;
 
     var canvas, context, posit;
     var modelSize = 35.0; //millimeters毫米
     var video;
+    var socket;//与服务器建立连接
 
 
     var renderer;
@@ -17,6 +28,87 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
     var camera_bg, camera_model;
     var model, texture;
     var step = 0.0;
+
+
+    let defaultVideoWidth = window.innerWidth;//设置默认值
+    let defaultVideoHeight = window.innerHeight;
+
+    let cameraDeviceIds = [];
+    //打开摄像头后的处理
+    eventManager.listen('cameraOpened', renderVideo);
+
+    mediaDevices.enumerateDevices().then(function (devices) {
+        //获取设备信息
+        devices.forEach(device => {
+            if (device.kind === 'videoinput') {
+                cameraDeviceIds.push(device.deviceId);
+            }
+        });
+    }).then(function () {
+        eventManager.trigger('cameraOpened', cameraDeviceIds);
+    });
+
+    //获取视频流
+    function renderVideo(cameraDeviceIds, videoConstraints) {
+        let defaultVideoConstraints = {
+            width: defaultVideoWidth,
+            height: defaultVideoHeight,
+            deviceId: cameraDeviceIds[1]
+        };
+
+        let constraints = {video: videoConstraints || defaultVideoConstraints};
+        // let default_video_period = 100;
+
+        mediaDevices.getUserMedia(constraints)
+            .then(function (stream) {
+                video = document.getElementById('video');
+                // 旧的浏览器可能没有srcObject
+                if ("srcObject" in video) {
+                    video.srcObject = stream;
+                } else {
+                    // 防止再新的浏览器里使用它，应为它已经不再支持了
+                    video.src = window.URL.createObjectURL(stream);
+                }
+                video.onloadedmetadata = function (e) {
+                    video.play();
+                    // width = video.videoWidth;
+                    // height = video.videoHeight;
+
+                    //初始化webgl相关
+                    initControl();
+
+                    //定时向后端传输图像数据和imu数据
+                    /*setInterval(function () {
+                        sendVideoData(video, video.videoWidth, video.videoHeight);
+                    }, video_period || default_video_period);*/
+                };
+
+            }).catch(function (err) {
+            console.log(err.name + ": " + err.message);
+        });
+    }
+
+    //发送视频帧
+    function sendVideoData(socket, video, width, height) {
+        // if (width && height) {
+        canvas.width = width || defaultVideoWidth;
+        canvas.height = height || defaultVideoHeight;
+
+        let context = canvas.getContext('2d');
+        // canvasFrame.width = width;
+        // canvasFrame.height = height;
+
+        //绘制当前视频帧
+        context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
+
+        let jpgQuality = 0.6;
+        let theDataURL = canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
+        let data = {
+            imgData: theDataURL,
+        };
+        //使用websocket进行图像传输
+        socket.emit('VIDEO_MESS', JSON.stringify(data));
+    }
 
     /*
     -------------------------OribitControls  Start--------------------------------------
@@ -836,6 +928,7 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
 
             state = STATE.NONE;
             resetCameraModel();
+            locateModel([{corners: preposition}]);
         }
 
         function onMouseWheel(event) {
@@ -949,6 +1042,7 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
             state = STATE.NONE;
 
             resetCameraModel();
+            locateModel([{corners: preposition}]);
 
         }
 
@@ -1124,8 +1218,37 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         renderer.setClearColor(0xffffff, 1);
         renderer.setSize(canvas.width, canvas.height);
         document.getElementById("three-container").appendChild(renderer.domElement);
+    }
 
-        //使用正交投影相机
+    function render() {
+        //放置两个场景
+        renderer.autoClear = false;
+        renderer.clear();
+
+        renderer.render(scene_bg, camera_bg);
+        renderer.render(scene_model, camera_model);
+    }
+
+
+    function addGeo() {
+        if (model) scene_model.remove(model);
+
+        // 创建一个立方体
+        model = createCube(100, 100, 100);
+
+        // 设置立方体的位置
+        model.position.x = 0;
+        model.position.y = 0;
+        model.position.z = -100;
+
+
+        // 添加虚拟物体至场景
+        scene_model.add(model);
+    }
+
+    //向场景中添加内容
+    function createScenes() {
+//使用正交投影相机
         scene_bg = new THREE.Scene();
         camera_bg = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
         scene_bg.add(camera_bg);
@@ -1139,43 +1262,6 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         camera_model.position.z = 10;
         camera_model.lookAt(scene_model.position);
         scene_model.add(camera_model);
-    };
-
-    function render() {
-        //放置两个场景
-        renderer.autoClear = false;
-        renderer.clear();
-        /*if (controller) {
-            controller.update();
-        }
-*/
-        renderer.render(scene_bg, camera_bg);
-        renderer.render(scene_model, camera_model);
-    };
-
-    let originModel;
-
-    function addGeo(scene) {
-        if (originModel) scene.remove(originModel);
-
-        // 创建一个立方体
-        let cubeGeometry = new THREE.BoxGeometry(100, 100, 100);
-        let cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-        originModel = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
-        // 设置立方体的位置
-        originModel.position.x = 20;
-        originModel.position.y = 10;
-        // cube.position.x = 20;
-        // cube.position.y = 10;
-        originModel.position.z = 0;
-
-        // 添加虚拟物体至场景
-        scene.add(originModel);
-    };
-
-    //向场景中添加内容
-    function createScenes() {
 
         //场景添加纹理，实际添加的是以当前视频流为纹理的对象
         texture = createTexture();
@@ -1211,7 +1297,7 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         });
 
         //场景添加模型，实际添加以地图图像为贴图的球体
-        model = object;
+        return object;
     }
 
     //更新场景，根据marker的四个角点的位置放置虚拟物体
@@ -1220,12 +1306,52 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
     }
 
     function imageControl() {
+        model = createModel();
+        scene_model.add(model)
 
+        //监听到后台返回的目标对象的位置信息的处理
+        eventManager.listen('position', function (data) {
+            let corners = data.corners;
+            if (!corners) return;
+            eventManager.trigger('locateModel', corners)
+        });
+
+        //显示虚拟物体，会将图像的四个角点信息传递给回调函数
+        eventManager.listen('locateModel', function (corners) {
+            updatePosition(corners);
+        });
+
+        let default_video_period = 100;
+        let video_period = 100;
+
+        if (!socket) {
+            //连接服务器端，传输数据
+            socket = io.connect('https://10.108.164.203:8081');
+            socket.on('frame', function (data) {
+
+                eventManager.trigger('position', data);
+            });
+        }
+
+        //定时向后端传输图像数据
+        let timer = setInterval(function () {
+            if ((currentController !== 'imageControl') && (currentController !== 'imageOrbitControl')) {
+                clearInterval(timer);
+                timer = null;
+            } else {
+                sendVideoData(socket, video, video.videoWidth, video.videoHeight);
+            }
+        }, video_period || default_video_period);
+    }
+
+    function removeImageControlListener() {
+        eventManager.remove('position');
+        eventManager.remove('locateModel');
     }
 
 
     //根据位置更新模型
-    function updateModel(markers) {
+    function locateModel(markers) {
         var corners, corner, pose, i;
 
         if (markers.length > 0) {
@@ -1238,9 +1364,10 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
                 corner.y = (canvas.height / 2) - corner.y;
             }
 
-            // console.log(corners);//Array4 [{x:-1,y:2},{x:-1,y:2},{x:-1,y:2},{x:-1,y:2}]
+            //根据目标图像四个角点的位置计算出相机的当前姿态
             pose = posit.pose(corners);
 
+            //更新模型的姿态
             updateObject(model, pose.bestRotation, pose.bestTranslation);
 
             step += 0.025;
@@ -1263,19 +1390,17 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         object.position.z = -translation[2];
     }
 
-    function initControl(srcvideo, manager) {
-        eventManager = manager;
+    function initControl() {
+
         canvas = document.getElementById("canvas");
         context = canvas.getContext("2d");
         canvas.width = defaultWidth;
         canvas.height = defaultHeight;
         //初始化定位方法，参数：模型大小，焦距
-        posit = new POS.Posit(modelSize, canvas.width);
-        video = srcvideo;
+        posit = new POS.Posit(modelSize, Math.max(canvas.width, canvas.height));
 
         createRenderers();
         createScenes();
-        createModel();
 
         tick();
     }
@@ -1297,28 +1422,48 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         requestAnimationFrame(tick);
         updateScenes();
 
-        //判断模型位置是否更新
-        if (curposition && preposition !== curposition) {
-            if (!preposition) {
-                scene_model.add(model);
-            }
+        switch (currentController) {
+            case 'imageControl':
+            case 'imageOrbitControl':
+                //判断模型位置是否更新
+                if (curposition && preposition !== curposition) {
+                    if (!preposition) {
+                        scene_model.add(model);
+                    }
 
-            let markers = [{corners: curposition}];
-            updateModel(markers);
-            preposition = curposition;
+                    let markers = [{corners: curposition}];
+                    locateModel(markers);
+                    preposition = curposition;
+                }
+                break;
+            case 'orbitControl':
+                break;
+            case 'orientationControl':
+                break;
+            case 'audioControl':
+                break;
+            default:
+                ;
         }
+
 
         render();
     }
 
     //用于屏幕触摸，键盘、鼠标控制
     function orbitControl() {
-        // addGeo(scene2);
-        let orbitController = new THREE.OrbitControls(camera_model);
+        // currentController = 'orbitControl';
+        addGeo(scene_model);
+        camera_model.position.x = 0
+        camera_model.position.y = 0
+        camera_model.position.z = 100
+        camera_model.lookAt(scene_model.position);
+        controller = new orbitControls(camera_model);
     }
 
     //传感器控制
     function orientationControl() {
+        // currentController = 'orientationControl';
         /* // scene_model.clear();
          controller = new THREE.DeviceOrientationControls(camera_model);
          //创建一个球型几何体
@@ -1345,7 +1490,6 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         var cube;
 
         function initObject(scene) {
-
             //坐标轴
             var xmat = new THREE.LineBasicMaterial({color: 0xff0000});
             var xgeo = new THREE.Geometry();
@@ -1386,6 +1530,7 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
             cube.position.y = 0;
             scene.add(cube);
         }
+
 
         function initCamera(camera) {
             camera.position.x = 0;
@@ -1456,17 +1601,14 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         var handleSuccess = function (stream) {
             var start = document.createElement('button');
             start.innerText = 'start';
-            start.setAttribute('style',"position:absolute;z-index:200;bottom:10px;left:10px");
+            start.setAttribute('style', "position:absolute;z-index:200;bottom:10px;left:10px");
 
             var stop = document.createElement('button');
             stop.innerText = 'stop';
-            stop.setAttribute('style',"position:absolute;z-index:200;bottom:10px;right:10px");
+            stop.setAttribute('style', "position:absolute;z-index:200;bottom:10px;right:10px");
 
             var recordedChunks = [];
             var mediaRecorder = new MediaRecorder(stream, options);//创建一个MediaRecord对象
-
-
-            var status;
 
             var container = document.getElementsByClassName('container')[0];
             container.appendChild(start);
@@ -1531,6 +1673,57 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         }
     }
 
+    function imageOrbitControl() {
+        imageControl();
+        controller = new THREE.OrbitControls(camera_model);
+
+    }
+
+    function reset(type) {
+        if (currentController === 'orbitControl' || currentController === 'imageOrbitControl') {
+            //释放所有的鼠标、屏幕、键盘事件监听
+            controller.dispose();
+        }
+        if (currentController === 'imageControl' || currentController === 'imageOrbitControl') {
+            curposition = null;
+            preposition = null;
+            removeImageControlListener();
+        }
+
+        if (camera_model) {
+            resetCameraModel();
+        }
+
+        if (scene_model) {
+            while (scene_model.children.length > 0) {
+                scene_model.remove(scene_model.children[0]);
+            }
+            scene_model.add(camera_model);
+        }
+
+        renderer.clear();
+        currentController = type;
+    }
+
+    function createCube(width, height, deep) {
+        //正方体
+        var cubegeo = new THREE.BoxGeometry(width, height, deep);
+        for (var i = 0; i < cubegeo.faces.length; i += 2) {
+            var hex = Math.random() * 0xffffff;
+            cubegeo.faces[i].color.setHex(hex);
+            cubegeo.faces[i + 1].color.setHex(hex);
+        }
+        var cubemat = new THREE.MeshBasicMaterial({vertexColors: THREE.FaceColors});
+        var cube = new THREE.Mesh(cubegeo, cubemat);
+        // cube.position.y = 0;
+        return cube;
+    }
+
+    //图像识别+传感器方向控制
+    function imageOrientationControl() {
+
+    }
+
 
     return {
         initControl: initControl,
@@ -1539,6 +1732,9 @@ define(['../controls/deviceOrientationControls', './webrtc'], function (DeviceOr
         orbitControl: orbitControl,
         orientationControl: orientationControl,
         audioControl: audioControl,
-        reset: resetCameraModel,
+        imageOrbitControl: imageOrbitControl,
+        imageOrientationControl: imageOrientationControl,
+        resetCameraModel: resetCameraModel,
+        reset: reset,
     }
 });
