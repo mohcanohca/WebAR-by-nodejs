@@ -15,6 +15,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     let preposition, curposition;
     let currentController;//控制器
     let controller;
+    let imageOrientationControlModel;
 
 
     var canvas, context, posit;
@@ -1376,6 +1377,45 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         }
     }
 
+    //根据位置更新模型
+    function locateModelByImageOrientation(model, markers) {
+        console.log('locateModelByImageOrientation');
+        var corners, corner, pose, i;
+
+        if (markers.length > 0) {
+            corners = markers[0].corners;
+
+            for (i = 0; i < corners.length; ++i) {
+                corner = corners[i];
+
+                corner.x = corner.x - (canvas.width / 2);
+                corner.y = (canvas.height / 2) - corner.y;
+            }
+
+            //根据目标图像四个角点的位置计算出相机的当前姿态
+            pose = posit.pose(corners);
+
+            //更新模型的姿态
+            // updateObject(model, pose.bestRotation, pose.bestTranslation);
+
+            let translation = pose.bestTranslation;
+
+            model.scale.x = modelSize;
+            model.scale.y = modelSize;
+            model.scale.z = modelSize;
+
+            model.position.x = translation[0];
+            model.position.y = translation[1];
+            model.position.z = -translation[2];
+
+
+            // step += 0.025;
+
+            // model.rotation.z -= step;
+        }
+    }
+
+
     function updateObject(object, rotation, translation) {
         object.scale.x = modelSize;
         object.scale.y = modelSize;
@@ -1440,6 +1480,18 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
                 break;
             case 'orientationControl':
                 break;
+            case 'imageOrientationControl':
+                //判断模型位置是否更新
+                if (curposition && preposition !== curposition) {
+                    if (!preposition) {
+                        scene_model.add(imageOrientationControlModel);
+                    }
+
+                    let markers = [{corners: curposition}];
+                    locateModelByImageOrientation(imageOrientationControlModel, markers);
+                    preposition = curposition;
+                }
+                break;
             case 'audioControl':
                 break;
             default:
@@ -1487,7 +1539,8 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         window.addEventListener('deviceorientation', deviceorientation, false);
         initObject(scene_model);
         initCamera(camera_model)
-        var cube;
+
+        // var cube;
 
         function initObject(scene) {
             //坐标轴
@@ -1498,7 +1551,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
                 new THREE.Vector3(300, 0, 0)
             );
             var xline = new THREE.Line(xgeo, xmat);
-            scene.add(xline);
+            // scene.add(xline);
 
             var ymat = new THREE.LineBasicMaterial({color: 0x00ff00});
             var ygeo = new THREE.Geometry();
@@ -1507,7 +1560,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
                 new THREE.Vector3(0, 300, 0)
             );
             var yline = new THREE.Line(ygeo, ymat);
-            scene.add(yline);
+            // scene.add(yline);
 
             var zmat = new THREE.LineBasicMaterial({color: 0x0000ff});
             var zgeo = new THREE.Geometry();
@@ -1516,29 +1569,33 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
                 new THREE.Vector3(0, 0, 300)
             );
             var zline = new THREE.Line(zgeo, zmat);
-            scene.add(zline);
+            // scene.add(zline);
 
             //正方体
-            var cubegeo = new THREE.BoxGeometry(100, 200, 20);
+            // var cubegeo = new THREE.BoxGeometry(100, 200, 20);
+            var cubegeo = new THREE.BoxGeometry(1, 1, 1);
             for (var i = 0; i < cubegeo.faces.length; i += 2) {
                 var hex = Math.random() * 0xffffff;
                 cubegeo.faces[i].color.setHex(hex);
                 cubegeo.faces[i + 1].color.setHex(hex);
             }
+
             var cubemat = new THREE.MeshBasicMaterial({vertexColors: THREE.FaceColors});
-            cube = new THREE.Mesh(cubegeo, cubemat);
-            cube.position.y = 0;
-            scene.add(cube);
+            imageOrientationControlModel = new THREE.Mesh(cubegeo, cubemat);
+            // imageOrientationControlModel.position.y = 0;
+            scene.add(imageOrientationControlModel);
         }
 
 
         function initCamera(camera) {
-            camera.position.x = 0;
-            camera.position.y = 0;
-            camera.position.z = 600;
-            camera.up.x = 0;//正方向
-            camera.up.y = 1;
+            // camera.position.x = 0;
+            // camera.position.y = 0;
+            // camera.position.z = 600;
+            camera.up.x = 0;
+            camera.up.y = 1;//以y轴正方向，默认就是以y轴为正方向
             camera.up.z = 0;
+
+            // camera.lookAt(0,0,0);//相机看向的方向，若不设置，默认为从z轴正方向看向xy平面
         }
 
         //重力感应事件处理
@@ -1553,9 +1610,9 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
             //var gamma = 0/180*Math.PI;
 
             //反转
-            var matrix = cube.matrix.clone();
+            var matrix = imageOrientationControlModel.matrix.clone();
             matrix.getInverse(matrix);
-            cube.applyMatrix(matrix);
+            imageOrientationControlModel.applyMatrix(matrix);
 
             //单个旋转正常
             //cube.rotateZ(alpha);
@@ -1588,7 +1645,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
             //欧拉角顺序应该为ZXY，另外需要注意的是前边参数的顺序和后边设置的顺序不是一一对应的，也就是说就算顺序被设置为ZXY，前边三个参数的顺序依然XYZ
             var euler = new THREE.Euler();
             euler.set(beta, gamma, alpha, 'ZXY');
-            cube.setRotationFromEuler(euler);
+            imageOrientationControlModel.setRotationFromEuler(euler);
 
             requestAnimationFrame(tick);
         }
@@ -1721,6 +1778,40 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
 
     //图像识别+传感器方向控制
     function imageOrientationControl() {
+        orientationControl();
+        //监听到后台返回的目标对象的位置信息的处理
+        eventManager.listen('position', function (data) {
+            let corners = data.corners;
+            if (!corners) return;
+            eventManager.trigger('locateModel', corners)
+        });
+
+        //显示虚拟物体，会将图像的四个角点信息传递给回调函数
+        eventManager.listen('locateModel', function (corners) {
+            updatePosition(corners);
+        });
+
+        let default_video_period = 100;
+        let video_period = 100;
+
+        if (!socket) {
+            //连接服务器端，传输数据
+            socket = io.connect('https://10.108.164.203:8081');
+            socket.on('frame', function (data) {
+
+                eventManager.trigger('position', data);
+            });
+        }
+
+        //定时向后端传输图像数据
+        let timer = setInterval(function () {
+            if ((currentController !== 'imageControl') && (currentController !== 'imageOrbitControl') && (currentController !== 'imageOrientationControl')) {
+                clearInterval(timer);
+                timer = null;
+            } else {
+                sendVideoData(socket, video, video.videoWidth, video.videoHeight);
+            }
+        }, video_period || default_video_period);
 
     }
 

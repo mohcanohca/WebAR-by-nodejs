@@ -15,6 +15,7 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     eventManager.listen('orbitControl', handleOrbitControl)
     eventManager.listen('imageOrbitControl', handleImageOrbitControl)
     eventManager.listen('orientationControl', handleOrientationControl)
+    eventManager.listen('imageOrientationControl', handleImageOrientationControl)
     eventManager.listen('audioControl', handleAudioControl)
 
     let currentController = 'imageControl';
@@ -65,6 +66,12 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     function handleOrientationControl() {
         console.log('传感器控制')
         ControlCenter.orientationControl();
+    }
+
+    //识别+传感器
+    function handleImageOrientationControl() {
+        console.log('识别+传感器控制')
+        ControlCenter.imageOrientationControl();
     }
 
     //语音控制
