@@ -17,6 +17,7 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     eventManager.listen('orientationControl', handleOrientationControl)
     eventManager.listen('imageOrientationControl', handleImageOrientationControl)
     eventManager.listen('audioControl', handleAudioControl)
+    eventManager.listen('GPSControl', handleGPSControl)
 
     let currentController = 'imageControl';
 
@@ -78,6 +79,11 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     function handleAudioControl() {
         console.log('语音控制')
         ControlCenter.audioControl();
+    }
+
+    function handleGPSControl() {
+        console.log('GPSControl')
+        ControlCenter.GPSControl();
     }
 });
 

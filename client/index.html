@@ -18,6 +18,7 @@
             <button id="orientationControl">传感器</button>
             <button id="imageOrientationControl">识别&传感器</button>
             <button id="audioControl">语音</button>
+            <button id="GPSControl">GPS</button>
         </div>
         <video id="video" style="display: none;"></video>
         <canvas id="canvas" style="display: none"></canvas>
@@ -29,10 +30,13 @@
 
 </div>
 
+<script src="js/libs/jquery-3.3.1.min.js"></script>
+<script src="js/libs/hmac-sha1.js"></script>
 <script src="js/libs/three.js"></script>
 <script src="js/libs/svd.js"></script>
 <script src="js/libs/cv.js"></script>
 <script src="js/libs/posit.js"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=8z63nTSBBiK7k0sVVZ77rHaaRgMszV2P"></script>
 
 <!--<script type="text/javascript" src="./socket.io/socket.io.js"></script>-->
 <script data-main="js/script/main.js" src="js/libs/require.js"></script>

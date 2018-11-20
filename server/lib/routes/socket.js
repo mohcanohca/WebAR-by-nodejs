@@ -235,7 +235,29 @@ module.exports = function (socket) {
             pose: pose,
             rotation: rotation,
             transition: pose.tvec//平移向量
-        })
-        ;
+        });
+    });
+
+    socket.on('LOC_MESS', function (data) {
+        let json = JSON.parse(data);
+        console.log(json.address)
+
+        var UID = "U763605444"; // 测试用 用户ID，请更换成您自己的用户ID
+        var KEY = "re7kkhugkl3jhdwm"; // 测试用key，请更换成您自己的 Key
+        var API = "https://api.seniverse.com/v3/weather/now.json"; // 获取天气实况
+
+        var LOCATION = "beijing"; // 除拼音外，还可以使用 v3 id、汉语等形式
+        var Api = require('../api.js')
+        var argv = require('optimist').default('l', LOCATION).argv;
+
+
+        var api = new Api(UID, KEY);
+        api.getWeatherNow(argv.l).then(function(data) {
+            console.log(JSON.stringify(data, null, 4));
+            socket.emit('weather',{weather:data.results[0]})
+        }).catch(function(err) {
+            console.log(err.error.status);
+        });
+
     });
 }

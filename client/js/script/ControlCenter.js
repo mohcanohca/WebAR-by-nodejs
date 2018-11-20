@@ -1396,9 +1396,9 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
             pose = posit.pose(corners);
 
             //更新模型的姿态
-            // updateObject(model, pose.bestRotation, pose.bestTranslation);
+            updateObject(model, pose.bestRotation, pose.bestTranslation);
 
-            let translation = pose.bestTranslation;
+            /*let translation = pose.bestTranslation;
 
             model.scale.x = modelSize;
             model.scale.y = modelSize;
@@ -1406,7 +1406,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
 
             model.position.x = translation[0];
             model.position.y = translation[1];
-            model.position.z = -translation[2];
+            model.position.z = -translation[2];*/
 
 
             // step += 0.025;
@@ -1515,27 +1515,6 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
 
     //传感器控制
     function orientationControl() {
-        // currentController = 'orientationControl';
-        /* // scene_model.clear();
-         controller = new THREE.DeviceOrientationControls(camera_model);
-         //创建一个球型几何体
-         var geometry = new THREE.SphereBufferGeometry(50, 60, 40);
-         // invert the geometry on the x-axis so that all of the faces point inward 在x轴上反转几何形状，这样所有的面都指向内
-         geometry.scale(-1, 1, 1);
-
-         var material = new THREE.MeshBasicMaterial({
-             map: new THREE.TextureLoader().load('./js/textures/2294472375_24a3b8ef46_o.jpg')
-         });
-         // var material = new THREE.MeshBasicMaterial({color: 0xffff00});
-
-         var mesh = new THREE.Mesh(geometry, material);
-         scene_model.add(mesh);
-
-         var helperGeometry = new THREE.BoxBufferGeometry(40, 40, 40, 4, 4, 4);
-         var helperMaterial = new THREE.MeshBasicMaterial({color: 0xff00ff, wireframe: true});
-         var helper = new THREE.Mesh(helperGeometry, helperMaterial);
-         scene_model.add(helper);*/
-
         window.addEventListener('deviceorientation', deviceorientation, false);
         initObject(scene_model);
         initCamera(camera_model)
@@ -1714,19 +1693,6 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         //请求语音识别结果
         function getSpeechRecognition(stream) {
             console.log('get stream')
-            /*$.ajax({
-                url: 'http://api.xfyun.cn/v1/service/v1/iat HTTP/1.1',
-                type: 'POST',
-                dataType: 'JSON',
-                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
-                async: false,
-                success: function (data) {
-                    console.log(data);
-                },
-                error: function (error) {
-                    console.log(error);
-                }
-            })*/
         }
     }
 
@@ -1741,7 +1707,7 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
             //释放所有的鼠标、屏幕、键盘事件监听
             controller.dispose();
         }
-        if (currentController === 'imageControl' || currentController === 'imageOrbitControl') {
+        if (currentController === 'imageControl' || currentController === 'imageOrbitControl' || currentController === 'imageOrientControl') {
             curposition = null;
             preposition = null;
             removeImageControlListener();
@@ -1816,6 +1782,83 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     }
 
 
+    function GPSControl() {
+        geoFindMe();
+
+        function geoFindMe() {
+
+            // 百度地图API功能
+
+            //地图初始化
+            var map = new BMap.Map("allmap");
+
+            //GPS坐标转换成百度坐标
+            var convertor = new BMap.Convertor();
+            var pointArr = [];
+            //坐标转换完之后的回调函数
+            var translateCallback = function (data) {
+                if (data.status === 0) {
+                    var point = data.points[0];
+                    var gc = new BMap.Geocoder();
+
+                    gc.getLocation(point, function (rs) {
+                        var addressComponents = rs.addressComponents;
+
+                        let data = {
+                            address: addressComponents,
+                        };
+                        //使用websocket进行图像传输
+                        socket.emit('LOC_MESS', JSON.stringify(data));
+                    });
+                }
+            };
+
+
+            if (!navigator.geolocation) {
+                console.log('Geolocation is not supported by your browser');
+                return;
+            }
+
+            function success(position) {
+                //GPS坐标
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+
+                var ggPoint = new BMap.Point(longitude, latitude);
+                pointArr.push(ggPoint);
+
+                convertor.translate(pointArr, 1, 5, translateCallback)
+            }
+
+            function error() {
+                console.log("Unable to retrieve your location");
+            }
+
+
+            navigator.geolocation.getCurrentPosition(success, error);
+        }
+
+
+        if (!socket) {
+            //连接服务器端，传输数据
+            socket = io.connect('https://10.108.164.203:8081');
+
+            //由于存在跨域问题，由server获取天气并返回
+            socket.on('weather', function (data) {
+                // eventManager.trigger('weather', data);
+                console.log(data)
+
+                showWeather(data.weather);
+            });
+        }
+    }
+
+    //根据天气情况，渲染不同的场景
+    function showWeather(weather) {
+        console.log(weather.now)
+    }
+
+
     return {
         initControl: initControl,
         locateModel: updatePosition,
@@ -1826,6 +1869,8 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         imageOrbitControl: imageOrbitControl,
         imageOrientationControl: imageOrientationControl,
         resetCameraModel: resetCameraModel,
+        GPSControl: GPSControl,
+        showWeather: showWeather,
         reset: reset,
     }
 });
