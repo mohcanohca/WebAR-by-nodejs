@@ -14,7 +14,7 @@
 //    Pan - right mouse, or left mouse + ctrl/metaKey, or arrow keys / touch: two-finger move（平移-鼠标右键或鼠标左键+Ctrl/metaKey，或是箭头键/触摸：双指移动）
 
 
-define(function () {
+// define(function () {
     //构造函数
     THREE.OrbitControls = function (object, domElement) {
 
@@ -1103,6 +1103,6 @@ define(function () {
 
     });
 
-    return THREE.OrbitControls;
-});
+    // return THREE.OrbitControls;
+// });
 

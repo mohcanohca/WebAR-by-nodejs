@@ -1442,7 +1442,20 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         createRenderers();
         createScenes();
 
+        /* 监听事件 */
+        window.addEventListener('resize', onWindowResize, false);
+
         tick();
+    }
+
+    /* 窗口变动触发 */
+    function onWindowResize() {
+
+        camera_bg.aspect = window.innerWidth / window.innerHeight;
+        camera_bg.updateProjectionMatrix();
+        camera_model.aspect = window.innerWidth / window.innerHeight;
+        camera_model.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     function updatePosition(position) {
@@ -1493,6 +1506,10 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
                 }
                 break;
             case 'audioControl':
+                break;
+            case 'GPSControl':
+                /* 循环渲染 */
+                eventManager.trigger('weatherUpdate');
                 break;
             default:
                 ;
@@ -1856,6 +1873,75 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     //根据天气情况，渲染不同的场景
     function showWeather(weather) {
         console.log(weather.now)
+
+        let points, controls;
+        //雪花图片
+        let texture = new THREE.TextureLoader().load('../js/textures/snow-32.png');
+
+        initWeatherContent(texture);
+        eventManager.listen('weatherUpdate', update);
+
+        //控制器
+        function initControls() {
+            controls = new THREE.OrbitControls(camera_model, renderer.domElement)
+        }
+
+        //场景中的内容
+        function initWeatherContent(texture) {
+            let geometry = new THREE.Geometry();
+            let pointsMaterial = new THREE.PointsMaterial({
+                size: 2,
+                transparent: true,
+                opacity: 0.8,
+                map: texture,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true,
+                depthTest: false
+            });
+
+            let range = 100;
+            for (let i = 0; i < 1500; i++) {
+
+                let vertice = new THREE.Vector3(
+                    Math.random() * range - range / 2,
+                    Math.random() * range * 1.5,
+                    Math.random() * range - range / 2);
+                /* 纵向移动速度 */
+                vertice.velocityY = 0.1 + Math.random() / 3;
+                /* 横向移动速度 */
+                vertice.velocityX = (Math.random() - 0.5) / 3;
+
+                /* 将顶点加入几何 */
+                geometry.vertices.push(vertice);
+
+            }
+
+            geometry.center();
+
+            points = new THREE.Points(geometry, pointsMaterial);
+            points.position.y = -30;
+
+            scene_model.add(points);
+        }
+
+
+        /* 数据更新 */
+        function update() {
+
+            let vertices = points.geometry.vertices;
+            vertices.forEach(function (v) {
+
+                v.y = v.y - (v.velocityY);
+                v.x = v.x - (v.velocityX);
+
+                if (v.y <= 0) v.y = 60;
+                if (v.x <= -20 || v.x >= 20) v.velocityX = v.velocityX * -1;
+
+            });
+            /* 顶点变动之后需要更新，否则无法实现雨滴特效 */
+            points.geometry.verticesNeedUpdate = true;
+
+        }
     }
 
 
