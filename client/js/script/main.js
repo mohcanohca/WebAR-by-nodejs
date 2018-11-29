@@ -23,8 +23,6 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
 
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
-
-
         currentController = type;
         ControlCenter.reset(type);
 
@@ -82,7 +80,7 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     }
 
     function handleGPSControl() {
-        console.log('GPSControl')
+        console.log('地理位置信息控制')
         ControlCenter.GPSControl();
     }
 });
