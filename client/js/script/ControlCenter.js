@@ -1,12 +1,13 @@
 require.config({
     paths: {
         io: '../libs/socket.io/socket.io',
-        eventManager: './event',
-        mediaDevices: './webrtc',
+        eventManager: '../utils/event',
+        mediaDevices: '../utils/webrtc',
         orientationControls: '../controls/DeviceOrientationControls',
         orbitControls: '../controls/OrbitControls',
     }
 });
+
 
 define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitControls'], function (io, eventManager, mediaDevices, DeviceOrientationControls, orbitControls) {
 
@@ -18,7 +19,6 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     let currentController;//控制器
     let controller;
     let imageOrientationControlModel;
-
 
     var canvas, context, posit;
     var modelSize = 35.0; //millimeters毫米
@@ -41,16 +41,64 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     //打开摄像头后的处理
     eventManager.listen('cameraOpened', renderVideo);
 
-    mediaDevices.enumerateDevices().then(function (devices) {
-        //获取设备信息
-        devices.forEach(device => {
-            if (device.kind === 'videoinput') {
-                cameraDeviceIds.push(device.deviceId);
+
+    class ThreeJSController {
+        constructor() {
+            this.renderer = null;
+            this.camera = null;
+            this.scene = null;
+            this.model = null;
+            this.init = this.init.bind(this);
+            this.addModel = this.addModel.bind(this);
+            this.updateThreeCamera = this.updateThreeCamera.bind(this);
+        }
+
+        init() {
+            this.renderer = new THREE.WebGLRenderer();
+            this.camera = new THREE.PerspectiveCamera();
+            this.camera.matrixAutoUpdate = false;
+            this.scene = new THREE.Scene();
+        }
+
+        addModel(model) {
+            if (!this.scene) {
+                this.scene = new THREE.Scene();
             }
-        });
-    }).then(function () {
-        eventManager.trigger('cameraOpened', cameraDeviceIds);
-    });
+
+            if (!model) {
+                const geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
+                const material = new THREE.MeshNormalMaterial();
+
+                // Translate the cube up 0.25m so that the origin of the cube
+                // is on its bottom face 向上平移0.25米，使立方体的原点在底面
+                geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.25, 0));
+
+                this.model = new THREE.Mesh(geometry, material);
+            } else {
+                this.model = model;
+            }
+
+            this.scene.add(this.model);
+        }
+
+        updateThreeCamera(pose) {
+            if (pose.viewMatrix) {
+                // 将camera的matrix与viewMatrix的逆矩阵相乘
+                this.camera.matrix.getInverse(viewMatrix);
+                //更新世界矩阵。如果父对象发生了形变，那么他的形变需要传递到下面所有的子对象 。
+                this.camera.updateMatrixWorld(true);
+            }
+            if (pose.projectionMatrix) {
+                this.camera.projectionMatrix.fromArray(projectionMatrix);
+            }
+            if (pose.position) {
+                this.camera.position.x = this.camera.position.x || pose.position.x || 0;
+                this.camera.position.y = this.camera.position.y || pose.position.y || 0;
+                this.camera.position.z = this.camera.position.z || pose.position.z || 0;
+            }
+        }
+
+    }
 
     //获取视频流
     function renderVideo(cameraDeviceIds, videoConstraints) {
@@ -485,9 +533,6 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
 
 
         function initCamera(camera) {
-            // camera.position.x = 0;
-            // camera.position.y = 0;
-            // camera.position.z = 600;
             camera.up.x = 0;
             camera.up.y = 1;//以y轴正方向，默认就是以y轴为正方向
             camera.up.z = 0;
@@ -1956,7 +2001,30 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
     }
 
 
+    function updateThreeViewMatrix(viewMatrix) {
+
+    }
+
+    function updateThreeProjectionMatrix(projectionMatrix) {
+
+    }
+
+    function openCamera() {
+        mediaDevices.enumerateDevices().then(function (devices) {
+            //获取设备信息
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    cameraDeviceIds.push(device.deviceId);
+                }
+            });
+        }).then(function () {
+            eventManager.trigger('cameraOpened', cameraDeviceIds);
+        });
+    }
+    openCamera()
+
     return {
+        openCamera: openCamera,
         initControl: initControl,
         locateModel: updatePosition,
         imageControl: imageControl,
@@ -1969,5 +2037,8 @@ define(['io', 'eventManager', 'mediaDevices', 'orientationControls', 'orbitContr
         GPSControl: GPSControl,
         showWeather: showWeather,
         reset: reset,
+        updateThreeViewMatrix: updateThreeViewMatrix,
+        updateThreeProjectionMatrix: updateThreeProjectionMatrix,
+        ThreeJSController: ThreeJSController
     }
 });

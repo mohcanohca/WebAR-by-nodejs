@@ -1,8 +1,8 @@
 require.config({
     paths: {
         io: '../libs/socket.io/socket.io',
-        eventManager: './event',
-        mediaDevices: './webrtc',
+        eventManager: '../utils/event',
+        mediaDevices: '../utils/webrtc',
         ControlCenter: './ControlCenter'
     }
 });
