@@ -125,8 +125,8 @@ module.exports = function (socket) {
      let pre_imu = null;//上一次收到的imu信息*/
 
     socket.on('VIDEO_MESS', function (data) {
-        let json = JSON.parse(data);
 
+        let json = JSON.parse(data);
         frame_count++;//收到的帧的数量递增
 
         //3.四个特征点在图像上的对应点坐标，需要与特征点的世界坐标相对应

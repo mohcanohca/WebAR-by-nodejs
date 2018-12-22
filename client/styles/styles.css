@@ -27,7 +27,14 @@ html, body {
     background-color: rgba(0, 0, 0, 0.3);
 }
 
+#three-container {
+    position: absolute;
+    z-index: 20;
+    /*    width: 100%;
+        height: 100%;*/
+}
 
+/*************************废弃分割线*******************************/
 #show {
     position: relative;
     /*width: 100%;*/
@@ -58,12 +65,7 @@ html, body {
         height: 100%;*/
 }
 
-#three-container {
-    position: absolute;
-    z-index: 20;
-    /*    width: 100%;
-        height: 100%;*/
-}
+
 
 
 

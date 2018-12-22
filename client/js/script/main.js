@@ -24,7 +24,7 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
         currentController = type;
-        ControlCenter.reset(type);
+        // ControlCenter.reset(type);
 
         eventManager.trigger(type);
         eventManager.listen('changeControl', handleChangeControl);
