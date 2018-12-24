@@ -61,20 +61,20 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             this.camera = null;
             this.scene = null;
             this.model = null;
-            this.init = this.init.bind(this);
             this.addModel = this.addModel.bind(this);
             this.updateCamera = this.updateCamera.bind(this);
             this.updateModelPosition = this.updateModelPosition.bind(this);
             this.render = this.render.bind(this);
+            this.setModelFromMatrixPosition = this.setModelFromMatrixPosition.bind(this)
+            this.init();
         }
 
         //初始化Three.js的必要组件
         init() {
             this.renderer = new THREE.WebGLRenderer();
-            this.renderer.setSize(defaultWidth, defaultHeight);
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.setClearColor(0xffffff, 1);
             this.camera = new THREE.PerspectiveCamera();
-            // this.camera.matrixAutoUpdate = false;
             this.scene = new THREE.Scene();
         }
 
@@ -125,10 +125,24 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             this.model.position.z = position.z || 0;
         }
 
+        setScene(scene) {
+            this.scene = scene;
+        }
+
+        setRendererProps(props) {
+            for (let i in props) {
+                this.renderer[i] = props[i];
+            }
+        }
+
         setThreeCameraProps(props) {
             for (let i in props) {
                 this.camera[i] = props[i];
             }
+        }
+
+        setModelFromMatrixPosition(matrix) {
+            this.model.position.setFromMatrixPosition(matrix)
         }
 
         updateCamera(pose) {

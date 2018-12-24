@@ -20,6 +20,128 @@ const opacityRemap = mat => {
     }
 };
 
+class ThreeJSController {
+    constructor() {
+        this.renderer = null;
+        this.camera = null;
+        this.scene = null;
+        this.model = null;
+        this.addModel = this.addModel.bind(this);
+        this.updateCamera = this.updateCamera.bind(this);
+        this.updateModelPosition = this.updateModelPosition.bind(this);
+        this.render = this.render.bind(this);
+        this.setModelFromMatrixPosition = this.setModelFromMatrixPosition.bind(this)
+        this.init();
+    }
+
+    //初始化Three.js的必要组件
+    init() {
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setClearColor(0xffffff, 1);
+        this.camera = new THREE.PerspectiveCamera();
+        this.scene = new THREE.Scene();
+    }
+
+    addModel(model) {
+        if (!this.scene) {
+            this.scene = new THREE.Scene();
+        }
+        if (!model) {
+            const geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
+            const material = new THREE.MeshNormalMaterial();
+            // Translate the cube up 0.25m so that the origin of the cube
+            // is on its bottom face 向上平移0.25米，使立方体的原点在底面
+            geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.25, 0));
+
+            this.model = new THREE.Mesh(geometry, material);
+        } else {
+            this.model = model;
+        }
+
+        this.scene.add(this.model);
+    }
+
+    updateModel(modelSize, rotation, translation) {
+        if (modelSize) {
+            this.model.scale.x = modelSize;
+            this.model.scale.y = modelSize;
+            this.model.scale.z = modelSize;
+        }
+
+        if (rotation) {
+            this.model.rotation.x = -Math.asin(-rotation[1][2]);
+            this.model.rotation.y = -Math.atan2(rotation[0][2], rotation[2][2]);
+            this.model.rotation.z = Math.atan2(rotation[1][0], rotation[1][1]);
+
+        }
+
+        if (translation) {
+            this.model.position.x = translation[0];
+            this.model.position.y = translation[1];
+            this.model.position.z = -translation[2];
+        }
+
+    }
+
+    updateModelPosition(position) {
+        this.model.position.x = position.x || 0;
+        this.model.position.y = position.y || 0;
+        this.model.position.z = position.z || 0;
+    }
+
+    setScene(scene) {
+        this.scene = scene;
+    }
+
+    setRendererProps(props) {
+        for (let i in props) {
+            this.renderer[i] = props[i];
+        }
+    }
+
+    setThreeCameraProps(props) {
+        for (let i in props) {
+            this.camera[i] = props[i];
+        }
+    }
+
+    setModelFromMatrixPosition(matrix) {
+        this.model.position.setFromMatrixPosition(matrix)
+    }
+
+    updateCamera(pose) {
+        if (pose.viewMatrix) {
+            // 将camera的matrix与viewMatrix的逆矩阵相乘
+            this.camera.matrix.getInverse(pose.viewMatrix);
+            //更新世界矩阵。如果父对象发生了形变，那么他的形变需要传递到下面所有的子对象 。
+            this.camera.updateMatrixWorld(true);
+        }
+        if (pose.projectionMatrix) {
+            this.camera.projectionMatrix.fromArray(pose.projectionMatrix);
+        }
+        if (pose.position) {
+            this.camera.position.x = this.camera.position.x || pose.position.x || 0;
+            this.camera.position.y = this.camera.position.y || pose.position.y || 0;
+            this.camera.position.z = this.camera.position.z || pose.position.z || 0;
+        }
+    }
+
+    //覆写WebGLRender的rend方法
+    render(renderer, scene, camera) {
+        let _renderer = renderer || this.renderer;
+        let _scene = scene || this.scene;
+        let _camera = camera || this.camera;
+
+        if (!_renderer) {
+            alert('Controller is not inited');
+            return;
+        }
+
+        _renderer.render(_scene, _camera);
+    }
+}
+
 /**
  * The Reticle class creates an object that repeatedly calls
  * `xrSession.requestHitTest()` to render a ring along a found
@@ -87,23 +209,28 @@ class Reticle extends THREE.Object3D {
 
         const origin = new Float32Array(ray.origin.toArray());
         const direction = new Float32Array(ray.direction.toArray());
-        const hits = await this.session.requestHitTest(origin,
+        this.session.requestHitTest(origin, direction, frameOfRef).then(hits => {
+            console.log(hits)
+            if (hits && hits.length) {
+                const hit = hits[0];
+                const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+
+                // Now apply the position from the hitMatrix onto our model
+                // 使用hitMatrix设置模型位置
+                //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
+                this.position.setFromMatrixPosition(hitMatrix);
+
+                DemoUtils.lookAtOnY(this, this.camera);
+
+                this.visible = true;
+            }
+        }).catch(e=>{console.log(e)})
+        /*const hits = await this.session.requestHitTest(origin,
             direction,
             frameOfRef);
+        console.log(hits)*/
 
-        if (hits.length) {
-            const hit = hits[0];
-            const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 
-            // Now apply the position from the hitMatrix onto our model
-            // 使用hitMatrix设置模型位置
-            //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
-            this.position.setFromMatrixPosition(hitMatrix);
-
-            DemoUtils.lookAtOnY(this, this.camera);
-
-            this.visible = true;
-        }
     }
 }
 

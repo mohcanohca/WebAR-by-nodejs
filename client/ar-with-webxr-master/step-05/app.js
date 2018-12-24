@@ -26,7 +26,6 @@ class App {
         this.onXRFrame = this.onXRFrame.bind(this);
         this.onEnterAR = this.onEnterAR.bind(this);
         this.onClick = this.onClick.bind(this);
-
         this.init();
     }
 
@@ -40,6 +39,7 @@ class App {
         if (navigator.xr && XRSession.prototype.requestHitTest) {
             try {
                 this.device = await navigator.xr.requestDevice();
+                this.threeController = new ThreeJSController();
                 const outputCanvas = document.createElement('canvas');
                 const ctx = outputCanvas.getContext('xrpresent');
 
@@ -89,6 +89,7 @@ class App {
             // we just created.
             // Note that `device.requestSession()` must be called in response to
             // a user gesture, hence this function being a click handler.
+
             const session = await this.device.requestSession({
                 outputContext: ctx,
                 environmentIntegration: true,
@@ -120,6 +121,7 @@ class App {
      * XRSession and kick off the render loop.
      */
     async onSessionStarted(session) {
+        let controller = this.threeController;
         this.session = session;
 
         // Add the `ar` class to our body, which will hide our 2D components
@@ -127,13 +129,20 @@ class App {
 
         // To help with working with 3D on the web, we'll use three.js. Set up
         // the WebGLRenderer, which handles rendering to our session's base layer.
-        this.renderer = new THREE.WebGLRenderer({
+        /*this.renderer = new THREE.WebGLRenderer({
             alpha: true,
             preserveDrawingBuffer: true,
         });
         this.renderer.autoClear = false;
-
         this.gl = this.renderer.getContext();
+        */
+        controller.setRendererProps({
+            alpha: true,
+            preserveDrawingBuffer: true,
+            autoClear: false,
+        });
+
+        this.gl = controller.renderer.getContext()
 
         // Ensure that the context we want to write to is compatible
         // with our XRDevice
@@ -145,7 +154,7 @@ class App {
 
         // A THREE.Scene contains the scene graph for all objects in the
         // render scene.
-        this.scene = new THREE.Scene();
+        /*this.scene = new THREE.Scene();*/
 
         const geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshNormalMaterial();
@@ -160,15 +169,20 @@ class App {
         // disable matrix auto updates so three.js doesn't attempt
         // to handle the matrices independently.
         //  直接从API更新相机矩阵，关闭three.js的自动更新相机矩阵的能力
-        this.camera = new THREE.PerspectiveCamera();
-        this.camera.matrixAutoUpdate = false;
+        /*this.camera = new THREE.PerspectiveCamera();
+        this.camera.matrixAutoUpdate = false;*/
+        controller.setThreeCameraProps({matrixAutoUpdate: false});
+
 
         // Add a Reticle object, which will help us find surfaces by drawing
         // a ring shape onto found surfaces. See source code
         // of Reticle in shared/utils.js for more details.
         //  Reticle是辅助图形，在检测到的平面上显示
-        this.reticle = new Reticle(this.session, this.camera);
-        this.scene.add(this.reticle);
+        /*this.reticle = new Reticle(this.session, this.camera);
+        this.scene.add(this.reticle);*/
+        this.reticle = new Reticle(this.session, controller.camera);
+        //添加模型
+        controller.scene.add(this.reticle);
 
         this.frameOfRef = await this.session.requestFrameOfReference('eye-level');
         this.session.requestAnimationFrame(this.onXRFrame);
@@ -181,6 +195,7 @@ class App {
      * Called with the time and XRPresentationFrame.
      */
     onXRFrame(time, frame) {
+        let controller = this.threeController;
         let session = frame.session;
         // 获取设备姿态
         let pose = frame.getDevicePose(this.frameOfRef);
@@ -208,24 +223,30 @@ class App {
             // have one view.
             for (let view of frame.views) {
                 const viewport = session.baseLayer.getViewport(view);
-                console.log(viewport.width, viewport.height)
-                this.renderer.setSize(viewport.width, viewport.height);
+                // console.log(viewport.width, viewport.height)
+                /*this.renderer.setSize(viewport.width, viewport.height);*/
+                controller.renderer.setSize(viewport.width, viewport.height);
 
                 // Set the view matrix and projection matrix from XRDevicePose
                 // and XRView onto our THREE.Camera.
                 //设置three.js的相机的投影矩阵
-                this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+
+                /*this.camera.projectionMatrix.fromArray(view.projectionMatrix);*/
+
+
                 //获取视图矩阵
                 const viewMatrix = new THREE.Matrix4().fromArray(pose.getViewMatrix(view));
 
                 // 将camera的matrix与viewMatrix的逆矩阵相乘
-                this.camera.matrix.getInverse(viewMatrix);
+                /*this.camera.matrix.getInverse(viewMatrix);
 
                 //更新世界矩阵。如果父对象发生了形变，那么他的形变需要传递到下面所有的子对象 。
-                this.camera.updateMatrixWorld(true);
+                this.camera.updateMatrixWorld(true);*/
 
+                controller.updateCamera({projectionMatrix: view.projectionMatrix, viewMatrix})
                 // Render our scene with our THREE.WebGLRenderer
-                this.renderer.render(this.scene, this.camera);
+                /*this.renderer.render(this.scene, this.camera);*/
+                controller.render();
             }
         }
     }
@@ -238,6 +259,7 @@ class App {
      * 当XRSession开始后，监听用户的点击事件。从屏幕中心发出一条射线，如果检测到平面，将物体放在射线射线与平面相交的点
      */
     async onClick(e) {
+        let controller = this.threeController;
         // The requestHitTest function takes an x and y coordinate in
         // Normalized Device Coordinates, where the upper left is (-1, 1)
         // and the bottom right is (1, -1). This makes (0, 0) our center.
@@ -252,7 +274,8 @@ class App {
         this.raycaster = this.raycaster || new THREE.Raycaster();
 
         // setFromCamera(coords,camera)用一个新的原点和方向向量来更新射线（ray）。cords: 鼠标的二维坐标；camera：把射线起点设置在该相机位置处。
-        this.raycaster.setFromCamera({x, y}, this.camera);
+        // this.raycaster.setFromCamera({x, y}, this.camera);
+        this.raycaster.setFromCamera({x, y}, controller.camera);
         const ray = this.raycaster.ray;
 
         // Fire the hit test to see if our ray collides with a real
@@ -279,11 +302,15 @@ class App {
             // Turn this matrix into a THREE.Matrix4().
             const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 
+
             // Now apply the position from the hitMatrix onto our model.
             this.model.position.setFromMatrixPosition(hitMatrix);
+            controller.addModel(this.model);
+            controller.setModelFromMatrixPosition(hitMatrix);
+
 
             // Ensure our model has been added to the scene.
-            this.scene.add(this.model);
+            // this.scene.add(this.model);
         }
     }
 };

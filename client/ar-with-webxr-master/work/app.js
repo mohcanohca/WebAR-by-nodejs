@@ -21,7 +21,6 @@ class App {
     constructor() {
         this.onXRFrame = this.onXRFrame.bind(this);
         this.onEnterAR = this.onEnterAR.bind(this);
-
         this.init();
     }
 
