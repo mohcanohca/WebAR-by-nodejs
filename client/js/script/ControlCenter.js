@@ -50,7 +50,6 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         let imageController = new Controllers.ImageController();
         imageController.init();
 
-
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
         imageController.posit = new POS.Posit(modelSize, Math.max(imageController.outputCanvas.width, imageController.outputCanvas.height));
@@ -58,61 +57,71 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         // threeController.renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById("three-container").appendChild(threeController.renderer.domElement);
 
-        let realWorldController = new Controllers.RealWorldController();
-
+        /*let realWorldController = new Controllers.RealWorldController();
+*/
+        imageController.control(function (video) {
+            recognizeImage(video);
+        },function () {
+            //判断模型位置是否更新
+            if (curposition && preposition !== curposition) {
+                imageController.locateModel(curposition, modelSize);
+                preposition = curposition;
+            }
+        });
         //监听到后台返回的目标对象的位置信息的处理
         eventManager.listen('position', function (position) {
             curposition = position;
         });
+        /*
+               eventManager.listen('cameraOpened', function (stream) {
+                   if (!video) {
+                       video = document.createElement('video');
+                       document.getElementById('container').appendChild(video);
+                       video.style.display = 'none';
+                       // 旧的浏览器可能没有srcObject
+                       if ("srcObject" in video) {
+                           video.srcObject = stream;
+                       } else {
+                           // 防止再新的浏览器里使用它，应为它已经不再支持了
+                           video.src = window.URL.createObjectURL(stream);
 
-        eventManager.listen('cameraOpened', function (stream) {
-            if (!video) {
-                video = document.createElement('video');
-                document.getElementById('container').appendChild(video);
-                video.style.display = 'none';
-                // 旧的浏览器可能没有srcObject
-                if ("srcObject" in video) {
-                    video.srcObject = stream;
-                } else {
-                    // 防止再新的浏览器里使用它，应为它已经不再支持了
-                    video.src = window.URL.createObjectURL(stream);
+                       }
+                   }
+                   video.onloadedmetadata = function (e) {
+                       video.play();
+                       //以捕捉到的视频流创建现实世界控制器
+                       realWorldController.init(video);
 
-                }
-            }
-            video.onloadedmetadata = function (e) {
-                video.play();
-                //以捕捉到的视频流创建现实世界控制器
-                realWorldController.init(video);
 
-                /* 监听事件 */
                 window.addEventListener('resize', onWindowResize, false);
-
+*/
+        /*
                 animate();
                 recognizeImage(video);
             }
         });
 
-        openCamera();
+            openCamera();
 
-        function animate() {
-            requestAnimationFrame(animate);
-            //更新渲染的现实世界场景
-            realWorldController.update();
+            function animate() {
+                 requestAnimationFrame(animate);
+                 //更新渲染的现实世界场景
+                 realWorldController.update();
 
-            //判断模型位置是否更新
-            if (curposition && preposition !== curposition) {
+                 //判断模型位置是否更新
+                 if (curposition && preposition !== curposition) {
 
-                imageController.locateModel(curposition, modelSize);
-                preposition = curposition;
-            }
+                     imageController.locateModel(curposition, modelSize);
+                     preposition = curposition;
+                 }
 
-            //放置两个场景
-            threeController.renderer.autoClear = false;
-            threeController.renderer.clear();
+                 //放置两个场景
+                 threeController.renderer.autoClear = false;
+                 threeController.renderer.clear();
 
-            realWorldController.render(threeController.renderer);
-            threeController.render();
-        }
+                 realWorldController.render(threeController.renderer);
+                 threeController.render();
+             }*/
     }
 
 
@@ -143,7 +152,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         clearInterval(recognizeImageTimer);
         recognizeImageTimer = null;
     }
-
+/*
     //获取视频流
     function renderVideo(stream) {
         video = document.createElement('video');
@@ -161,7 +170,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
             video.play();
             initControl();
         }
-    }
+    }*/
 
     //发送视频帧
     function sendVideoData(socket, video, width, height) {
@@ -187,67 +196,67 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         socket.emit('VIDEO_MESS', JSON.stringify(data));
     }
 
-    function render() {
-        //放置两个场景
-        renderer.autoClear = false;
-        renderer.clear();
+    /*   function render() {
+           //放置两个场景
+           renderer.autoClear = false;
+           renderer.clear();
 
-        renderer.render(scene_bg, camera_bg);
-        renderer.render(scene_model, camera_model);
-    }
+           renderer.render(scene_bg, camera_bg);
+           renderer.render(scene_model, came_model);
+       }
 
-    //创建渲染器和场景
-    function createRenderers() {
-        //渲染器
-        renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor(0xffffff, 1);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById("three-container").appendChild(renderer.domElement);
-    }
+   /*    //创建渲染器和场景
+       function createRenderers() {
+           //渲染器
+           renderer = new THREE.WebGLRenderer();
+           renderer.setClearColor(0xffffff, 1);
+           renderer.setSize(window.innerWidth, window.innerHeight);
+           document.getElementById("three-container").appendChild(renderer.domElement);
+       }
 
-    //向场景中添加内容
-    function createScenes() {
-//使用正交投影相机
-        scene_bg = new THREE.Scene();
-        camera_bg = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
-        scene_bg.add(camera_bg);
+       //向场景中添加内容
+       function createScenes() {
+   //使用正交投影相机
+           scene_bg = new THREE.Scene();
+           camera_bg = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
+           scene_bg.add(camera_bg);
 
-        //使用透视投影相机
-        scene_model = new THREE.Scene();
-        camera_model = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
-        //若要通过相机控制模型，需要设置相机的position
-        camera_model.position.x = 0;
-        camera_model.position.y = 0;
-        camera_model.position.z = 10;
-        camera_model.lookAt(scene_model.position);
-        scene_model.add(camera_model);
+           //使用透视投影相机
+           scene_model = new THREE.Scene();
+           camera_model = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
+           //若要通过相机控制模型，需要设置相机的position
+           camera_model.position.x = 0;
+           camera_model.position.y = 0;
+           camera_model.position.z = 10;
+           camera_model.lookAt(scene_model.position);
+           scene_model.add(camera_model);
 
-        //场景添加纹理，实际添加的是以当前视频流为纹理的对象
-        texture = createTexture();
-        scene_bg.add(texture);
-    }
+           //场景添加纹理，实际添加的是以当前视频流为纹理的对象
+           texture = createTexture();
+           scene_bg.add(texture);
+       }
 
-    //创建纹理，以视频流为颜色映射对象
-    function createTexture(video) {
-        //THREE.Texture():创建一个纹理应用到一个表面或作为反射或折射贴图
-        var texture = new THREE.Texture(video),
-            object = new THREE.Object3D(),
-            geometry = new THREE.PlaneGeometry(1.0, 1.0, 0.0),
-            //map:颜色映射，默认为空
-            material = new THREE.MeshBasicMaterial({map: texture, depthTest: false, depthWrite: false}),
-            mesh = new THREE.Mesh(geometry, material);
-        texture.minFilter = THREE.LinearFilter;
-        object.position.z = -1;
+       //创建纹理，以视频流为颜色映射对象
+       function createTexture(video) {
+           //THREE.Texture():创建一个纹理应用到一个表面或作为反射或折射贴图
+           var texture = new THREE.Texture(video),
+               object = new THREE.Object3D(),
+               geometry = new THREE.PlaneGeometry(1.0, 1.0, 0.0),
+               //map:颜色映射，默认为空
+               material = new THREE.MeshBasicMaterial({map: texture, depthTest: false, depthWrite: false}),
+               mesh = new THREE.Mesh(geometry, material);
+           texture.minFilter = THREE.LinearFilter;
+           object.position.z = -1;
 
-        object.add(mesh);
+           object.add(mesh);
 
-        return object;
-    }
+           return object;
+       }
 
-    //更新场景，根据marker的四个角点的位置放置虚拟物体
-    function updateScenes() {
-        texture.children[0].material.map.needsUpdate = true;
-    }
+       //更新场景，根据marker的四个角点的位置放置虚拟物体
+       function updateScenes() {
+           texture.children[0].material.map.needsUpdate = true;
+       }*/
 
     /*function imageControl() {
         model = createModel();
@@ -296,7 +305,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
     }
 
 
-    //根据位置更新模型
+/*    //根据位置更新模型
     function locateModel(markers) {
         var corners, corner, pose, i;
 
@@ -320,9 +329,9 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
             model.rotation.z -= step;
         }
-    }
+    }*/
 
-    //根据位置更新模型
+ /*   //根据位置更新模型
     function locateModelByImageOrientation(model, markers) {
         console.log('locateModelByImageOrientation');
         var corners, corner, pose, i;
@@ -358,10 +367,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
             // model.rotation.z -= step;
         }
-    }
+    }*/
 
 
-    function updateObject(object, rotation, translation) {
+    /*function updateObject(object, rotation, translation) {
         object.scale.x = modelSize;
         object.scale.y = modelSize;
         object.scale.z = modelSize;
@@ -373,11 +382,11 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         object.position.x = translation[0];
         object.position.y = translation[1];
         object.position.z = -translation[2];
-    }
+    }*/
 
 
     //初始化webgl相关
-    function initControl() {
+    /*function initControl() {
         // canvas = document.getElementById("canvas");
         canvas = document.createElement('canvas');
         context = canvas.getContext("2d");
@@ -389,11 +398,11 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         createRenderers();
         createScenes();
 
-        /* 监听事件 */
+        /!* 监听事件 *!/
         window.addEventListener('resize', onWindowResize, false);
 
         tick();
-    }
+    }*/
 
 
     /* 窗口变动触发 */
@@ -417,7 +426,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         camera_model.lookAt(scene_model.position);
     }
 
-    function tick() {
+    /*function tick() {
         //告诉浏览器您希望执行动画并请求浏览器在下一次重绘之前调用指定的函数来更新动画
         requestAnimationFrame(tick);
         updateScenes();
@@ -455,7 +464,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
             case 'audioControl':
                 break;
             case 'GPSControl':
-                /* 循环渲染 */
+                /!* 循环渲染 *!/
                 eventManager.trigger('weatherUpdate');
                 break;
             default:
@@ -464,7 +473,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
 
         render();
-    }
+    }*/
 
     /*    //用于屏幕触摸，键盘、鼠标控制
         function orbitControl() {
@@ -707,58 +716,58 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
               var start = document.createElement('button');
               start.innerText = 'start';
               start.setAttribute('style', "position:absolute;z-index:200;bottom:10px;left:10px");
-  
+
               var stop = document.createElement('button');
               stop.innerText = 'stop';
               stop.setAttribute('style', "position:absolute;z-index:200;bottom:10px;right:10px");
-  
+
               var recordedChunks = [];
               var mediaRecorder = new MediaRecorder(stream, options);//创建一个MediaRecord对象
-  
+
               var container = document.getElementsByClassName('container')[0];
               container.appendChild(start);
               container.appendChild(stop);
               start.onclick = startRecord;
               stop.onclick = stopRecord;
-  
+
               function startRecord(e) {
                   recordedChunks = [];
                   mediaRecorder.start(1000);
               }
-  
+
               function stopRecord(e) {
                   mediaRecorder.stop()
               }
-  
+
               if (MediaRecorder.isTypeSupported('audio/webm')) {
                   options = {mimeType: 'audio/webm'};
               } else {
                   options = null;
               }
-  
-  
+
+
               mediaRecorder.ondataavailable = function (e) {
                   if (e.data.size > 0) {
                       recordedChunks.push(e.data);
                   }
               };
-  
+
               mediaRecorder.addEventListener('stop', function () {
                   console.log("data available after MediaRecorder.stop() called.")
                   getSpeechRecognition(recordedChunks)
-  
+
               });
-  
-  
+
+
           };
-  
+
           var constraints = {audio: true};
           mediaDevices.getUserMedia(constraints)
               .then(handleSuccess)
               .catch(function (err) {
                   console.log(err.name + ": " + err.message);
               });
-  
+
           //请求语音识别结果
           function getSpeechRecognition(stream) {
               console.log('get stream')
@@ -767,13 +776,14 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
     /*    function imageOrbitControl() {
             imageControl();
-    
+
             augumentedTHREE();
-    
+
             controller = new THREE.OrbitControls(camera_model);
-    
+
         }*/
 
+    // 图像识别+手势控制
     function imageOrbitControl() {
         if (currentController === 'imageOrbitControl') return;
         currentController = 'imageOrbitControl';
@@ -822,13 +832,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
                 recognizeImage(video);
                 imageOrbitController.control(function () {
-                    debugger
                     eventManager.trigger('locateModel');
                 });
                 animate();
             }
-
-
 
         });
 
@@ -856,7 +863,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         openCamera();
     }
 
-    function argumentTHREE() {
+    /*function argumentTHREE() {
         //构造函数
         THREE.OrbitControls = function (object, domElement) {
 
@@ -1247,10 +1254,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
             }();
 
-            /**
+            /!**
              * 放大，整部摄影机向前移动
              * @param dollyScale 缩放比例
-             */
+             *!/
             function dollyIn(dollyScale) {
 
                 if (scope.object.isPerspectiveCamera) {
@@ -1272,10 +1279,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
             }
 
-            /**
+            /!**
              * 缩小，整部摄影机向后移动
              * @param dollyScale 缩放比例
-             */
+             *!/
             function dollyOut(dollyScale) {
 
                 if (scope.object.isPerspectiveCamera) {
@@ -1943,7 +1950,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
             }
 
         });
-    }
+    }*/
 
 
     function reset(type) {
@@ -1974,42 +1981,114 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
 
     //图像识别+传感器方向控制
-    function imageOrientationControl() {
-        orientationControl();
-        //监听到后台返回的目标对象的位置信息的处理
-        eventManager.listen('position', function (data) {
-            let corners = data.corners;
-            if (!corners) return;
-            eventManager.trigger('locateModel', corners)
-        });
-
-        //显示虚拟物体，会将图像的四个角点信息传递给回调函数
-        eventManager.listen('locateModel', function (corners) {
-            updatePosition(corners);
-        });
-
-        let default_video_period = 100;
-        let video_period = 100;
-
-        if (!socket) {
-            //连接服务器端，传输数据
-            socket = io.connect('https://10.108.164.203:8081');
-            socket.on('frame', function (data) {
-
-                eventManager.trigger('position', data);
+    /*    function imageOrientationControl() {
+            orientationControl();
+            //监听到后台返回的目标对象的位置信息的处理
+            eventManager.listen('position', function (data) {
+                let corners = data.corners;
+                if (!corners) return;
+                eventManager.trigger('locateModel', corners)
             });
+
+            //显示虚拟物体，会将图像的四个角点信息传递给回调函数
+            eventManager.listen('locateModel', function (corners) {
+                updatePosition(corners);
+            });
+
+            let default_video_period = 100;
+            let video_period = 100;
+
+            if (!socket) {
+                //连接服务器端，传输数据
+                socket = io.connect('https://10.108.164.203:8081');
+                socket.on('frame', function (data) {
+
+                    eventManager.trigger('position', data);
+                });
+            }
+
+            //定时向后端传输图像数据
+            let timer = setInterval(function () {
+                if ((currentController !== 'imageControl') && (currentController !== 'imageOrbitControl') && (currentController !== 'imageOrientationControl')) {
+                    clearInterval(timer);
+                    timer = null;
+                } else {
+                    sendVideoData(socket, video, video.videoWidth, video.videoHeight);
+                }
+            }, video_period || default_video_period);
+        }*/
+
+    function imageOrientationControl() {
+        if (currentController === 'imageOrientationControl') return;
+        currentController = 'imageOrientationControl';
+
+        let preposition = null;//表示上一帧中目标对象的位置
+        let curposition = null;//表示当前帧中目标对象的位置
+
+        let imageOrientationController = new Controllers.ImageOrientationController();
+        imageOrientationController.init();
+
+        //初始化定位方法，参数：模型大小，焦距
+        let modelSize = 35.0; //millimeters毫米
+        imageOrientationController.posit = new POS.Posit(modelSize, Math.max(window.innerWidth, window.innerHeight));
+        let threeController = imageOrientationController.threeController;
+        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+
+        let realWorldController = new Controllers.RealWorldController();
+
+        //监听到后台返回的目标对象的位置信息的处理
+        eventManager.listen('position', function (position) {
+            curposition = position;
+        });
+
+        eventManager.listen('cameraOpened', function (stream) {
+            if (!video) {
+                video = document.createElement('video');
+                document.getElementById('container').appendChild(video);
+                video.style.display = 'none';
+                // 旧的浏览器可能没有srcObject
+                if ("srcObject" in video) {
+                    video.srcObject = stream;
+                } else {
+                    // 防止再新的浏览器里使用它，应为它已经不再支持了
+                    video.src = window.URL.createObjectURL(stream);
+                }
+            }
+            video.onloadedmetadata = function (e) {
+                video.play();
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+                /* 监听事件 */
+                window.addEventListener('resize', onWindowResize, false);
+                recognizeImage(video);
+                imageOrientationController.control()
+                animate();
+
+            }
+
+        });
+
+
+        function animate() {
+            requestAnimationFrame(animate);
+            //更新渲染的现实世界场景
+            realWorldController.update();
+
+            //判断模型位置是否更新
+            if (curposition && preposition !== curposition) {
+                imageOrientationController.locateModel(curposition, modelSize);
+                preposition = curposition;
+            }
+
+            //放置两个场景
+            threeController.renderer.autoClear = false;
+            threeController.renderer.clear();
+
+            realWorldController.render(threeController.renderer);
+            threeController.render();
         }
 
-        //定时向后端传输图像数据
-        let timer = setInterval(function () {
-            if ((currentController !== 'imageControl') && (currentController !== 'imageOrbitControl') && (currentController !== 'imageOrientationControl')) {
-                clearInterval(timer);
-                timer = null;
-            } else {
-                sendVideoData(socket, video, video.videoWidth, video.videoHeight);
-            }
-        }, video_period || default_video_period);
-
+        openCamera();
     }
 
 
@@ -2181,7 +2260,6 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
             };
 
             let constraints = {video: defaultVideoConstraints};
-            // let default_video_period = 100;
             return mediaDevices.getUserMedia(constraints).then(stream => {
                 eventManager.trigger('cameraOpened', stream);
             })
@@ -2190,17 +2268,16 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
 
     return {
-        initControl: initControl,
+        // initControl: initControl,
         imageControl: imageControl,
         orbitControl: orbitControl,
         orientationControl: orientationControl,
         // audioControl: audioControl,
         imageOrbitControl: imageOrbitControl,
         imageOrientationControl: imageOrientationControl,
-        resetCameraModel: resetCameraModel,
+        // resetCameraModel: resetCameraModel,
         GPSControl: GPSControl,
-        showWeather: showWeather,
+        // showWeather: showWeather,
         reset: reset,
-
     }
 });
