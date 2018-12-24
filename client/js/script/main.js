@@ -18,9 +18,11 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     eventManager.listen('imageOrientationControl', handleImageOrientationControl)
     eventManager.listen('audioControl', handleAudioControl)
     eventManager.listen('GPSControl', handleGPSControl)
+    eventManager.listen('XRHitControl', handleXRHitControl)
 
     let curController = null;
 
+    XRDetect();
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
         if (curController) {
@@ -82,5 +84,48 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
         console.log('地理位置信息控制')
         ControlCenter.GPSControl();
     }
+
+    function handleXRHitControl() {
+        console.log('XR击中控制')
+        ControlCenter.XRHitControl();
+    }
+
+    function XRDetect() {
+        if (navigator.xr && XRSession.prototype.requestHitTest) {
+            try {
+                navigator.xr.requestDevice().then(device => {
+                    const outputCanvas = document.createElement('canvas');
+                    const ctx = outputCanvas.getContext('xrpresent');
+
+                    device.supportsSession({
+                        outputContext: ctx,
+                        environmentIntegration: true,
+                    }).then(() => {
+                        console.log('Device support AR model')
+                        let controllers = document.getElementById('controllers');
+                        let button = document.createElement('button');
+                        button.setAttribute('id', 'XRHitControl');
+                        button.innerText = 'XRHit';
+                        controllers.appendChild(button);
+                    }).catch(e => {
+                        console.log('Device does not support AR Session')
+                    })
+                }).catch(e => {
+                    console.log('No XRDevice')
+                });
+
+            } catch (e) {
+                console.log('Browser does not support XR')
+                return;
+            }
+        } else {
+            // If `navigator.xr` or `XRSession.prototype.requestHitTest`
+            // does not exist, we must display a message indicating there
+            // are no valid devices.
+            console.log('Browser does not support XR')
+            return;
+        }
+    }
+
 });
 

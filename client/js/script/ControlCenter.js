@@ -5,13 +5,12 @@ require.config({
         eventManager: '../utils/event',
         mediaDevices: '../utils/webrtc',
         controllers: '../utils/controllers',
-        orientationControls: '../controls/DeviceOrientationControls',
         orbitControls: '../controls/OrbitControls',
     }
 });
 
 
-define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControls', 'orbitControls'], function (io, eventManager, mediaDevices, Controllers, DeviceOrientationControls, orbitControls) {
+define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], function (io, eventManager, mediaDevices, Controllers) {
     //three.js流程： 创建场景、相机、渲染器、内容、（控制器）；初始化，动画，更新
 
     let listeners = [];
@@ -537,10 +536,28 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
             case 'GPSControl':
                 removeGPSControl();
                 break;
+            case 'XRHitControl':
+                removeXRHitControl();
+                break;
             default:
                 break;
         }
         currentController = type;
+    }
+
+    async function XRHitControl() {
+        if (currentController === 'XRHitControl') return;
+        currentController = 'XRHitControl';
+        let xrHitController = new Controllers.XRHitController();
+
+        await xrHitController.getDevice();
+        await xrHitController.getSession();
+        container.appendChild(xrHitController.outputCanvas);
+        await xrHitController.onSessionStarted();
+    }
+
+    function removeXRHitControl() {
+        clear();
     }
 
     return {
@@ -551,5 +568,6 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         imageOrientationControl: imageOrientationControl,
         GPSControl: GPSControl,
         resetControl: resetControl,
+        XRHitControl: XRHitControl,
     }
 });

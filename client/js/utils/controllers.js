@@ -181,6 +181,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         constructor() {
             this.outputCanvas = null;
             this.threeController = new ThreeJSController();
+            this.init();
         }
 
         init() {
@@ -205,10 +206,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
         init() {
             //创建输出上下文
-            let canvas = document.createElement('canvas');
-            canvas.width = defaultWidth;
-            canvas.height = defaultHeight;
-            this.outputCanvas = canvas;
+            super.init();
 
             let threeController = this.threeController;
             threeController.init();
@@ -360,7 +358,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             if (!material) {
                 eventManager.listen('cameraOpened', function (video) {
                     material = video;
-                    _self.model = this.createTexture(material);
+                    _self.model = _self.createTexture(material);
                     _self.scene.add(_self.model);
                 });
                 openCamera()
@@ -394,7 +392,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         }
     }
 
-    class OrbitController extends ThreeJSController {
+    class OrbitController extends Controller {
         constructor() {
             super();
             this.model = null;
@@ -870,6 +868,261 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
     }
 
+    class Reticle extends THREE.Object3D {
+        /**
+         * @param {XRSession} xrSession
+         * @param {THREE.Camera} camera
+         */
+        constructor(xrSession, camera) {
+            super();
+
+            this.loader = new THREE.TextureLoader();
+
+            let geometry = new THREE.RingGeometry(0.1, 0.11, 24, 1);
+            let material = new THREE.MeshBasicMaterial({color: 0xffffff});
+            // Orient the geometry so its position is flat on a horizontal surface
+            //  确定几何图形的方向，使其在水平面上
+            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
+
+            this.ring = new THREE.Mesh(geometry, material);
+
+            geometry = new THREE.PlaneBufferGeometry(0.15, 0.15);
+            // Orient the geometry so its position is flat on a horizontal surface,
+            // as well as rotate the image so the anchor is facing the user
+            //确定几何图形的方向，使其在水平面，同时旋转图像，使锚面向用户
+            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
+            geometry.applyMatrix(new THREE.Matrix4().makeRotationY(THREE.Math.degToRad(0)));
+            material = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0
+            });
+            this.icon = new THREE.Mesh(geometry, material);
+
+            // Load the anchor texture and apply it to our material
+            // once loaded
+            this.loader.load('js/textures/Anchor.png', texture => {
+                this.icon.material.opacity = 1;
+                this.icon.material.map = texture;
+            });
+
+            this.add(this.ring);
+            this.add(this.icon);
+
+            this.session = xrSession;
+            this.visible = false;
+            this.camera = camera;
+        }
+
+        /**
+         * Fires a hit test in the middle of the screen and places the reticle
+         * upon the surface if found.
+         *在屏幕中心执行击中检测，如果检测到平面，就在上面放置圆环
+         * 利用three.js的Raycaster
+         *
+         * @param {XRCoordinateSystem} frameOfRef
+         */
+        async update(frameOfRef) {
+            this.raycaster = this.raycaster || new THREE.Raycaster();
+            this.raycaster.setFromCamera({x: 0, y: 0}, this.camera);
+            const ray = this.raycaster.ray;
+
+            const origin = new Float32Array(ray.origin.toArray());
+            const direction = new Float32Array(ray.direction.toArray());
+            this.session.requestHitTest(origin, direction, frameOfRef)
+                .then(hits => {
+                    if (hits && hits.length) {
+                        const hit = hits[0];
+                        const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+
+                        // Now apply the position from the hitMatrix onto our model
+                        // 使用hitMatrix设置模型位置
+                        //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
+                        this.position.setFromMatrixPosition(hitMatrix);
+
+                        lookAtOnY(this, this.camera);
+
+                        this.visible = true;
+                    }
+                }).catch(e => {
+                console.log(e)
+            })
+
+        }
+
+
+    }
+
+    function lookAtOnY(looker, target) {
+        const targetPos = new THREE.Vector3().setFromMatrixPosition(target.matrixWorld);
+
+        const angle = Math.atan2(targetPos.x - looker.position.x,
+            targetPos.z - looker.position.z);
+
+        looker.rotation.set(0, angle, 0);
+    }
+
+    class XRHitController extends Controller {
+        constructor(device) {
+            super();
+            this.device = device;//XRDevice
+            this.session = null;//XRSession
+            this.gl = null;//three.js渲染使用的上下文环境
+            this.reticle = null;//辅助图形，标定平面
+            this.getDevice = this.getDevice.bind(this);
+            this.getSession = this.getSession.bind(this);
+            this.onSessionStarted = this.onSessionStarted.bind(this);
+            this.onXRFrame = this.onXRFrame.bind(this);
+            this.onClick = this.onClick.bind(this);
+        }
+
+        async getDevice() {
+            this.device = await navigator.xr.requestDevice();
+        }
+
+        async getSession() {
+
+            const ctx = this.outputCanvas.getContext('xrpresent');
+            this.session = await this.device.requestSession({
+                outputContext: ctx,
+                environmentIntegration: true,
+            });
+        }
+
+        async onSessionStarted() {
+            let threeController = this.threeController;
+            let _self = this;
+            window.addEventListener('resize', function () {
+                onWindowResize.call(_self);
+            }, false);
+            threeController.setRendererProps({
+                alpha: true,
+                preserveDrawingBuffer: true,
+                autoClear: false,
+            });
+            //创建session的展示层
+            this.gl = threeController.renderer.getContext();
+            await this.gl.setCompatibleXRDevice(this.device);
+            this.session.baseLayer = new XRWebGLLayer(this.session, this.gl);
+
+            threeController.setThreeCameraProps({matrixAutoUpdate: false});
+
+            this.reticle = new Reticle(this.session, threeController.camera);
+//添加模型
+            threeController.scene.add(this.reticle);
+
+            const geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
+            const material = new THREE.MeshNormalMaterial();
+
+            // Translate the cube up 0.25m so that the origin of the cube
+            // is on its bottom face 向上平移0.25米，使立方体的原点在底面
+            geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.25, 0));
+
+            this.model = new THREE.Mesh(geometry, material);
+
+            this.frameOfRef = await this.session.requestFrameOfReference('eye-level');
+            this.session.requestAnimationFrame(this.onXRFrame);
+            window.addEventListener('click', this.onClick);
+        }
+
+        onXRFrame(time, frame) {
+            let controller = this.threeController;
+            let session = frame.session;
+            // 获取设备姿态
+            let pose = frame.getDevicePose(this.frameOfRef);
+
+            // Update the reticle's position
+            //  更新辅助圆环的位置
+            // console.log(this.frameOfRef);
+            this.reticle.update(this.frameOfRef);
+
+            // Queue up the next frame
+            session.requestAnimationFrame(this.onXRFrame);
+
+            // Bind the framebuffer to our baseLayer's framebuffer
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.session.baseLayer.framebuffer);
+
+            if (pose) {
+                // Our XRFrame has an array of views. In the VR case, we'll have
+                // two views, one for each eye. In mobile AR, however, we only
+                // have one view.
+                for (let view of frame.views) {
+                    const viewport = session.baseLayer.getViewport(view);
+                    // console.log(viewport.width, viewport.height)
+                    /*this.renderer.setSize(viewport.width, viewport.height);*/
+                    controller.renderer.setSize(viewport.width, viewport.height);
+
+                    // Set the view matrix and projection matrix from XRDevicePose
+                    // and XRView onto our THREE.Camera.
+                    //设置three.js的相机的投影矩阵
+                    //获取视图矩阵
+                    const viewMatrix = new THREE.Matrix4().fromArray(pose.getViewMatrix(view));
+
+                    // 将camera的matrix与viewMatrix的逆矩阵相乘
+
+                    //更新世界矩阵。如果父对象发生了形变，那么他的形变需要传递到下面所有的子对象 。
+
+                    controller.updateCamera({projectionMatrix: view.projectionMatrix, viewMatrix})
+                    // Render our scene with our THREE.WebGLRenderer
+                    controller.render();
+                }
+            }
+        }
+
+        async onClick(e) {
+            let controller = this.threeController;
+            // The requestHitTest function takes an x and y coordinate in
+            // Normalized Device Coordinates, where the upper left is (-1, 1)
+            // and the bottom right is (1, -1). This makes (0, 0) our center.
+            const x = 0;
+            const y = 0;
+
+            // Create a THREE.Raycaster if one doesn't already exist,
+            // and use it to generate an origin and direction from
+            // our camera (device) using the tap coordinates.
+            // Learn more about THREE.Raycaster:
+            // https://threejs.org/docs/#api/core/Raycaster
+            this.raycaster = this.raycaster || new THREE.Raycaster();
+
+            // setFromCamera(coords,camera)用一个新的原点和方向向量来更新射线（ray）。cords: 鼠标的二维坐标；camera：把射线起点设置在该相机位置处。
+            // this.raycaster.setFromCamera({x, y}, this.camera);
+            this.raycaster.setFromCamera({x, y}, controller.camera);
+            const ray = this.raycaster.ray;
+
+            // Fire the hit test to see if our ray collides with a real
+            // surface. Note that we must turn our THREE.Vector3 origin and
+            // direction into an array of x, y, and z values. The proposal
+            // for `XRSession.prototype.requestHitTest` can be found here:
+            // https://github.com/immersive-web/hit-test
+            const origin = new Float32Array(ray.origin.toArray());
+            const direction = new Float32Array(ray.direction.toArray());
+            const hits = await this.session.requestHitTest(origin,
+                direction,
+                this.frameOfRef);
+
+            // If we found at least one hit...
+            if (hits.length) {
+                // We can have multiple collisions per hit test. Let's just take the
+                // first hit, the nearest, for now.
+                const hit = hits[0];
+
+                // Our XRHitResult object has one property, `hitMatrix`, a
+                // Float32Array(16) representing a 4x4 Matrix encoding position where
+                // the ray hit an object, and the orientation has a Y-axis that corresponds
+                // with the normal of the object at that location.
+                // Turn this matrix into a THREE.Matrix4().
+                const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+
+
+                // Now apply the position from the hitMatrix onto our model.
+                this.model.position.setFromMatrixPosition(hitMatrix);
+
+                controller.addModel(this.model);
+                controller.setModelFromMatrixPosition(hitMatrix);
+            }
+        }
+    }
+
     return {
         ThreeJSController: ThreeJSController,
         ImageController: ImageController,
@@ -878,6 +1131,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         OrientationController: OrientationController,
         ImageOrbitController: ImageOrbitController,
         ImageOrientationController: ImageOrientationController,
+        XRHitController: XRHitController,
     }
 });
 
