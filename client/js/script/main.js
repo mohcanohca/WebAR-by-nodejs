@@ -19,20 +19,19 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     eventManager.listen('audioControl', handleAudioControl)
     eventManager.listen('GPSControl', handleGPSControl)
 
-    let currentController = 'imageControl';
+    let curController = null;
 
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
-        currentController = type;
-        // ControlCenter.reset(type);
-
-        eventManager.trigger(type);
+        if (curController) {
+            ControlCenter.resetControl(curController);
+        }
+        curController = type;
+        eventManager.trigger(type);//触发控制
         eventManager.listen('changeControl', handleChangeControl);
     }
 
     let controllers = document.getElementById('controllers');
-
-    let video;//存放视频流的DOM元素
 
     controllers.addEventListener('click', function (e) {
         let controllerID = e.target.id;
@@ -76,7 +75,7 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     //语音控制
     function handleAudioControl() {
         console.log('语音控制')
-        ControlCenter.audioControl();
+        // ControlCenter.audioControl();
     }
 
     function handleGPSControl() {

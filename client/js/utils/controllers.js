@@ -27,7 +27,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
     }
 
     function openCamera() {
-        let cameraDeviceIds = []
+        let cameraDeviceIds = [];
         mediaDevices.enumerateDevices().then(function (devices) {
             //获取设备信息
             devices.forEach(device => {
@@ -218,7 +218,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
-                    document.getElementById('container').appendChild(video);
+                    document.body.appendChild(video);
                     video.style.display = 'none';
                     // 旧的浏览器可能没有srcObject
                     if ("srcObject" in video) {
@@ -226,7 +226,6 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     } else {
                         // 防止再新的浏览器里使用它，应为它已经不再支持了
                         video.src = window.URL.createObjectURL(stream);
-
                     }
                 }
                 video.onloadedmetadata = function (e) {
@@ -244,7 +243,22 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     callback(video);
                 }
             });
-            openCamera();
+            if (!video) {
+                openCamera();
+            } else {
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+
+                /* 监听事件 */
+                window.addEventListener('resize', function () {
+                    onWindowResize.call(_self);
+                }, false);
+
+                animate();
+
+                callback(video);
+            }
+
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -399,6 +413,11 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             threeController.updateModelPosition({x: 0, y: 0, z: -100});
         }
 
+        setModel(model) {
+            let threeController = this.threeController;
+            threeController.addModel(model);
+        }
+
         control(updateCB) {
             let _self = this;
             let realWorldController = new RealWorldController();
@@ -406,7 +425,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
-                    document.getElementById('container').appendChild(video);
+                    document.body.appendChild(video);
                     video.style.display = 'none';
                     // 旧的浏览器可能没有srcObject
                     if ("srcObject" in video) {
@@ -431,13 +450,30 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     animate();
                 }
             });
-            openCamera();
+
+            if (!video) {
+                openCamera();
+            } else {
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+
+                /* 监听事件 */
+                window.addEventListener('resize', function () {
+                    onWindowResize.call(_self);
+                }, false);
+
+                _self.orbitControls = new orbitController(threeController.camera, threeController.renderer.domElement)
+                animate();
+            }
 
             function animate() {
                 requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
-                updateCB();
+                if (updateCB) {
+                    updateCB();
+                }
+
                 //放置两个场景
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
@@ -491,7 +527,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
-                    document.getElementById('container').appendChild(video);
+                    document.body.appendChild(video);
                     video.style.display = 'none';
                     // 旧的浏览器可能没有srcObject
                     if ("srcObject" in video) {
@@ -534,7 +570,39 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     animate();
                 }
             });
-            openCamera();
+            if (!video) {
+                openCamera();
+            } else {
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+
+                /* 监听事件 */
+                window.addEventListener('resize', function () {
+                    onWindowResize.call(_self);
+                }, false);
+
+                let model = threeController.model;
+                window.addEventListener('deviceorientation', function (event) {
+                    //重力感应事件处理
+                    var alpha = event.alpha / 180 * Math.PI;
+                    var beta = event.beta / 180 * Math.PI;
+                    var gamma = event.gamma / 180 * Math.PI;
+
+                    //反转
+                    let matrix = model.matrix.clone();
+                    matrix.getInverse(matrix);
+                    model.applyMatrix(matrix);
+
+
+                    //欧拉角顺序应该为ZXY，另外需要注意的是前边参数的顺序和后边设置的顺序不是一一对应的，也就是说就算顺序被设置为ZXY，前边三个参数的顺序依然XYZ
+                    let euler = new THREE.Euler();
+                    euler.set(beta, gamma, alpha, 'ZXY');
+                    model.setRotationFromEuler(euler);
+                }, false);
+
+                animate();
+            }
+
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -580,7 +648,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
-                    document.getElementById('container').appendChild(video);
+                    document.body.appendChild(video);
                     video.style.display = 'none';
                     // 旧的浏览器可能没有srcObject
                     if ("srcObject" in video) {
@@ -605,7 +673,21 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     }, false);
                 }
             });
-            openCamera();
+            if (!video) {
+                openCamera();
+            } else {
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+                callback(video);
+
+                animate();
+                _self.orbitControls = new orbitController(threeController.camera, threeController.renderer.domElement)
+                /* 监听事件 */
+                window.addEventListener('resize', function () {
+                    onWindowResize.call(_self);
+                }, false);
+            }
+
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -666,7 +748,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
-                    document.getElementById('container').appendChild(video);
+                    document.body.appendChild(video);
                     video.style.display = 'none';
                     // 旧的浏览器可能没有srcObject
                     if ("srcObject" in video) {
@@ -690,7 +772,20 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     }, false);
                 }
             });
-            openCamera();
+
+            if (!video) {
+                openCamera();
+            } else {
+                //以捕捉到的视频流创建现实世界控制器
+                realWorldController.init(video);
+                callback(video);
+                animate();
+                controlModel();
+                /* 监听事件 */
+                window.addEventListener('resize', function () {
+                    onWindowResize.call(_self);
+                }, false);
+            }
 
             function animate() {
                 requestAnimationFrame(animate);

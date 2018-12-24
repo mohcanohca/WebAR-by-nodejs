@@ -19,6 +19,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
     let currentController;//控制器
     let recognizeImageTimer;//向服务器请求图像识别结果的定时器
     let controller;
+    let container = document.getElementById('three-container');
 
     var canvas;
     var socket;//与服务器建立连接
@@ -41,7 +42,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
         // 向DOM树添加虚拟环境
         let threeController = imageController.threeController;
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+        container.appendChild(threeController.renderer.domElement);
 
         // 参数一：处理函数
         // 参数二： 更新方式
@@ -111,15 +112,20 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
     }
 
     function removeImageControl() {
-        removeListener();
+        clear();
         stopRecognize();
+        socket.removeAllListeners('frame');
     }
 
-    function removeListener() {
+    function clear() {
         for (let i = 0; i < listeners.length; i++) {
             eventManager.remove(listeners[i]);
         }
         listeners = [];
+        while (container.hasChildNodes()) //当elem下还存在子节点时 循环继续
+        {
+            container.removeChild(container.firstChild);
+        }
     }
 
     //用于屏幕触摸，键盘、鼠标控制
@@ -132,14 +138,14 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
         let threeController = orbitController.threeController;
 
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+        container.appendChild(threeController.renderer.domElement);
 
         orbitController.control();
     }
 
     function removeOrbitControl() {
-        removeListener();
-
+        console.log('removeOrbitControl');
+        clear();
     }
 
     //传感器控制
@@ -152,8 +158,13 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
         let threeController = orientationController.threeController;
 
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+        container.appendChild(threeController.renderer.domElement);
         orientationController.control()
+    }
+
+    function removeOrientationControl() {
+        console.log('removeOrientationControl');
+        clear();
     }
 
     /*  //语音控制
@@ -240,25 +251,27 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         imageOrbitController.posit = new POS.Posit(modelSize, Math.max(window.innerWidth, window.innerHeight));
 
         let threeController = imageOrbitController.threeController;
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+        container.appendChild(threeController.renderer.domElement);
 
-        imageOrbitController.control(function (video) {
-            recognizeImage(video);
-            document.addEventListener('mouseup', handler, false);
+        imageOrbitController.control(
+            function (video) {
+                recognizeImage(video);
+                document.addEventListener('mouseup', handler, false);
 
-            function handler() {
-                threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
-                threeController.camera.lookAt(threeController.scene.position);
-                document.removeEventListener('mouseup', handler, false);
-                eventManager.trigger('locateModel');
-            }
-        }, function () {
-            //判断模型位置是否更新
-            if (curposition && preposition !== curposition) {
-                imageOrbitController.locateModel(curposition, modelSize);
-                preposition = curposition;
-            }
-        });
+                function handler() {
+                    threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
+                    threeController.camera.lookAt(threeController.scene.position);
+                    document.removeEventListener('mouseup', handler, false);
+                    eventManager.trigger('locateModel');
+                }
+            },
+            function () {
+                //判断模型位置是否更新
+                if (curposition && preposition !== curposition) {
+                    imageOrbitController.locateModel(curposition, modelSize);
+                    preposition = curposition;
+                }
+            });
 
         //监听到后台返回的目标对象的位置信息的处理
         eventManager.listen('position', function (position) {
@@ -270,6 +283,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         });
     }
 
+    function removeImageOrbitControl() {
+        console.log('removeImageOrbitControl')
+        clear()
+    }
 
     function reset(type) {
         if (currentController === 'orbitControl' || currentController === 'imageOrbitControl') {
@@ -314,7 +331,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         let modelSize = 35.0; //millimeters毫米
         imageOrientationController.posit = new POS.Posit(modelSize, Math.max(window.innerWidth, window.innerHeight));
         let threeController = imageOrientationController.threeController;
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+        container.appendChild(threeController.renderer.domElement);
 
         //监听到后台返回的目标对象的位置信息的处理
         eventManager.listen('position', function (position) {
@@ -332,22 +349,31 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         });
     }
 
+    function removeImageOrientationControl() {
+        console.log('removeImageOrientationControl');
+        clear();
+    }
+
 
     function GPSControl() {
+        currentController = 'GPSControl';
+        listeners.push('cameraOpened', 'address');
         eventManager.listen('address', handleAddress);
         geoFindMe();
 
+
         //处理位置信息
         function handleAddress(data) {
+
             if (!socket) {
                 //连接服务器端，传输数据
                 socket = io.connect('https://10.108.164.203:8081');
 
-                //由于存在跨域问题，由server获取天气并返回
-                socket.on('weather', function (data) {
-                    showWeather(data.weather);
-                });
             }
+            //由于存在跨域问题，由server获取天气并返回
+            socket.on('weather', function (data) {
+                showWeather(data.weather);
+            });
 
             //使用websocket传输地理位置信息
             socket.emit('LOC_MESS', JSON.stringify(data));
@@ -355,13 +381,14 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
         //获取地址
         function geoFindMe() {
+            console.log('定位位置')
             // 百度地图API功能
             //地图初始化
-            var map = new BMap.Map("allmap");
+            let map = new BMap.Map("allmap");
 
             //GPS坐标转换成百度坐标
-            var convertor = new BMap.Convertor();
-            var pointArr = [];
+            let convertor = new BMap.Convertor();
+            let pointArr = [];
 
             //坐标转换完之后的回调函数
             var translateCallback = function (data) {
@@ -405,78 +432,115 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
 
             navigator.geolocation.getCurrentPosition(success, error);
         }
-    }
 
-    //根据天气情况，渲染不同的场景
-    function showWeather(weather) {
-        console.log(weather.now)
-        let points;
-        //雪花图片
-        let texture = new THREE.TextureLoader().load('../js/textures/snow-32.png');
-        let model = initWeatherContent(texture);
-        let controller = new Controllers.OrbitController();
-        controller.init(model);
+        //根据天气情况，渲染不同的场景
+        function showWeather(weather) {
+            console.log(weather.now)
+            let points;
+            //雪花图片
+            let texture = new THREE.TextureLoader().load('../js/textures/snow-32.png');
+            let model = initWeatherContent(texture);
+            let controller = new Controllers.OrbitController();
+            controller.init(model);
 
-        let threeController = controller.threeController;
-        threeController.updateCamera({position: {x: 0, y: 0, z: 0}});
-        threeController.updateModelPosition({x: 0, y: 0, z: 0});
-        document.getElementById("three-container").appendChild(threeController.renderer.domElement);
+            let threeController = controller.threeController;
+            threeController.updateCamera({position: {x: 0, y: 0, z: 0}});
+            threeController.updateModelPosition({x: 0, y: 0, z: 0});
+            container.appendChild(threeController.renderer.domElement);
 
-        controller.control(update);
+            controller.control(update);
 
 
-        //场景中的内容
-        function initWeatherContent(texture) {
-            let geometry = new THREE.Geometry();
-            let pointsMaterial = new THREE.PointsMaterial({
-                size: 2,
-                transparent: true,
-                opacity: 0.8,
-                map: texture,
-                blending: THREE.AdditiveBlending,
-                sizeAttenuation: true,
-                depthTest: false
-            });
+            //场景中的内容
+            function initWeatherContent(texture) {
+                let geometry = new THREE.Geometry();
+                let pointsMaterial = new THREE.PointsMaterial({
+                    size: 2,
+                    transparent: true,
+                    opacity: 0.8,
+                    map: texture,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true,
+                    depthTest: false
+                });
 
-            let range = 100;
-            for (let i = 0; i < 1500; i++) {
+                let range = 100;
+                for (let i = 0; i < 1500; i++) {
 
-                let vertice = new THREE.Vector3(
-                    Math.random() * range - range / 2,
-                    Math.random() * range * 1.5,
-                    Math.random() * range - range / 2);
-                /* 纵向移动速度 */
-                vertice.velocityY = 0.1 + Math.random() / 3;
-                /* 横向移动速度 */
-                vertice.velocityX = (Math.random() - 0.5) / 3;
+                    let vertice = new THREE.Vector3(
+                        Math.random() * range - range / 2,
+                        Math.random() * range * 1.5,
+                        Math.random() * range - range / 2);
+                    /* 纵向移动速度 */
+                    vertice.velocityY = 0.1 + Math.random() / 3;
+                    /* 横向移动速度 */
+                    vertice.velocityX = (Math.random() - 0.5) / 3;
 
-                /* 将顶点加入几何 */
-                geometry.vertices.push(vertice);
+                    /* 将顶点加入几何 */
+                    geometry.vertices.push(vertice);
+                }
+
+                geometry.center();
+
+                points = new THREE.Points(geometry, pointsMaterial);
+                points.position.y = -30;
+
+                return points;
             }
 
-            geometry.center();
+            /* 数据更新 */
+            function update() {
+                let vertices = points.geometry.vertices;
+                vertices.forEach(function (v) {
 
-            points = new THREE.Points(geometry, pointsMaterial);
-            points.position.y = -30;
+                    v.y = v.y - (v.velocityY);
+                    v.x = v.x - (v.velocityX);
 
-            return points;
+                    if (v.y <= 0) v.y = 60;
+                    if (v.x <= -20 || v.x >= 20) v.velocityX = v.velocityX * -1;
+
+                });
+                /* 顶点变动之后需要更新，否则无法实现雨滴特效 */
+                points.geometry.verticesNeedUpdate = true;
+            }
         }
+    }
 
-        /* 数据更新 */
-        function update() {
-            let vertices = points.geometry.vertices;
-            vertices.forEach(function (v) {
 
-                v.y = v.y - (v.velocityY);
-                v.x = v.x - (v.velocityX);
+    function removeGPSControl() {
+        console.log('removeGPSControl');
+        clear();
+        socket.removeAllListeners('weather');
+    }
 
-                if (v.y <= 0) v.y = 60;
-                if (v.x <= -20 || v.x >= 20) v.velocityX = v.velocityX * -1;
-
-            });
-            /* 顶点变动之后需要更新，否则无法实现雨滴特效 */
-            points.geometry.verticesNeedUpdate = true;
+    function resetControl(type) {
+        console.log(currentController);
+        switch (currentController) {
+            case 'imageControl':
+                removeImageControl();
+                break;
+            case 'orbitControl':
+                removeOrbitControl();
+                break;
+            case 'orientationControl':
+                removeOrientationControl();
+                break;
+            case 'imageOrbitControl':
+                removeImageOrbitControl()
+                break;
+            case 'orientationControl':
+                removeOrientationControl();
+                break;
+            case 'imageOrientationControl':
+                removeImageOrientationControl();
+                break;
+            case 'GPSControl':
+                removeGPSControl();
+                break;
+            default:
+                break;
         }
+        currentController = type;
     }
 
     return {
@@ -486,6 +550,6 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orientationControl
         imageOrbitControl: imageOrbitControl,
         imageOrientationControl: imageOrientationControl,
         GPSControl: GPSControl,
-        reset: reset,
+        resetControl: resetControl,
     }
 });
