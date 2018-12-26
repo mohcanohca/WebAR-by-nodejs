@@ -33,10 +33,11 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let curposition = null;//表示当前帧中目标对象的位置
 
         let imageController = new Controllers.ImageController();
-        imageController.init();
+        // imageController.init();
 
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
+        // console.log(imageController.outputCanvas.width,imageController.outputCanvas.height)
         imageController.posit = new POS.Posit(modelSize, Math.max(imageController.outputCanvas.width, imageController.outputCanvas.height));
 
         // 向DOM树添加虚拟环境
@@ -153,7 +154,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         currentController = 'orientationControl';
         listeners.push('cameraOpened');
         let orientationController = new Controllers.OrientationController();
-        orientationController.init();
+        // orientationController.init();
 
         let threeController = orientationController.threeController;
 
@@ -243,7 +244,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let curposition = null;//表示当前帧中目标对象的位置
 
         let imageOrbitController = new Controllers.ImageOrbitController();
-        imageOrbitController.init();
+        // imageOrbitController.init();
 
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
@@ -252,22 +253,66 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let threeController = imageOrbitController.threeController;
         container.appendChild(threeController.renderer.domElement);
 
+        let touch = false;
+
+        // 参数一：控制方法；参数二：更新方法
         imageOrbitController.control(
             function (video) {
                 recognizeImage(video);
-                document.addEventListener('mouseup', handler, false);
+                eventManager.listen('touchstart', handleTouchStart);
+                eventManager.listen('touchend', handleTouchEnd);
+                eventManager.listen('mouseup', handleMouseUp);
+                listeners.push('touchstart', 'touchend', 'mouseup');
+                document.addEventListener('touchstart', onTouchStart, false);
+                document.addEventListener('touchend', onTouchEnd, false);
+                document.addEventListener('mouseup', onMouseUp, false);
 
-                function handler() {
+                function onTouchStart(event) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                    eventManager.trigger('touchstart', event)
+                    console.log('touchstart')
+
+                }
+
+                function handleTouchStart(event) {
+                    touch = true;
+
+                }
+
+                function onTouchEnd(event) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                    eventManager.trigger('touchend', event)
+                    console.log('touchend')
+                }
+
+                function handleTouchEnd(event) {
+                    touch = false;
                     threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
                     threeController.camera.lookAt(threeController.scene.position);
-                    document.removeEventListener('mouseup', handler, false);
+                    eventManager.trigger('locateModel');
+                }
+
+                function onMouseUp(event) {
+                    // event.preventDefault();
+                    // event.stopAllAction();
+                    eventManager.trigger('mouseup')
+                    console.log('mouseup')
+                }
+
+                function handleMouseUp(event) {
+                    threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
+                    threeController.camera.lookAt(threeController.scene.position);
                     eventManager.trigger('locateModel');
                 }
             },
             function () {
                 //判断模型位置是否更新
                 if (curposition && preposition !== curposition) {
-                    imageOrbitController.locateModel(curposition, modelSize);
+                    if (!touch) {
+                        imageOrbitController.locateModel(curposition, modelSize);
+                    }
                     preposition = curposition;
                 }
             });
@@ -283,7 +328,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
     }
 
     function removeImageOrbitControl() {
-        console.log('removeImageOrbitControl')
+        console.log('removeImageOrbitControl');
         clear()
     }
 
@@ -324,7 +369,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let curposition = null;//表示当前帧中目标对象的位置
 
         let imageOrientationController = new Controllers.ImageOrientationController();
-        imageOrientationController.init();
+        // imageOrientationController.init();
 
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
@@ -439,8 +484,8 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
             //雪花图片
             let texture = new THREE.TextureLoader().load('../js/textures/snow-32.png');
             let model = initWeatherContent(texture);
-            let controller = new Controllers.OrbitController();
-            controller.init(model);
+            let controller = new Controllers.OrbitController(model);
+            // controller.init(model);
 
             let threeController = controller.threeController;
             threeController.updateCamera({position: {x: 0, y: 0, z: 0}});

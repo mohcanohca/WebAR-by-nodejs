@@ -14,9 +14,6 @@ html, body {
 #controllers {
     position: absolute;
     z-index: 100;
-    /*left:50%;*/
-    /*transform:translate(-50%,0);*/
-
 }
 
 #controllers button {
@@ -30,8 +27,6 @@ html, body {
 #three-container {
     position: absolute;
     z-index: 20;
-    /*    width: 100%;
-        height: 100%;*/
 }
 
 /*************************废弃分割线*******************************/

@@ -79,6 +79,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         }
 
         addModel(model) {
+            // debugger
             if (!this.scene) {
                 this.scene = new THREE.Scene();
             }
@@ -181,10 +182,11 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         constructor() {
             this.outputCanvas = null;
             this.threeController = new ThreeJSController();
-            this.init();
+            // this.init = this.init.bind(this);
+            Controller.init.call(this);
         }
 
-        init() {
+        static init() {
             //创建输出上下文
             let canvas = document.createElement('canvas');
             canvas.width = defaultWidth;
@@ -199,17 +201,17 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             this.model = null;
             this.posit = null;
             this.threeController = new ThreeJSController();
-            this.init = this.init.bind(this);
             this.createModel = this.createModel.bind(this);
             this.locateModel = this.locateModel.bind(this);
+            // this.init();
+            ImageController.init.call(this);
         }
 
-        init() {
+        static init() {
+            // super.init.call(this);
             //创建输出上下文
-            super.init();
-
             let threeController = this.threeController;
-            threeController.init();
+            // threeController.init();
             let camera = threeController.camera;
             let scene = threeController.scene;
             threeController.setThreeCameraProps({
@@ -220,13 +222,19 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             });
             threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
             camera.lookAt(scene.position);
-
+            /*console.log(this);
+            debugger*/
         }
 
+        /**
+         * @param callback 自定义的控制方法
+         * @param updateCB 更新方法
+         */
         control(callback, updateCB) {
             let _self = this;
             let realWorldController = new RealWorldController();
             let threeController = this.threeController;
+
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
@@ -393,18 +401,16 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
     }
 
     class OrbitController extends Controller {
-        constructor() {
+        constructor(model) {
             super();
-            this.model = null;
-            this.posit = null;
             this.threeController = new ThreeJSController();
             this.orbitControls = null;
-
+            OrbitController.init.call(this, model)
         }
 
-        init(model) {
+        static init(model) {
             let threeController = this.threeController;
-            threeController.init();
+            // threeController.init();
             let camera = threeController.camera;
             let scene = threeController.scene;
             threeController.setThreeCameraProps({
@@ -499,14 +505,15 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
 
     class OrientationController extends Controller {
-        constructor() {
+        constructor(model) {
             super();
             this.threeController = new ThreeJSController();
+            OrbitController.init.call(this, model);
         }
 
-        init(model) {
+        static init(model) {
             let threeController = this.threeController;
-            threeController.init();
+            // threeController.init();
             let camera = threeController.camera;
             let scene = threeController.scene;
             threeController.setThreeCameraProps({
@@ -634,12 +641,12 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
     class ImageOrbitController extends ImageController {
         constructor() {
             super();
+            ImageOrbitController.init.call(this);
         }
 
-        init(model) {
-            super.init.call(this);
+        static init(model) {
+            // super.init.call(this);
             let threeController = this.threeController;
-            threeController.init();
 
             let camera = threeController.camera;
             let scene = threeController.scene;
@@ -721,12 +728,16 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
     class ImageOrientationController extends ImageController {
         constructor() {
             super();
+            // this.init = this.init.bind(this);
+            this.control = this.control.bind(this)
+            // this.init();
+            ImageOrientationController.init.call(this);
         }
 
-        init(model) {
-            super.init.call(this);
+        static init(model) {
+            // super.init.call(this);
             let threeController = this.threeController;
-            threeController.init();
+            // threeController.init();
             let camera = threeController.camera;
             let scene = threeController.scene;
             threeController.setThreeCameraProps({
@@ -750,7 +761,6 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.addModel(model);
             }
         }
-
 
         control(callback, updateCB) {
             let _self = this;
