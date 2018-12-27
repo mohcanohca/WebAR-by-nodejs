@@ -33,6 +33,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let curposition = null;//表示当前帧中目标对象的位置
 
         let imageController = new Controllers.ImageController();
+        controller = imageController;
         // imageController.init();
 
         //初始化定位方法，参数：模型大小，焦距
@@ -68,7 +69,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         if (!socket) {
             //连接服务器端，传输数据
             socket = io.connect('https://10.108.164.203:8081');
-            // socket = io.connect('https://10.208.25.196:8081');
+            // socket = io.connect('https://192.168.43.132:8081');
             socket.on('frame', function (data) {
                 let corners = data.corners;
                 if (!corners) return;
@@ -112,9 +113,8 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
     }
 
     function removeImageControl() {
-        clear();
         stopRecognize();
-        socket.removeAllListeners('frame');
+        clear();
     }
 
     function clear() {
@@ -134,7 +134,8 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         currentController = 'orbitControl';
         listeners.push('cameraOpened');
         let orbitController = new Controllers.OrbitController();
-        orbitController.init();
+        // orbitController.init();
+        controller = orbitController;
 
         let threeController = orbitController.threeController;
 
@@ -154,6 +155,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         currentController = 'orientationControl';
         listeners.push('cameraOpened');
         let orientationController = new Controllers.OrientationController();
+        controller = orientationController;
         // orientationController.init();
 
         let threeController = orientationController.threeController;
@@ -245,6 +247,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
 
         let imageOrbitController = new Controllers.ImageOrbitController();
         // imageOrbitController.init();
+        controller = imageOrbitController;
 
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
@@ -370,6 +373,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
 
         let imageOrientationController = new Controllers.ImageOrientationController();
         // imageOrientationController.init();
+        controller = imageOrientationController;
 
         //初始化定位方法，参数：模型大小，焦距
         let modelSize = 35.0; //millimeters毫米
@@ -412,7 +416,6 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
             if (!socket) {
                 //连接服务器端，传输数据
                 socket = io.connect('https://10.108.164.203:8081');
-
             }
             //由于存在跨域问题，由server获取天气并返回
             socket.on('weather', function (data) {
@@ -484,7 +487,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
             //雪花图片
             let texture = new THREE.TextureLoader().load('../js/textures/snow-32.png');
             let model = initWeatherContent(texture);
-            let controller = new Controllers.OrbitController(model);
+            controller = new Controllers.OrbitController(model);
             // controller.init(model);
 
             let threeController = controller.threeController;
@@ -559,6 +562,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
 
     function resetControl(type) {
         console.log(currentController);
+        controller.cancelControl();
         switch (currentController) {
             case 'imageControl':
                 removeImageControl();
@@ -570,10 +574,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
                 removeOrientationControl();
                 break;
             case 'imageOrbitControl':
-                removeImageOrbitControl()
-                break;
-            case 'orientationControl':
-                removeOrientationControl();
+                removeImageOrbitControl();
                 break;
             case 'imageOrientationControl':
                 removeImageOrientationControl();
@@ -594,6 +595,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         if (currentController === 'XRHitControl') return;
         currentController = 'XRHitControl';
         let xrHitController = new Controllers.XRHitController();
+        controller = xrHitController;
 
         await xrHitController.getDevice();
         await xrHitController.getSession();

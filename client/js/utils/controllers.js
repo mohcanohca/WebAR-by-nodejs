@@ -183,6 +183,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             this.outputCanvas = null;
             this.threeController = new ThreeJSController();
             // this.init = this.init.bind(this);
+            this.cancelControl = this.cancelControl.bind(this);
             Controller.init.call(this);
         }
 
@@ -192,6 +193,12 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             canvas.width = defaultWidth;
             canvas.height = defaultHeight;
             this.outputCanvas = canvas;
+        }
+
+        cancelControl() {
+            if (this.loop) {
+                cancelAnimationFrame(this.loop);
+            }
         }
     }
 
@@ -264,6 +271,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 }
             });
             if (!video) {
+                // debugger
                 openCamera();
             } else {
                 //以捕捉到的视频流创建现实世界控制器
@@ -281,7 +289,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
 
             function animate() {
-                requestAnimationFrame(animate);
+                _self.loop = requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
                 updateCB();
@@ -289,7 +297,8 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                realWorldController.render(threeController.renderer);
+                // realWorldController.render(threeController.renderer);
+                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
@@ -341,45 +350,47 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 this.threeController.updateModel(modelSize, pose.bestRotation, pose.bestTranslation);
             }
         }
+
     }
 
-    class RealWorldController extends ThreeJSController {
+    class RealWorldController extends Controller {
         constructor() {
             super();
             this.model = null;
             this.init = this.init.bind(this);
             this.update = this.update.bind(this);
             this.createTexture = this.createTexture.bind(this);
-            this.render = this.render.bind(this);
+            // this.render = this.render.bind(this);
         }
 
         //初始化环境组件
         init(material) {
             let _self = this;
-            this.renderer = new THREE.WebGLRenderer();
-            this.renderer.setSize(defaultWidth, defaultHeight);
-            this.renderer.setClearColor(0xffffff, 1);
-            this.camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
-            this.scene = new THREE.Scene();
-            this.scene.add(this.camera);
+            let threeController = this.threeController;
+            /* this.renderer = new THREE.WebGLRenderer();
+             this.renderer.setSize(defaultWidth, defaultHeight);
+             this.renderer.setClearColor(0xffffff, 1);
+             this.camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
+             this.scene = new THREE.Scene();
+             this.scene.add(this.camera);*/
+            threeController.camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
 
             if (!material) {
                 eventManager.listen('cameraOpened', function (video) {
                     material = video;
-                    _self.model = _self.createTexture(material);
-                    _self.scene.add(_self.model);
+                    /*_self.model = _self.createTexture(material);
+                    _self.scene.add(_self.model);*/
+                    threeController.addModel(_self.createTexture(material));
                 });
                 openCamera()
             } else {
-                this.model = this.createTexture(material);
-                this.scene.add(this.model);
+                threeController.addModel(_self.createTexture(material));
             }
-
         }
 
         //更新渲染内容
         update() {
-            this.model.children[0].material.map.needsUpdate = true;
+            this.threeController.model.children[0].material.map.needsUpdate = true;
         }
 
         //创建纹理，以视频流为颜色映射对象
@@ -395,7 +406,6 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             object.position.z = -1;
 
             object.add(mesh);
-
             return object;
         }
     }
@@ -417,9 +427,9 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 fov: 40,
                 aspect: window.innerWidth / window.innerHeight,
                 near: 1,
-                far: 1000
+                far: 1000,
             });
-            threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
+            threeController.updateCamera({position: {x: 0, y: 0, z: 100}});
             camera.lookAt(scene.position);
 
             if (!model) {
@@ -428,7 +438,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             } else {
                 threeController.addModel(model);
             }
-            threeController.updateModelPosition({x: 0, y: 0, z: -100});
+            threeController.updateModelPosition({x: 0, y: 0, z: 0});
         }
 
         setModel(model) {
@@ -440,6 +450,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             let _self = this;
             let realWorldController = new RealWorldController();
             let threeController = this.threeController;
+
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
@@ -485,7 +496,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             }
 
             function animate() {
-                requestAnimationFrame(animate);
+                _self.loop = requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
                 if (updateCB) {
@@ -496,11 +507,10 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                realWorldController.render(threeController.renderer);
+                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
-
     }
 
 
@@ -508,7 +518,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         constructor(model) {
             super();
             this.threeController = new ThreeJSController();
-            OrbitController.init.call(this, model);
+            OrientationController.init.call(this, model);
         }
 
         static init(model) {
@@ -527,12 +537,13 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     z: 0
                 }
             });
-            threeController.updateCamera({position: {x: 0, y: 0, z: 100}});
+            threeController.updateCamera({position: {x: 0, y: 0, z: 10}});
             camera.lookAt(scene.position);
 
             if (!model) {
+                console.log('手动添加模型')
                 //添加模型
-                threeController.addModel(createCube(10, 10, 10));
+                threeController.addModel(createCube(1, 1, 1));
             } else {
                 threeController.addModel(model);
             }
@@ -568,6 +579,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     }, false);
 
                     let model = threeController.model;
+
                     window.addEventListener('deviceorientation', function (event) {
                         //重力感应事件处理
                         var alpha = event.alpha / 180 * Math.PI;
@@ -589,6 +601,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     animate();
                 }
             });
+
             if (!video) {
                 openCamera();
             } else {
@@ -601,6 +614,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 }, false);
 
                 let model = threeController.model;
+
                 window.addEventListener('deviceorientation', function (event) {
                     //重力感应事件处理
                     var alpha = event.alpha / 180 * Math.PI;
@@ -624,14 +638,14 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
 
             function animate() {
-                requestAnimationFrame(animate);
+                _self.loop = requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
                 //放置两个场景
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                realWorldController.render(threeController.renderer);
+                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
@@ -639,9 +653,9 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
     }
 
     class ImageOrbitController extends ImageController {
-        constructor() {
+        constructor(model) {
             super();
-            ImageOrbitController.init.call(this);
+            ImageOrbitController.init.call(this, model);
         }
 
         static init(model) {
@@ -664,6 +678,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             let _self = this;
             let realWorldController = new RealWorldController();
             let threeController = this.threeController;
+
             eventManager.listen('cameraOpened', function (stream) {
                 if (!video) {
                     video = document.createElement('video');
@@ -692,6 +707,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                     }, false);
                 }
             });
+
             if (!video) {
                 openCamera();
             } else {
@@ -709,7 +725,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
 
 
             function animate() {
-                requestAnimationFrame(animate);
+                _self.loop = requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
                 updateCB();
@@ -717,7 +733,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                realWorldController.render(threeController.renderer);
+                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
 
@@ -810,7 +826,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
             }
 
             function animate() {
-                requestAnimationFrame(animate);
+                _self.loop = requestAnimationFrame(animate);
                 //更新渲染的现实世界场景
                 realWorldController.update();
                 updateCB();
@@ -818,7 +834,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                realWorldController.render(threeController.renderer);
+                threeController.render(null, realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
 

@@ -14,12 +14,14 @@ html, body {
 #controllers {
     position: absolute;
     z-index: 100;
+    width: 100%;
 }
 
 #controllers button {
     display: inline-block;
     border: 0px;
-    margin-right: 10px;
+    /*width: 15%;*/
+    /*margin-right: 10px;*/
     border-radius: 3px;
     background-color: rgba(0, 0, 0, 0.3);
 }
