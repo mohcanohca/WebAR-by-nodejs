@@ -7,5 +7,9 @@ exports.serveIndex = function (app, staticFolder) {
 
     app.get('/webxr', function (req, res) {
         res.sendFile('/ar-with-webxr-master/step-05/index.html', {root: staticFolder});
+    });
+
+    app.get('/recognize',function (req,res) {
+        //TODO 将图像识别能力以接口提供
     })
 };

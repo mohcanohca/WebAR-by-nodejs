@@ -13,18 +13,22 @@ require.config({
 define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], function (io, eventManager, mediaDevices, Controllers) {
     //three.js流程： 创建场景、相机、渲染器、内容、（控制器）；初始化，动画，更新
 
+    const serverPath = 'https://10.28.201.198:8081';
     let listeners = [];
     let preposition, curposition;
     let currentController;//控制器
     let recognizeImageTimer;//向服务器请求图像识别结果的定时器
     let controller;
     let container = document.getElementById('three-container');
+    let recognitionCenter;
 
     var canvas;
     var socket;//与服务器建立连接
 
     let defaultVideoWidth = window.innerWidth;//设置默认值
     let defaultVideoHeight = window.innerHeight;
+
+    if (!window.eventManager) window.eventManager = eventManager;
 
     function imageControl() {
         currentController = 'imageControl';
@@ -45,7 +49,21 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let threeController = imageController.threeController;
         container.appendChild(threeController.renderer.domElement);
 
-        // 参数一：处理函数
+        if (!recognitionCenter) {
+            recognitionCenter = new Controllers.recognitionCenter();
+        }
+
+
+        imageController.control(function (video) {
+            recognitionCenter.start(video);
+        }, function () {
+            let curposition = recognitionCenter.corners;
+            if (curposition && preposition !== curposition) {
+                imageController.locateModel(curposition, modelSize);
+                preposition = curposition;
+            }
+        });
+        /*// 参数一：处理函数
         // 参数二： 更新方式
         imageController.control(recognizeImage, function () {
             //判断模型位置是否更新
@@ -53,12 +71,12 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
                 imageController.locateModel(curposition, modelSize);
                 preposition = curposition;
             }
-        });
+        });*/
 
-        //监听到后台返回的目标对象的位置信息的处理
-        eventManager.listen('position', function (position) {
-            curposition = position;
-        });
+        /*        //监听到后台返回的目标对象的位置信息的处理
+                eventManager.listen('position', function (position) {
+                    curposition = position;
+                });*/
     }
 
 
@@ -68,7 +86,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let video_period = 100;
         if (!socket) {
             //连接服务器端，传输数据
-            socket = io.connect('https://10.108.164.203:8081');
+            socket = io.connect(serverPath);
             // socket = io.connect('https://192.168.43.132:8081');
             socket.on('frame', function (data) {
                 let corners = data.corners;
@@ -81,6 +99,28 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         recognizeImageTimer = setInterval(function () {
             sendVideoData(socket, video, video.videoWidth, video.videoHeight);
         }, video_period || default_video_period);
+
+        //发送视频帧
+        function sendVideoData(socket, video, width, height) {
+            if (!canvas)
+                canvas = document.createElement('canvas');
+
+            canvas.width = width || defaultVideoWidth;
+            canvas.height = height || defaultVideoHeight;
+
+            let context = canvas.getContext('2d');
+
+            //绘制当前视频帧
+            context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
+
+            let jpgQuality = 0.6;
+            let theDataURL = canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
+            let data = {
+                imgData: theDataURL,
+            };
+            //使用websocket进行图像传输
+            socket.emit('VIDEO_MESS', JSON.stringify(data));
+        }
     }
 
     //停止图像识别
@@ -90,30 +130,9 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         recognizeImageTimer = null;
     }
 
-    //发送视频帧
-    function sendVideoData(socket, video, width, height) {
-        if (!canvas)
-            canvas = document.createElement('canvas');
-
-        canvas.width = width || defaultVideoWidth;
-        canvas.height = height || defaultVideoHeight;
-
-        let context = canvas.getContext('2d');
-
-        //绘制当前视频帧
-        context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
-
-        let jpgQuality = 0.6;
-        let theDataURL = canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
-        let data = {
-            imgData: theDataURL,
-        };
-        //使用websocket进行图像传输
-        socket.emit('VIDEO_MESS', JSON.stringify(data));
-    }
-
     function removeImageControl() {
-        stopRecognize();
+        // stopRecognize();
+        recognitionCenter.stop();
         clear();
     }
 
@@ -381,10 +400,12 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
         let threeController = imageOrientationController.threeController;
         container.appendChild(threeController.renderer.domElement);
 
-        //监听到后台返回的目标对象的位置信息的处理
+        /*//监听到后台返回的目标对象的位置信息的处理
         eventManager.listen('position', function (position) {
             curposition = position;
         });
+
+
 
         // 参数一：处理函数
         // 参数二： 更新方式
@@ -394,11 +415,26 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
                 imageOrientationController.locateModel(curposition, modelSize);
                 preposition = curposition;
             }
+        });*/
+
+        if(!recognitionCenter){
+            recognitionCenter = new Controllers.recognitionCenter();
+        }
+
+        imageOrientationController.control(function (video) {
+            recognitionCenter.start(video);
+        }, function () {
+            let curposition = recognitionCenter.corners;
+            if (curposition && preposition !== curposition) {
+                imageOrientationController.locateModel(curposition, modelSize);
+                preposition = curposition;
+            }
         });
     }
 
     function removeImageOrientationControl() {
         console.log('removeImageOrientationControl');
+        recognitionCenter.stop();
         clear();
     }
 
@@ -415,7 +451,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
 
             if (!socket) {
                 //连接服务器端，传输数据
-                socket = io.connect('https://10.108.164.203:8081');
+                socket = io.connect(serverPath);
             }
             //由于存在跨域问题，由server获取天气并返回
             socket.on('weather', function (data) {

@@ -1,14 +1,18 @@
 require.config({
     paths: {
+        io: '../libs/socket.io/socket.io',
         orbitController: '../utils/OrbitControls',
         eventManager: '../utils/event',
         mediaDevices: '../utils/webrtc',
+        posit: '../libs/posit',
     }
 });
-define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitController, eventManager, mediaDevices) {
+define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], function (io, orbitController, eventManager, mediaDevices, POS) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
     let video;
+
+    window.eventManager = eventManager;
 
     function createCube(width, height, deep) {
         //正方体
@@ -238,6 +242,10 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
          * @param updateCB 更新方法
          */
         control(callback, updateCB) {
+            let modelSize = 35.0; //millimeters毫米
+            if (!this.posit) {
+                this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
+            }
             let _self = this;
             let realWorldController = new RealWorldController();
             let threeController = this.threeController;
@@ -298,7 +306,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.clear();
 
                 // realWorldController.render(threeController.renderer);
-                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
+                threeController.render(null, realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
@@ -507,7 +515,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
+                threeController.render(null, realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
@@ -645,7 +653,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
+                threeController.render(null, realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
         }
@@ -733,7 +741,7 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
                 threeController.renderer.autoClear = false;
                 threeController.renderer.clear();
 
-                threeController.render(null,realWorldController.threeController.scene, realWorldController.threeController.camera);
+                threeController.render(null, realWorldController.threeController.scene, realWorldController.threeController.camera);
                 threeController.render();
             }
 
@@ -1149,6 +1157,117 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         }
     }
 
+    class XRController {
+        constructor() {
+
+        }
+
+        async init() {
+            await this.isSupported().then()
+        }
+
+        async isSupported() {
+            if (navigator.xr && XRSession.prototype.requestHitTest) {
+                try {
+                    navigator.xr.requestDevice().then(device => {
+                        const outputCanvas = document.createElement('canvas');
+                        const ctx = outputCanvas.getContext('xrpresent');
+
+                        device.supportsSession({
+                            outputContext: ctx,
+                            environmentIntegration: true,
+                        }).then(() => {
+                            console.log('Device support AR model')
+                            return true;
+                        }).catch(e => {
+                            console.log('Device does not support AR Session')
+                            return false;
+                        })
+                    }).catch(e => {
+                        console.log('No XRDevice')
+                        return false;
+                    });
+
+                } catch (e) {
+                    console.log('Browser does not support XR')
+                    return false;
+                }
+            } else {
+                // If `navigator.xr` or `XRSession.prototype.requestHitTest`
+                // does not exist, we must display a message indicating there
+                // are no valid devices.
+                console.log('Browser does not support XR')
+                return false;
+            }
+        }
+
+
+    }
+
+    //图像识别定位
+    class recognitionCenter {
+        constructor() {
+            this.socket = null;
+            this.serverPath = 'https://10.28.201.198:8081';
+            this.timer = null;
+            this.canvas = document.createElement('canvas');
+            this.corners = null;
+            this.start = this.start.bind(this)
+            this.stop = this.stop.bind(this)
+        }
+
+        start(video, socket) {
+            let default_video_period = 100;
+            let video_period = 100;
+            let _self = this;
+            if (!socket) {
+                //连接服务器端，传输数据
+                socket = io.connect(this.serverPath);
+                socket.on('frame', function (data) {
+                    let corners = data.corners;
+                    if (!corners) return;
+                    _self.corners = corners;
+                    // eventManager.trigger('position', corners);
+                });
+            }
+
+            //定时向后端传输图像数据
+            this.timer = setInterval(function () {
+                sendVideoData(socket, video, video.videoWidth, video.videoHeight);
+            }, video_period || default_video_period);
+
+            //发送视频帧
+            function sendVideoData(socket, video, width, height) {
+                if (!_self.canvas)
+                    _self.canvas = document.createElement('canvas');
+
+                _self.canvas.width = width;
+                _self.canvas.height = height;
+
+                let context = _self.canvas.getContext('2d');
+
+                //绘制当前视频帧
+                context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
+
+                let jpgQuality = 0.6;
+                let theDataURL = _self.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
+                let data = {
+                    imgData: theDataURL,
+                };
+                //使用websocket进行图像传输
+                socket.emit('VIDEO_MESS', JSON.stringify(data));
+            }
+        }
+
+        //停止图像识别
+        stop() {
+            if (!this.timer) return;
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+
+    }
+
     return {
         ThreeJSController: ThreeJSController,
         ImageController: ImageController,
@@ -1158,6 +1277,10 @@ define(['orbitController', 'eventManager', 'mediaDevices'], function (orbitContr
         ImageOrbitController: ImageOrbitController,
         ImageOrientationController: ImageOrientationController,
         XRHitController: XRHitController,
+        XRController: XRController,
+        openCamera: openCamera,
+        createCube: createCube,
+        recognitionCenter: recognitionCenter,
     }
 });
 
