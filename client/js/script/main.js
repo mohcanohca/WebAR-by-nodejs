@@ -1,14 +1,15 @@
 require.config({
     paths: {
         io: '../libs/socket.io/socket.io',
-        eventManager: '../utils/event',
+        // eventManager: '../utils/event',
         mediaDevices: '../utils/webrtc',
         ControlCenter: './ControlCenter'
     }
 });
 
-require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, eventManager, mediaDevices, ControlCenter) {
+require(['io', /*'eventManager',*/ 'mediaDevices', 'ControlCenter'], function (io, /*event,*/ mediaDevices, ControlCenter) {
 
+    let eventManager = window.eventManager;
     eventManager.listen('changeControl', handleChangeControl);
 
     eventManager.listen('imageControl', handleImageControl)
@@ -20,9 +21,22 @@ require(['io', 'eventManager', 'mediaDevices', 'ControlCenter'], function (io, e
     eventManager.listen('GPSControl', handleGPSControl)
     eventManager.listen('XRHitControl', handleXRHitControl)
 
+    eventManager.listen('XRSupported', handleXRSupported)
+
+    function handleXRSupported(supported) {
+        if (supported) {
+            let controllers = document.getElementById('controllers');
+            let button = document.createElement('button');
+            button.setAttribute('id', 'XRHitControl');
+            button.innerText = 'XRHit';
+            controllers.appendChild(button);
+        }
+    }
+
     let curController = null;
 
-    XRDetect();
+    // XRDetect();
+
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
         if (curController) {

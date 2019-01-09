@@ -5,9 +5,10 @@ require.config({
         eventManager: '../utils/event',
         mediaDevices: '../utils/webrtc',
         posit: '../libs/posit',
+        webxr: '../libs/webxr-polyfill'
     }
 });
-define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], function (io, orbitController, eventManager, mediaDevices, POS) {
+define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit', 'webxr'], function (io, orbitController, eventManager, mediaDevices, POS, WebXR) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
     let video;
@@ -214,7 +215,6 @@ define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], funct
             this.threeController = new ThreeJSController();
             this.createModel = this.createModel.bind(this);
             this.locateModel = this.locateModel.bind(this);
-            // this.init();
             ImageController.init.call(this);
         }
 
@@ -428,7 +428,6 @@ define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], funct
 
         static init(model) {
             let threeController = this.threeController;
-            // threeController.init();
             let camera = threeController.camera;
             let scene = threeController.scene;
             threeController.setThreeCameraProps({
@@ -1268,6 +1267,410 @@ define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], funct
 
     }
 
+    function XRDetect() {
+        // 检测是否支持XR
+        if (typeof navigator.XR === 'undefined') {
+            console.log('No WebXR API found, usually because the WebXR polyfill has not loaded')
+            eventManager.trigger('XRSupported', false);
+            return
+        }
+
+        // 获取可用的显示，然后请求会话
+        // Get displays and then request a session
+        navigator.XR.getDisplays().then(displays => {
+            if (displays.length == 0) {
+                console.log('No displays are available')
+                eventManager.trigger('XRSupported', false);
+                return
+            }
+            eventManager.trigger('XRSupported', true);
+        }).catch(err => {
+            console.error('Error getting XR displays', err)
+
+            console.log('Could not get XR displays')
+        })
+
+        /*if (navigator.xr && XRSession.prototype.requestHitTest) {
+            try {
+                navigator.xr.requestDevice().then(device => {
+                    const outputCanvas = document.createElement('canvas');
+                    const ctx = outputCanvas.getContext('xrpresent');
+
+                    device.supportsSession({
+                        outputContext: ctx,
+                        environmentIntegration: true,
+                    }).then(() => {
+                        console.log('Device support AR model')
+                        eventManager.trigger('XRSupported', true);
+                    }).catch(e => {
+                        eventManager.trigger('XRSupported', false);
+                        console.log('Device does not support AR Session')
+                    })
+                }).catch(e => {
+                    console.log('No XRDevice')
+                    eventManager.trigger('XRSupported', false);
+                });
+
+            } catch (e) {
+                console.log('Browser does not support XR')
+                eventManager.trigger('XRSupported', false);
+                return;
+            }
+        } else {
+            // If `navigator.xr` or `XRSession.prototype.requestHitTest`
+            // does not exist, we must display a message indicating there
+            // are no valid devices.
+            console.log('Browser does not support XR')
+            eventManager.trigger('XRSupported', false);
+            return;
+        }*/
+    }
+
+    class XRControllerBase {
+        constructor(domElement, createVirtualReality = true, shouldStartPresenting = true, useComputerVision = false, worldSensing = false, alignEUS = true) {
+            this.el = domElement
+            this.createVirtualReality = createVirtualReality
+            this.shouldStartPresenting = shouldStartPresenting
+            this.useComputerVision = useComputerVision
+            this.alignEUS = alignEUS
+            this.worldSensing = worldSensing
+
+            //用于设置requestAnimationFrame的回调函数
+            this._boundHandleFrame = this._handleFrame.bind(this) // Useful for setting up the requestAnimationFrame callback
+
+            // Set during the XR.getDisplays call below 在XR.getDisplays调用中设置
+            this.displays = null
+
+            // Set during this.startSession below	在this.startSession调用中设置
+            this.display = null
+            this.session = null
+
+            // 该场景使用头部姿态绕相机旋转
+            this.scene = new THREE.Scene() // The scene will be rotated and oriented around the camera using the head pose
+
+            //会被ARCore或ARKit中的投影矩阵重写
+            this.camera = new THREE.PerspectiveCamera(70, 1024, 1024, 0.1, 1000) // These values will be overwritten by the projection matrix from ARKit or ARCore
+            this.scene.add(this.camera)
+
+            // 为会话层创建一个canvas和context
+            // Create a canvas and context for the session layer
+            this.glCanvas = document.createElement('canvas')
+            this.glContext = this.glCanvas.getContext('webgl')
+            if (this.glContext === null) {
+                this.showMessage('Could not create a WebGL canvas')
+                throw new Error('Could not create GL context')
+            }
+
+            // 使用会话层的上下文设置THREE的renderer
+            // Set up the THREE renderer with the session's layer's glContext
+            this.renderer = new THREE.WebGLRenderer({
+                canvas: this.glCanvas,
+                context: this.glContext,
+                antialias: false,
+                alpha: true
+            })
+            this.renderer.setPixelRatio(1)
+            this.renderer.autoClear = false
+            this.renderer.setClearColor('#000', 0)
+
+            // 该组最终被定位到地板
+            this.requestedFloor = false
+            this.floorGroup = new THREE.Group() // This group will eventually be be anchored to the floor (see findFloorAnchor below)
+
+
+            // 将在_handleFrame中使用的一组信息，以使用锚点更新节点
+            // an array of info that we'll use in _handleFrame to update the nodes using anchors
+            this.anchoredNodes = [] // { XRAnchorOffset, Three.js Object3D }
+
+            // 为扩展类提供初始化场景
+            // Give extending classes the opportunity to initially populate the scene
+            this.initializeScene()
+
+            // 检测是否支持XR
+            if (typeof navigator.XR === 'undefined') {
+                this.showMessage('No WebXR API found, usually because the WebXR polyfill has not loaded')
+                return
+            }
+
+            // 获取可用的显示，然后请求会话
+            // Get displays and then request a session
+            navigator.XR.getDisplays().then(displays => {
+                if (displays.length == 0) {
+                    this.showMessage('No displays are available')
+                    return
+                }
+                this.displays = displays
+                this._startSession()
+            }).catch(err => {
+                console.error('Error getting XR displays', err)
+                this.showMessage('Could not get XR displays')
+            })
+        }
+
+        // 开始会话
+        _startSession() {
+            // session初始化参数
+            let sessionInitParameters = {
+                exclusive: this.createVirtualReality,
+                type: this.createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION,
+                videoFrames: this.useComputerVision,    //computer_vision_data
+                alignEUS: this.alignEUS,
+                worldSensing: this.worldSensing
+            }
+
+            //检测显示器是否支持请求的会话类型
+            for (let display of this.displays) {
+                if (display.supportsSession(sessionInitParameters)) {
+                    this.display = display
+                    break
+                }
+            }
+
+            //若最终没有检测到支持该会话类型的显示器，给出提示，并结束
+            if (this.display === null) {
+                this.showMessage('Could not find a display for this type of session')
+                return
+            }
+
+            // 请求会话，然后开始渲染逻辑
+            this.display.requestSession(sessionInitParameters).then(session => {
+                this.session = session
+                this.session.depthNear = 0.1
+                this.session.depthFar = 1000.0
+
+                // 处理会话的生命周期事件
+                // Handle session lifecycle events
+                this.session.addEventListener('focus', ev => {
+                    this.handleSessionFocus(ev)
+                })
+                this.session.addEventListener('blur', ev => {
+                    this.handleSessionBlur(ev)
+                })
+                this.session.addEventListener('end', ev => {
+                    this.handleSessionEnded(ev)
+                })
+
+                this.newSession();
+
+                // 开始呈现
+                if (this.shouldStartPresenting) {
+                    // VR Displays need startPresenting called due to input events like a click
+                    this.startPresenting()
+                }
+            }).catch(err => {
+                console.error('Error requesting session', err)
+                this.showMessage('Could not initiate the session')
+            })
+        }
+
+        /*
+        客户端应该覆盖以在创建新会话时调用
+          Clients should override to be called when a new session is created
+          */
+        newSession() {
+        }
+
+        /*
+            Empties this.el, adds a div with the message text, and shows a button to test rendering the scene to this.el
+        */
+        showMessage(messageText) {
+            let messages = document.getElementsByClassName('common-message')
+            if (messages.length > 0) {
+                var message = messages[0]
+            } else {
+                var message = document.createElement('div')
+                message.setAttribute('class', 'common-message')
+                this.el.append(message)
+            }
+            let div = document.createElement('div')
+            div.innerHTML = messageText
+            message.appendChild(div)
+        }
+
+        /*
+        WebVR 1.1 displays require that the call to requestPresent be a direct result of an input event like a click.
+        If you're trying to set up a VR display, you'll need to pass false in the shouldStartPresenting parameter of the constructor
+        and then call this.startPresenting() inside an input event handler.
+        */
+        startPresenting() {
+            if (this.session === null) {
+                this.showMessage('Can not start presenting without a session')
+                throw new Error('Can not start presenting without a session')
+            }
+
+            // Set the session's base layer into which the app will render
+            this.session.baseLayer = new XRWebGLLayer(this.session, this.glContext)
+
+            // Handle layer focus events
+            this.session.baseLayer.addEventListener('focus', ev => {
+                this.handleLayerFocus(ev)
+            })
+            this.session.baseLayer.addEventListener('blur', ev => {
+                this.handleLayerBlur(ev)
+            })
+
+            this.session.requestFrame(this._boundHandleFrame)
+        }
+
+        // 自定义session的各种状态的响应
+        // Extending classes can react to these events
+        handleSessionFocus(ev) {
+        }
+
+        handleSessionBlur(ev) {
+        }
+
+        handleSessionEnded(ev) {
+        }
+
+        handleLayerFocus(ev) {
+        }
+
+        handleLayerBlur(ev) {
+        }
+
+        /*
+
+        * set up the video processing
+        */
+        setVideoWorker(worker) {
+            this.session.setVideoFrameHandler(worker)
+        }
+
+        // request the next frame
+        // buffers is an optional parameter, suggesting buffers that could be used
+        requestVideoFrame() {
+            this.session.requestVideoFrame();
+        }
+
+        /*
+        扩展该类重写类的构造方法中设置的scene
+        Extending classes should override this to set up the scene during class construction
+        */
+        initializeScene() {
+        }
+
+        /*
+        Extending classes that need to update the layer during each frame should override this method
+        */
+        updateScene(frame) {
+        }
+
+        // 用于requestAnimationFrame的更新回调
+        _handleFrame(frame) {
+            // 设置更新Frame
+            const nextFrameRequest = this.session.requestFrame(this._boundHandleFrame)
+
+            //获取设备姿态
+            const headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL))
+
+            // 如果还没有检测平面，执行检测平面操作
+            // If we haven't already, request the floor anchor offset
+            if (this.requestedFloor === false) {
+                this.requestedFloor = true
+                frame.findFloorAnchor('first-floor-anchor').then(anchorOffset => {
+                    if (anchorOffset === null) {
+                        console.log('could not find the floor anchor')
+                        const headCoordinateSystem = frame.getCoordinateSystem(XRCoordinateSystem.EYE_LEVEL)
+                        //增加一个Anchor
+                        const anchorUID = frame.addAnchor(headCoordinateSystem, [0, -1, 0])
+                        // XRAnchorOffset为相对于XRAnchor的姿态
+                        anchorOffset = new XRAnchorOffset(anchorUID)
+                    }
+                    // 添加锚定的节点
+                    this.addAnchoredNode(anchorOffset, this.floorGroup)
+                }).catch(err => {
+                    console.error('error finding the floor anchor', err)
+                })
+            }
+
+            // 更新锚定的节点在场景中的位置
+            // Update anchored node positions in the scene graph
+            for (let anchoredNode of this.anchoredNodes) {
+                this.updateNodeFromAnchorOffset(frame, anchoredNode.node, anchoredNode.anchorOffset)
+            }
+
+            // 在每次渲染签使用扩展的类更新场景
+            // Let the extending class update the scene before each render
+            this.updateScene(frame)
+
+            // Prep THREE.js for the render of each XRView
+            this.renderer.autoClear = false
+            this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false)
+            this.renderer.clear()
+
+            this.camera.matrixAutoUpdate = false
+            // this.camera.matrix.fromArray(headPose.poseModelMatrix)
+            // this.camera.updateMatrixWorld()
+            // Render each view into this.session.baseLayer.context
+            for (const view of frame.views) {
+                // Each XRView has its own projection matrix, so set the camera to use that
+                this.camera.matrix.fromArray(view.viewMatrix)
+                this.camera.updateMatrixWorld()
+                this.camera.projectionMatrix.fromArray(view.projectionMatrix)
+
+                // Set up the renderer to the XRView's viewport and then render
+                this.renderer.clearDepth()
+                const viewport = view.getViewport(this.session.baseLayer)
+                this.renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height)
+                this.doRender()
+            }
+
+        }
+
+        doRender() {
+            this.renderer.render(this.scene, this.camera)
+        }
+
+        /*
+        向场景中添加一个节点，并使用anchorOffset（相对于anchor的姿态）更新其姿态
+        Add a node to the scene and keep its pose updated using the anchorOffset
+        */
+        addAnchoredNode(anchorOffset, node) {
+            this.anchoredNodes.push({
+                anchorOffset: anchorOffset,
+                node: node
+            })
+            this.scene.add(node)
+        }
+
+        /*
+        Remove a node from the scene
+        */
+        removeAnchoredNode(node) {
+            for (var i = 0; i < this.anchoredNodes.length; i++) {
+                if (node === this.anchoredNodes[i].node) {
+                    this.anchoredNodes.splice(i, 1);
+                    this.scene.remove(node)
+                    return;
+                }
+            }
+        }
+
+        /*
+        Extending classes should override this to get notified when an anchor for node is removed
+        */
+        anchoredNodeRemoved(node) {
+        }
+
+        /*
+        使用anchor数据更新节点姿态
+        Get the anchor data from the frame and use it and the anchor offset to update the pose of the node, this must be an Object3D
+        */
+        updateNodeFromAnchorOffset(frame, node, anchorOffset) {
+            const anchor = frame.getAnchor(anchorOffset.anchorUID)
+            if (anchor === null) {
+                throttledConsoleLog('Unknown anchor uid', anchorOffset.anchorUID)
+                this.anchoredNodeRemoved(node);
+                this.removeAnchoredNode(node);
+                return
+            }
+            node.matrixAutoUpdate = false
+            node.matrix.fromArray(anchorOffset.getOffsetTransform(anchor.coordinateSystem))
+            node.updateMatrixWorld(true)
+        }
+    }
+
     return {
         ThreeJSController: ThreeJSController,
         ImageController: ImageController,
@@ -1281,6 +1684,8 @@ define(['io', 'orbitController', 'eventManager', 'mediaDevices', 'posit'], funct
         openCamera: openCamera,
         createCube: createCube,
         recognitionCenter: recognitionCenter,
+        XRDetect: XRDetect,
+        XRControllerBase: XRControllerBase
     }
 });
 

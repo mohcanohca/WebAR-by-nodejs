@@ -2,15 +2,15 @@
 require.config({
     paths: {
         io: '../libs/socket.io/socket.io',
-        eventManager: '../utils/event',
+        /*eventManager: '../utils/event',*/
         mediaDevices: '../utils/webrtc',
         controllers: '../utils/controllers',
-        orbitControls: '../controls/OrbitControls',
+        orbitControls: '../libs/OrbitControls',
     }
 });
 
 
-define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], function (io, eventManager, mediaDevices, Controllers) {
+define(['io', /*'eventManager', */'mediaDevices', 'controllers', 'orbitControls'], function (io, /*eventManager,*/ mediaDevices, Controllers) {
     //three.js流程： 创建场景、相机、渲染器、内容、（控制器）；初始化，动画，更新
 
     const serverPath = 'https://10.28.201.198:8081';
@@ -28,7 +28,10 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
     let defaultVideoWidth = window.innerWidth;//设置默认值
     let defaultVideoHeight = window.innerHeight;
 
-    if (!window.eventManager) window.eventManager = eventManager;
+    // if (!window.eventManager) window.eventManager = eventManager;
+
+    let eventManager=window.eventManager;
+    console.log(eventManager);
 
     function imageControl() {
         currentController = 'imageControl';
@@ -417,7 +420,7 @@ define(['io', 'eventManager', 'mediaDevices', 'controllers', 'orbitControls'], f
             }
         });*/
 
-        if(!recognitionCenter){
+        if (!recognitionCenter) {
             recognitionCenter = new Controllers.recognitionCenter();
         }
 
