@@ -5,6 +5,9 @@ exports.serveIndex = function (app, staticFolder) {
         res.sendFile('index.html', {root: staticFolder});
     });
 
+    app.get('/examples/ar_simple', function (req, res) {
+        res.sendFile('/examples/ar_simple/index.html', {root: staticFolder});
+    });
     app.get('/webxr', function (req, res) {
         res.sendFile('/ar-with-webxr-master/step-05/index.html', {root: staticFolder});
     });

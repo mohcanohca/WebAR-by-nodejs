@@ -23,6 +23,10 @@ require(['io', /*'eventManager',*/ 'mediaDevices', 'ControlCenter'], function (i
 
     eventManager.listen('XRSupported', handleXRSupported)
 
+    // ControlCenter.XRHitControl();
+    ControlCenter.Test();
+
+
     function handleXRSupported(supported) {
         if (supported) {
             let controllers = document.getElementById('controllers');
@@ -35,7 +39,7 @@ require(['io', /*'eventManager',*/ 'mediaDevices', 'ControlCenter'], function (i
 
     let curController = null;
 
-    // XRDetect();
+
 
     function handleChangeControl(type) {
         eventManager.remove('changeControl');//移除对于changeControl监听，稍后重新添加监听
@@ -105,41 +109,38 @@ require(['io', /*'eventManager',*/ 'mediaDevices', 'ControlCenter'], function (i
     }
 
     function XRDetect() {
+        //检测是否为Chrome Canary
         if (navigator.xr && XRSession.prototype.requestHitTest) {
-            try {
-                navigator.xr.requestDevice().then(device => {
-                    const outputCanvas = document.createElement('canvas');
-                    const ctx = outputCanvas.getContext('xrpresent');
-
-                    device.supportsSession({
-                        outputContext: ctx,
-                        environmentIntegration: true,
-                    }).then(() => {
-                        console.log('Device support AR model')
-                        let controllers = document.getElementById('controllers');
-                        let button = document.createElement('button');
-                        button.setAttribute('id', 'XRHitControl');
-                        button.innerText = 'XRHit';
-                        controllers.appendChild(button);
-                    }).catch(e => {
-                        console.log('Device does not support AR Session')
-                    })
+            navigator.xr.requestDevice().then(device => {
+                const outputCanvas = document.createElement('canvas');
+                const ctx = outputCanvas.getContext('xrpresent');
+                device.supportsSession({
+                    outputContext: ctx,
+                    environmentIntegration: true,
+                }).then(() => {
+                    debugger
+                    console.log('Device support AR model')
+                    eventManager.trigger('XRSupported', true);
+                    return
                 }).catch(e => {
-                    console.log('No XRDevice')
-                });
+                    eventManager.trigger('XRSupported', false);
+                    console.log('Device does not support AR Session')
+                    return
+                })
+            }).catch(e => {
+                console.log('No XRDevice')
+                eventManager.trigger('XRSupported', false);
+                return
+            });
 
-            } catch (e) {
-                console.log('Browser does not support XR')
-                return;
-            }
         } else {
             // If `navigator.xr` or `XRSession.prototype.requestHitTest`
             // does not exist, we must display a message indicating there
             // are no valid devices.
             console.log('Browser does not support XR')
+            eventManager.trigger('XRSupported', false);
             return;
         }
     }
-
 });
 

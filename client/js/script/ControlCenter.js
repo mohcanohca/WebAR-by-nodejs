@@ -5,15 +5,17 @@ require.config({
         /*eventManager: '../utils/event',*/
         mediaDevices: '../utils/webrtc',
         controllers: '../utils/controllers',
-        orbitControls: '../libs/OrbitControls',
+        // orbitControls: '../libs/OrbitControls',
     }
 });
 
 
-define(['io', /*'eventManager', */'mediaDevices', 'controllers', 'orbitControls'], function (io, /*eventManager,*/ mediaDevices, Controllers) {
+define(['io', /*'eventManager', */'mediaDevices', 'controllers', /*'orbitControls'*/], function (io, /*eventManager,*/ mediaDevices, Controllers) {
     //three.js流程： 创建场景、相机、渲染器、内容、（控制器）；初始化，动画，更新
 
-    const serverPath = 'https://10.28.201.198:8081';
+    // Controllers.XRDetect();
+    // const serverPath = 'https://10.28.201.198:8081';
+    const serverPath = 'https://10.108.164.203:8081';
     let listeners = [];
     let preposition, curposition;
     let currentController;//控制器
@@ -30,8 +32,7 @@ define(['io', /*'eventManager', */'mediaDevices', 'controllers', 'orbitControls'
 
     // if (!window.eventManager) window.eventManager = eventManager;
 
-    let eventManager=window.eventManager;
-    console.log(eventManager);
+    let eventManager = window.eventManager;
 
     function imageControl() {
         currentController = 'imageControl';
@@ -646,6 +647,16 @@ define(['io', /*'eventManager', */'mediaDevices', 'controllers', 'orbitControls'
         clear();
     }
 
+    // 用于测试webxr-polyfill
+    function Test() {
+        try {
+            window.pageApp = new Controllers.ARSea(document.getElementById('errorMsg'),false)
+        } catch (e) {
+            console.error('page error', e)
+        }
+    }
+
+
     return {
         imageControl: imageControl,
         orbitControl: orbitControl,
@@ -655,5 +666,7 @@ define(['io', /*'eventManager', */'mediaDevices', 'controllers', 'orbitControls'
         GPSControl: GPSControl,
         resetControl: resetControl,
         XRHitControl: XRHitControl,
+        Test: Test,
     }
+
 });

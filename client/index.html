@@ -23,14 +23,25 @@
     <!--<video id="video" style="display: none;"></video>-->
     <!--<canvas id="canvas" style="display: none"></canvas>-->
     <div id="three-container"></div>
+
+    <!--错误提示信息-->
+    <div id="errorMsg"/>
     <!--</div>-->
 
 
 </div>
 
+<script src='js/libs/webxr-polyfill.js'></script>
+
+<!--This script patches up around implementation differences in past browser versions
+    so that the samples can always be written against the most recent spec changes.
+    It won't be necessary after the API has been officially shipped for a bit.-->
+<!--针对浏览器版本的实现差异进行修补-->
+<script src='js/libs/webxr-version-shim.js'></script>
 <script src="js/libs/jquery-3.3.1.min.js"></script>
 <script src="js/libs/hmac-sha1.js"></script>
 <script src="js/libs/three.js"></script>
+<!--<script src="js/models/TeapotBufferGeometry.js"></script>-->
 <script src="js/libs/svd.js"></script>
 <script src="js/libs/cv.js"></script>
 <script src="js/libs/posit.js"></script>

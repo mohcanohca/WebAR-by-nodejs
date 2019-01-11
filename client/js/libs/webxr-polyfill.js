@@ -1,12681 +1,6918 @@
-/* if there is a navigator.xr, clear it out */
-if(typeof navigator.xr != 'undefined') {
-    if(typeof XRDisplay != 'undefined') { XRDisplay = null }
-    if(typeof XRSession != 'undefined') { XRSession = null }
-    if(typeof XRSessionCreateParameters != 'undefined') { XRSessionCreateParameters = null }
-    if(typeof Reality != 'undefined') { Reality = null }
-    if(typeof XRPointCloud != 'undefined') { XRPointCloud = null }
-    if(typeof XRLightEstimate != 'undefined') { XRLightEstimate = null }
-    if(typeof XRAnchor != 'undefined') { XRAnchor = null }
-    if(typeof XRPlaneAnchor != 'undefined') { XRPlaneAnchor = null }
-    if(typeof XRFaceAnchor != 'undefined') { XRFaceAnchor = null }
-    if(typeof XRImageAnchor != 'undefined') { XRImageAnchor = null }
-    if(typeof XRAnchorOffset != 'undefined') { XRAnchorOffset = null }
-    if(typeof XRStageBounds != 'undefined') { XRStageBounds = null }
-    if(typeof XRStageBoundsPoint != 'undefined') { XRStageBoundsPoint = null }
-    if(typeof XRPresentationFrame != 'undefined') { XRPresentationFrame = null }
-    if(typeof XRView != 'undefined') { XRView = null }
-    if(typeof XRViewport != 'undefined') { XRViewport = null }
-    if(typeof XRCoordinateSystem != 'undefined') { XRCoordinateSystem = null }
-    if(typeof XRViewPose != 'undefined') { XRViewPose = null }
-    if(typeof XRLayer != 'undefined') { XRLayer = null }
-    if(typeof XRWebGLLayer != 'undefined') { XRWebGLLayer = null }
-    if(typeof XRVideoFrame != 'undefined') { XRVideoFrame = null }
-    //navigator.xr = null;
-}/******/ 
-(function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 25);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-MatrixMath provides helper functions for populating the various matrices involved with 3D graphics.
-
-Many of the math methods were taken from the Google webvr polyfill:
-https://github.com/googlevr/webvr-polyfill/blob/master/src/util.js#L270
-*/
-var MatrixMath = function () {
-	function MatrixMath() {
-		_classCallCheck(this, MatrixMath);
-	}
-
-	_createClass(MatrixMath, null, [{
-		key: 'mat4_generateIdentity',
-
-
-		// Returns a new Float32Array that is set to the transform identity
-		value: function mat4_generateIdentity() {
-			return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-		}
-	}, {
-		key: 'mat4_get_position',
-		value: function mat4_get_position(out, m) {
-			out[0] = m[12];
-			out[1] = m[13];
-			out[2] = m[14];
-			return out;
-		}
-	}, {
-		key: 'mat4_get_rotation',
-		value: function mat4_get_rotation(out, m) {
-			var quat = new _Quaternion2.default();
-			quat.setFromRotationMatrix(m);
-			out[0] = quat.x;
-			out[1] = quat.y;
-			out[2] = quat.z;
-			out[3] = quat.w;
-			return out;
-		}
-	}, {
-		key: 'mat4_eyeView',
-		value: function mat4_eyeView(out, poseModelMatrix) {
-			var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new Float32Array([0, 0, 0]);
-
-			MatrixMath.mat4_translate(out, poseModelMatrix, offset);
-			MatrixMath.mat4_invert(out, out);
-		}
-	}, {
-		key: 'mat4_perspectiveFromFieldOfView',
-		value: function mat4_perspectiveFromFieldOfView(out, fov, near, far) {
-			var upTan = Math.tan(fov.upDegrees * MatrixMath.PI_OVER_180);
-			var downTan = Math.tan(fov.downDegrees * MatrixMath.PI_OVER_180);
-			var leftTan = Math.tan(fov.leftDegrees * MatrixMath.PI_OVER_180);
-			var rightTan = Math.tan(fov.rightDegrees * MatrixMath.PI_OVER_180);
-
-			var xScale = 2.0 / (leftTan + rightTan);
-			var yScale = 2.0 / (upTan + downTan);
-
-			out[0] = xScale;
-			out[1] = 0.0;
-			out[2] = 0.0;
-			out[3] = 0.0;
-			out[4] = 0.0;
-			out[5] = yScale;
-			out[6] = 0.0;
-			out[7] = 0.0;
-			out[8] = -((leftTan - rightTan) * xScale * 0.5);
-			out[9] = (upTan - downTan) * yScale * 0.5;
-			out[10] = far / (near - far);
-			out[11] = -1.0;
-			out[12] = 0.0;
-			out[13] = 0.0;
-			out[14] = far * near / (near - far);
-			out[15] = 0.0;
-			return out;
-		}
-	}, {
-		key: 'mat4_fromRotationTranslation',
-		value: function mat4_fromRotationTranslation(out) {
-			var q = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
-			var v = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0];
-
-			// Quaternion math
-			var x = q[0];
-			var y = q[1];
-			var z = q[2];
-			var w = q[3];
-			var x2 = x + x;
-			var y2 = y + y;
-			var z2 = z + z;
-
-			var xx = x * x2;
-			var xy = x * y2;
-			var xz = x * z2;
-			var yy = y * y2;
-			var yz = y * z2;
-			var zz = z * z2;
-			var wx = w * x2;
-			var wy = w * y2;
-			var wz = w * z2;
-
-			out[0] = 1 - (yy + zz);
-			out[1] = xy + wz;
-			out[2] = xz - wy;
-			out[3] = 0;
-			out[4] = xy - wz;
-			out[5] = 1 - (xx + zz);
-			out[6] = yz + wx;
-			out[7] = 0;
-			out[8] = xz + wy;
-			out[9] = yz - wx;
-			out[10] = 1 - (xx + yy);
-			out[11] = 0;
-			out[12] = v[0];
-			out[13] = v[1];
-			out[14] = v[2];
-			out[15] = 1;
-
-			return out;
-		}
-	}, {
-		key: 'mat4_translate',
-		value: function mat4_translate(out, a, v) {
-			var x = v[0];
-			var y = v[1];
-			var z = v[2];
-			var a00 = void 0;
-			var a01 = void 0;
-			var a02 = void 0;
-			var a03 = void 0;
-			var a10 = void 0,
-			    a11 = void 0,
-			    a12 = void 0,
-			    a13 = void 0,
-			    a20 = void 0,
-			    a21 = void 0,
-			    a22 = void 0,
-			    a23 = void 0;
-
-			if (a === out) {
-				out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
-				out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
-				out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
-				out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
-			} else {
-				a00 = a[0];a01 = a[1];a02 = a[2];a03 = a[3];
-				a10 = a[4];a11 = a[5];a12 = a[6];a13 = a[7];
-				a20 = a[8];a21 = a[9];a22 = a[10];a23 = a[11];
-
-				out[0] = a00;out[1] = a01;out[2] = a02;out[3] = a03;
-				out[4] = a10;out[5] = a11;out[6] = a12;out[7] = a13;
-				out[8] = a20;out[9] = a21;out[10] = a22;out[11] = a23;
-
-				out[12] = a00 * x + a10 * y + a20 * z + a[12];
-				out[13] = a01 * x + a11 * y + a21 * z + a[13];
-				out[14] = a02 * x + a12 * y + a22 * z + a[14];
-				out[15] = a03 * x + a13 * y + a23 * z + a[15];
-			}
-
-			return out;
-		}
-	}, {
-		key: 'mat4_invert',
-		value: function mat4_invert(out, a) {
-			var a00 = a[0],
-			    a01 = a[1],
-			    a02 = a[2],
-			    a03 = a[3],
-			    a10 = a[4],
-			    a11 = a[5],
-			    a12 = a[6],
-			    a13 = a[7],
-			    a20 = a[8],
-			    a21 = a[9],
-			    a22 = a[10],
-			    a23 = a[11],
-			    a30 = a[12],
-			    a31 = a[13],
-			    a32 = a[14],
-			    a33 = a[15];
-
-			var b00 = a00 * a11 - a01 * a10;
-			var b01 = a00 * a12 - a02 * a10;
-			var b02 = a00 * a13 - a03 * a10;
-			var b03 = a01 * a12 - a02 * a11;
-			var b04 = a01 * a13 - a03 * a11;
-			var b05 = a02 * a13 - a03 * a12;
-			var b06 = a20 * a31 - a21 * a30;
-			var b07 = a20 * a32 - a22 * a30;
-			var b08 = a20 * a33 - a23 * a30;
-			var b09 = a21 * a32 - a22 * a31;
-			var b10 = a21 * a33 - a23 * a31;
-			var b11 = a22 * a33 - a23 * a32;
-
-			// Calculate the determinant
-			var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-
-			if (!det) {
-				return null;
-			}
-			det = 1.0 / det;
-
-			out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
-			out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
-			out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
-			out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
-			out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
-			out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
-			out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
-			out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
-			out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
-			out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
-			out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
-			out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
-			out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
-			out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
-			out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
-			out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
-
-			return out;
-		}
-	}, {
-		key: 'mat4_multiply',
-		value: function mat4_multiply(out, ae, be) {
-			var a11 = ae[0],
-			    a12 = ae[4],
-			    a13 = ae[8],
-			    a14 = ae[12];
-			var a21 = ae[1],
-			    a22 = ae[5],
-			    a23 = ae[9],
-			    a24 = ae[13];
-			var a31 = ae[2],
-			    a32 = ae[6],
-			    a33 = ae[10],
-			    a34 = ae[14];
-			var a41 = ae[3],
-			    a42 = ae[7],
-			    a43 = ae[11],
-			    a44 = ae[15];
-
-			var b11 = be[0],
-			    b12 = be[4],
-			    b13 = be[8],
-			    b14 = be[12];
-			var b21 = be[1],
-			    b22 = be[5],
-			    b23 = be[9],
-			    b24 = be[13];
-			var b31 = be[2],
-			    b32 = be[6],
-			    b33 = be[10],
-			    b34 = be[14];
-			var b41 = be[3],
-			    b42 = be[7],
-			    b43 = be[11],
-			    b44 = be[15];
-
-			out[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-			out[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-			out[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-			out[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
-
-			out[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-			out[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-			out[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-			out[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
-
-			out[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-			out[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-			out[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-			out[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
-
-			out[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-			out[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-			out[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-			out[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
-
-			return out;
-		}
-	}]);
-
-	return MatrixMath;
-}();
-
-exports.default = MatrixMath;
-
-
-MatrixMath.PI_OVER_180 = Math.PI / 180.0;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRAnchors provide per-frame coordinates which the Reality attempts to pin "in place".
-In a virtual Reality these coordinates do not change. 
-In a Reality based on environment mapping sensors, the anchors may change pose on a per-frame bases as the system refines its map.
-*/
-var XRAnchor = function () {
-	function XRAnchor(xrCoordinateSystem) {
-		var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-		_classCallCheck(this, XRAnchor);
-
-		this._uid = uid || XRAnchor._generateUID();
-		this._coordinateSystem = xrCoordinateSystem;
-	}
-
-	_createClass(XRAnchor, [{
-		key: 'uid',
-		get: function get() {
-			return this._uid;
-		}
-	}, {
-		key: 'coordinateSystem',
-		get: function get() {
-			return this._coordinateSystem;
-		}
-	}], [{
-		key: '_generateUID',
-		value: function _generateUID() {
-			return 'anchor-' + new Date().getTime() + '-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-		}
-	}]);
-
-	return XRAnchor;
-}();
-
-exports.default = XRAnchor;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-Quaternion wraps a vector of length 4 used as an orientation value.
-
-Taken from https://github.com/googlevr/webvr-polyfill/blob/master/src/math-util.js which took it from Three.js
-*/
-var Quaternion = function () {
-	function Quaternion() {
-		var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-		var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-		var z = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-		var w = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
-
-		_classCallCheck(this, Quaternion);
-
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.w = w;
-	}
-
-	_createClass(Quaternion, [{
-		key: 'set',
-		value: function set(x, y, z, w) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			this.w = w;
-			return this;
-		}
-	}, {
-		key: 'toArray',
-		value: function toArray() {
-			return [this.x, this.y, this.z, this.w];
-		}
-	}, {
-		key: 'copy',
-		value: function copy(quaternion) {
-			this.x = quaternion.x;
-			this.y = quaternion.y;
-			this.z = quaternion.z;
-			this.w = quaternion.w;
-			return this;
-		}
-	}, {
-		key: 'setFromRotationMatrix',
-		value: function setFromRotationMatrix(array16) {
-			// Taken from https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
-			// which took it from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-			// assumes the upper 3x3 of array16 (column major) is a pure rotation matrix (i.e, unscaled)
-
-			var m11 = array16[0],
-			    m12 = array16[4],
-			    m13 = array16[8],
-			    m21 = array16[1],
-			    m22 = array16[5],
-			    m23 = array16[9],
-			    m31 = array16[2],
-			    m32 = array16[6],
-			    m33 = array16[10];
-
-			var trace = m11 + m22 + m33;
-
-			if (trace > 0) {
-				var s = 0.5 / Math.sqrt(trace + 1.0);
-				this.w = 0.25 / s;
-				this.x = (m32 - m23) * s;
-				this.y = (m13 - m31) * s;
-				this.z = (m21 - m12) * s;
-			} else if (m11 > m22 && m11 > m33) {
-				var s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
-				this.w = (m32 - m23) / s;
-				this.x = 0.25 * s;
-				this.y = (m12 + m21) / s;
-				this.z = (m13 + m31) / s;
-			} else if (m22 > m33) {
-				var s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
-				this.w = (m13 - m31) / s;
-				this.x = (m12 + m21) / s;
-				this.y = 0.25 * s;
-				this.z = (m23 + m32) / s;
-			} else {
-				var s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
-				this.w = (m21 - m12) / s;
-				this.x = (m13 + m31) / s;
-				this.y = (m23 + m32) / s;
-				this.z = 0.25 * s;
-			}
-			return this;
-		}
-	}, {
-		key: 'setFromEuler',
-		value: function setFromEuler(x, y, z) {
-			var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'XYZ';
-
-			// http://www.mathworks.com/matlabcentral/fileexchange/
-			// 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
-			//	content/SpinCalc.m
-
-			var cos = Math.cos;
-			var sin = Math.sin;
-			var c1 = cos(x / 2);
-			var c2 = cos(y / 2);
-			var c3 = cos(z / 2);
-			var s1 = sin(x / 2);
-			var s2 = sin(y / 2);
-			var s3 = sin(z / 2);
-
-			if (order === 'XYZ') {
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-			} else if (order === 'YXZ') {
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-			} else if (order === 'ZXY') {
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-			} else if (order === 'ZYX') {
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-			} else if (order === 'YZX') {
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-			} else if (order === 'XZY') {
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-			}
-		}
-	}, {
-		key: 'setFromAxisAngle',
-		value: function setFromAxisAngle(axis, angle) {
-			// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
-			// assumes axis is normalized
-			var halfAngle = angle / 2;
-			var s = Math.sin(halfAngle);
-			this.x = axis.x * s;
-			this.y = axis.y * s;
-			this.z = axis.z * s;
-			this.w = Math.cos(halfAngle);
-			return this;
-		}
-	}, {
-		key: 'multiply',
-		value: function multiply(q) {
-			return this.multiplyQuaternions(this, q);
-		}
-	}, {
-		key: 'multiplyQuaternions',
-		value: function multiplyQuaternions(a, b) {
-			// from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
-			var qax = a.x,
-			    qay = a.y,
-			    qaz = a.z,
-			    qaw = a.w;
-			var qbx = b.x,
-			    qby = b.y,
-			    qbz = b.z,
-			    qbw = b.w;
-			this.x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
-			this.y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
-			this.z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
-			this.w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
-			return this;
-		}
-	}, {
-		key: 'inverse',
-		value: function inverse() {
-			this.x *= -1;
-			this.y *= -1;
-			this.z *= -1;
-			this.normalize();
-			return this;
-		}
-	}, {
-		key: 'normalize',
-		value: function normalize() {
-			var l = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
-			if (l === 0) {
-				this.x = 0;
-				this.y = 0;
-				this.z = 0;
-				this.w = 1;
-			} else {
-				l = 1 / l;
-				this.x = this.x * l;
-				this.y = this.y * l;
-				this.z = this.z * l;
-				this.w = this.w * l;
-			}
-			return this;
-		}
-	}, {
-		key: 'slerp',
-		value: function slerp(qb, t) {
-			// http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
-			if (t === 0) return this;
-			if (t === 1) return this.copy(qb);
-
-			var x = this.x,
-			    y = this.y,
-			    z = this.z,
-			    w = this.w;
-			var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
-			if (cosHalfTheta < 0) {
-				this.w = -qb.w;
-				this.x = -qb.x;
-				this.y = -qb.y;
-				this.z = -qb.z;
-				cosHalfTheta = -cosHalfTheta;
-			} else {
-				this.copy(qb);
-			}
-			if (cosHalfTheta >= 1.0) {
-				this.w = w;
-				this.x = x;
-				this.y = y;
-				this.z = z;
-				return this;
-			}
-
-			var halfTheta = Math.acos(cosHalfTheta);
-			var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
-			if (Math.abs(sinHalfTheta) < 0.001) {
-				this.w = 0.5 * (w + this.w);
-				this.x = 0.5 * (x + this.x);
-				this.y = 0.5 * (y + this.y);
-				this.z = 0.5 * (z + this.z);
-
-				return this;
-			}
-
-			var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
-			var ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
-			this.w = w * ratioA + this.w * ratioB;
-			this.x = x * ratioA + this.x * ratioB;
-			this.y = y * ratioA + this.y * ratioB;
-			this.z = z * ratioA + this.z * ratioB;
-			return this;
-		}
-	}]);
-
-	return Quaternion;
-}();
-
-exports.default = Quaternion;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-EventHandlerBase is the base class that implements the EventHandler interface methods for dispatching and receiving events.
-*/
-var EventHandlerBase = function () {
-	function EventHandlerBase() {
-		_classCallCheck(this, EventHandlerBase);
-
-		this._listeners = new Map(); // string type -> [listener, ...]
-	}
-
-	_createClass(EventHandlerBase, [{
-		key: "addEventListener",
-		value: function addEventListener(type, listener) {
-			var listeners = this._listeners.get(type);
-			if (Array.isArray(listeners) === false) {
-				listeners = [];
-				this._listeners.set(type, listeners);
-			}
-			listeners.push(listener);
-		}
-	}, {
-		key: "removeEventListener",
-		value: function removeEventListener(type, listener) {
-			var listeners = this._listeners.get(type);
-			if (Array.isArray(listeners) === false) {
-				return;
-			}
-			for (var i = 0; i < listeners.length; i++) {
-				if (listeners[i] === listener) {
-					listeners.splice(i, 1);
-					return;
-				}
-			}
-		}
-	}, {
-		key: "dispatchEvent",
-		value: function dispatchEvent(event) {
-			var listeners = this._listeners.get(event.type);
-			if (Array.isArray(listeners) === false) return;
-
-			// need a copy, since removeEventListener is often called inside listeners to create one-shots and it modifies the array, causing 
-			// listeners not to be called! 
-			var array = listeners.slice(0);
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = array[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var listener = _step.value;
-
-					listener(event);
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-		}
-	}]);
-
-	return EventHandlerBase;
-}();
-
-exports.default = EventHandlerBase;
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setMatrixArrayType = setMatrixArrayType;
-exports.toRadian = toRadian;
-exports.equals = equals;
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
 /**
- * Common utilities
- * @module glMatrix
- */
-
-// Configuration Constants
-var EPSILON = exports.EPSILON = 0.000001;
-var ARRAY_TYPE = exports.ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
-var RANDOM = exports.RANDOM = Math.random;
-
-/**
- * Sets the type of array used when creating new vectors and matrices
- *
- * @param {Type} type Array type, such as Float32Array or Array
- */
-function setMatrixArrayType(type) {
-  exports.ARRAY_TYPE = ARRAY_TYPE = type;
-}
-
-var degree = Math.PI / 180;
-
-/**
- * Convert Degree To Radian
- *
- * @param {Number} a Angle in Degrees
- */
-function toRadian(a) {
-  return a * degree;
-}
-
-/**
- * Tests whether or not the arguments have approximately the same value, within an absolute
- * or relative tolerance of glMatrix.EPSILON (an absolute tolerance is used for values less
- * than or equal to 1.0, and a relative tolerance is used for larger values)
- *
- * @param {Number} a The first number to test.
- * @param {Number} b The second number to test.
- * @returns {Boolean} True if the numbers are approximately equal, false otherwise.
- */
-function equals(a, b) {
-  return Math.abs(a - b) <= EPSILON * Math.max(1.0, Math.abs(a), Math.abs(b));
-}
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-var _mat = __webpack_require__(17);
-
-var mat4 = _interopRequireWildcard(_mat);
-
-var _quat = __webpack_require__(18);
-
-var quat = _interopRequireWildcard(_quat);
-
-var _vec = __webpack_require__(12);
-
-var vec3 = _interopRequireWildcard(_vec);
-
-var _base64Binary = __webpack_require__(19);
-
-var _base64Binary2 = _interopRequireDefault(_base64Binary);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*	
-ARKitWrapper talks	 to Apple ARKit, as exposed by Mozilla's test ARDemo app.
-It won't function inside a browser like Firefox.
-
-ARKitWrapper is a singleton. Use ARKitWrapper.GetOrCreate() to get the instance, then add event listeners like so:
-
-	if(ARKitWrapper.HasARKit()){
-		let arKitWrapper = ARKitWrapper.GetOrCreate()
-		arKitWrapper.addEventListener(ARKitWrapper.INIT_EVENT, ev => { console.log('ARKit initialized', ev) })
-		arKitWrapper.addEventListener(ARKitWrapper.WATCH_EVENT, ev => { console.log('ARKit update', ev) })
-		arKitWrapper.watch({
-			location: boolean,
-			camera: boolean,
-			objects: boolean,
-			light_intensity: boolean
-		})
-	}
-
-*/
-
-var ARKitWrapper = function (_EventHandlerBase) {
-	_inherits(ARKitWrapper, _EventHandlerBase);
-
-	function ARKitWrapper() {
-		_classCallCheck(this, ARKitWrapper);
-
-		var _this = _possibleConstructorReturn(this, (ARKitWrapper.__proto__ || Object.getPrototypeOf(ARKitWrapper)).call(this));
-
-		if (ARKitWrapper.HasARKit() === false) {
-			throw 'ARKitWrapper will only work in Mozilla\'s ARDemo test app';
-		}
-		if (typeof ARKitWrapper.GLOBAL_INSTANCE !== 'undefined') {
-			throw 'ARKitWrapper is a singleton. Use ARKitWrapper.GetOrCreate() to get the global instance.';
-		}
-
-		_this._deviceId = null;
-		_this._isWatching = false;
-		_this._isInitialized = false;
-		_this._rawARData = null;
-
-		// worker to convert buffers
-		// var blobURL = this._buildWorkerBlob()
-		// this._worker = new Worker(blobURL);
-		// URL.revokeObjectURL(blobURL);
-
-		// var self = this;
-		// this._worker.onmessage = function (ev) {
-		// 	setTimeout(function () {
-		// 		self.dispatchEvent(
-		// 			new CustomEvent(
-		// 				ARKitWrapper.COMPUTER_VISION_DATA,
-		// 				{
-		// 					source: self,
-		// 					detail: ev.data
-		// 				}
-		// 			)
-		// 		)	
-		// 	})
-		// }
-
-		_this.lightIntensity = 1000;
-		/**
-   * The current projection matrix of the device.
-   * @type {Float32Array}
-   * @private
-   */
-		_this.projectionMatrix_ = new Float32Array(16);
-		/**
-   * The current view matrix of the device.
-   * @type {Float32Array}
-   * @private
-   */
-		_this.viewMatrix_ = new Float32Array(16);
-		/**
-   * The list of planes coming from ARKit.
-   * @type {Map<number, ARPlane}
-   * @private
-   */
-		_this.planes_ = new Map();
-		_this.anchors_ = new Map();
-
-		_this._timeOffsets = [];
-		_this._timeOffset = 0;
-		_this._timeOffsetComputed = false;
-		_this.timestamp = 0;
-
-		_this.worldMappingStatus = ARKitWrapper.WEB_AR_WORLDMAPPING_NOT_AVAILABLE;
-
-		_this._globalCallbacksMap = {}; // Used to map a window.arkitCallback method name to an ARKitWrapper.on* method name
-		// Set up the window.arkitCallback methods that the ARKit bridge depends on
-		var callbackNames = ['onInit', 'onWatch'];
-		for (var i = 0; i < callbackNames.length; i++) {
-			_this._generateGlobalCallback(callbackNames[i], i);
-		}
-
-		// default options for initializing ARKit
-		_this._defaultOptions = {
-			location: true,
-			camera: true,
-			objects: true,
-			light_intensity: true,
-			computer_vision_data: false
-		};
-		_this._m90 = mat4.fromZRotation(mat4.create(), 90 * _MatrixMath2.default.PI_OVER_180);
-		_this._m90neg = mat4.fromZRotation(mat4.create(), -90 * _MatrixMath2.default.PI_OVER_180);
-		_this._m180 = mat4.fromZRotation(mat4.create(), 180 * _MatrixMath2.default.PI_OVER_180);
-		_this._mTemp = mat4.create();
-
-		// temp storage for CV arraybuffers
-		//this._ab = []
-
-		// Set up some named global methods that the ARKit to JS bridge uses and send out custom events when they are called
-		var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT], ['arkitWindowResize', ARKitWrapper.WINDOW_RESIZE_EVENT], ['onError', ARKitWrapper.ON_ERROR], ['arTrackingChanged', ARKitWrapper.AR_TRACKING_CHANGED], ['userGrantedComputerVisionData', ARKitWrapper.USER_GRANTED_COMPUTER_VISION_DATA], ['userGrantedWorldSensingData', ARKitWrapper.USER_GRANTED_WORLD_SENSING_DATA]
-		//,['onComputerVisionData', ARKitWrapper.COMPUTER_VISION_DATA]
-		];
-
-		var _loop = function _loop(_i) {
-			window[eventCallbacks[_i][0]] = function (detail) {
-				detail = detail || null;
-				try {
-					_this.dispatchEvent(new CustomEvent(eventCallbacks[_i][1], {
-						source: _this,
-						detail: detail
-					}));
-				} catch (e) {
-					console.error(eventCallbacks[_i][0] + ' callback error', e);
-				}
-			};
-		};
-
-		for (var _i = 0; _i < eventCallbacks.length; _i++) {
-			_loop(_i);
-		}
-		/*
-   * Computer vision needs massaging
-   */
-		window['onComputerVisionData'] = function (detail) {
-			_this._onComputerVisionData(detail);
-		};
-
-		window['setNativeTime'] = function (detail) {
-			_this._timeOffsets.push((performance || Date).now() - detail.nativeTime);
-			_this._timeOffsetComputed = true;
-			_this._timeOffset = 0;
-			for (var i = 0; i < _this._timeOffsets.length; i++) {
-				_this._timeOffset += _this._timeOffsets[i];
-			}
-			_this._timeOffset = _this._timeOffset / _this._timeOffsets.length;
-			console.log("Native time: " + detail.nativeTime + ", new timeOffset: " + _this._timeOffset);
-		};
-
-		_this._adjustARKitTime = function (time) {
-			// if (!this._timeOffsetComputed && adjust) {
-			// 	this._timeOffsetComputed = true;
-			// 	this._timeOffset = ( performance || Date ).now() - time;
-			// }
-			if (this._timeOffsetComputed) {
-				return time + this._timeOffset;
-			} else {
-				return (performance || Date).now();
-			}
-		};
-
-		/**
-   * The result of a raycast into the AR world encoded as a transform matrix.
-   * This structure has a single property - modelMatrix - which encodes the
-   * translation of the intersection of the hit in the form of a 4x4 matrix.
-   * @constructor
-   */
-		function VRHit() {
-			this.modelMatrix = new Float32Array(16);
-			return this;
-		};
-
-		var self = _this;
-		/**
-   * Get an iterable of plane objects representing ARKit's current understanding of the world.
-   * @return {iterator<Object>} The iterable of plane objects.
-   */
-		_this.getPlanes = function () {
-			return Array.from(this.planes_.values());
-		};
-		/**
-   * Get intersection array with planes ARKit detected for the screen coords.
-   *
-   * @param {number} x The x coordinate in normalized screen space [0,1].
-   * @param {number} y The y coordinate in normalized screen space [0,1].
-   *
-   * @return {!Array<VRHit>} The array of hits sorted based on distance.
-   */
-		_this.hitTestNoAnchor = function () {
-			/**
-   * Cached vec3, mat4, and quat structures needed for the hit testing to
-   * avoid generating garbage.
-   * @type {Object}
-   */
-			var hitVars = {
-				rayStart: vec3.create(),
-				rayEnd: vec3.create(),
-				cameraPosition: vec3.create(),
-				cameraQuaternion: quat.create(),
-				modelViewMatrix: mat4.create(),
-				projectionMatrix: mat4.create(),
-				projViewMatrix: mat4.create(),
-				worldRayStart: vec3.create(),
-				worldRayEnd: vec3.create(),
-				worldRayDir: vec3.create(),
-				planeMatrix: mat4.create(),
-				planeExtent: vec3.create(),
-				planePosition: vec3.create(),
-				planeCenter: vec3.create(),
-				planeNormal: vec3.create(),
-				planeIntersection: vec3.create(),
-				planeIntersectionLocal: vec3.create(),
-				planeHit: mat4.create(),
-				planeQuaternion: quat.create()
-			};
-
-			/**
-   * Sets the given mat4 from the given float[16] array.
-   *
-   * @param {!mat4} m The mat4 to populate with values.
-   * @param {!Array<number>} a The source array of floats (must be size 16).
-   */
-			var setMat4FromArray = function setMat4FromArray(m, a) {
-				mat4.set(m, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14], a[15]);
-			};
-			/**
-   * Tests whether the given ray intersects the given plane.
-   *
-   * @param {!vec3} planeNormal The normal of the plane.
-   * @param {!vec3} planePosition Any point on the plane.
-   * @param {!vec3} rayOrigin The origin of the ray.
-   * @param {!vec3} rayDirection The direction of the ray (normalized).
-   * @return {number} The t-value of the intersection (-1 for none).
-   */
-			var rayIntersectsPlane = function () {
-				var rayToPlane = vec3.create();
-				return function (planeNormal, planePosition, rayOrigin, rayDirection) {
-					// assuming vectors are all normalized
-					var denom = vec3.dot(planeNormal, rayDirection);
-					vec3.subtract(rayToPlane, planePosition, rayOrigin);
-					return vec3.dot(rayToPlane, planeNormal) / denom;
-				};
-			}();
-
-			/**
-   * Sorts based on the distance from the VRHits to the camera.
-   *
-   * @param {!VRHit} a The first hit to compare.
-   * @param {!VRHit} b The second hit item to compare.
-   * @returns {number} -1 if a is closer than b, otherwise 1.
-   */
-			var sortFunction = function sortFunction(a, b) {
-				// Get the matrix of hit a.
-				setMat4FromArray(hitVars.planeMatrix, a.modelMatrix);
-				// Get the translation component of a's matrix.
-				mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
-				// Get the distance from the intersection point to the camera.
-				var distA = vec3.distance(hitVars.planeIntersection, hitVars.cameraPosition);
-
-				// Get the matrix of hit b.
-				setMat4FromArray(hitVars.planeMatrix, b.modelMatrix);
-				// Get the translation component of b's matrix.
-				mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
-				// Get the distance from the intersection point to the camera.
-				var distB = vec3.distance(hitVars.planeIntersection, hitVars.cameraPosition);
-
-				// Return comparison of distance from camera to a and b.
-				return distA < distB ? -1 : 1;
-			};
-
-			return function (x, y) {
-				// Coordinates must be in normalized screen space.
-				if (x < 0 || x > 1 || y < 0 || y > 1) {
-					throw new Error("hitTest - x and y values must be normalized [0,1]!");
-				}
-
-				var hits = [];
-				// If there are no anchors detected, there will be no hits.
-				var planes = this.getPlanes();
-				if (!planes || planes.length == 0) {
-					return hits;
-				}
-
-				// Create a ray in screen space for the hit test ([-1, 1] with y flip).
-				vec3.set(hitVars.rayStart, 2 * x - 1, 2 * (1 - y) - 1, 0);
-				vec3.set(hitVars.rayEnd, 2 * x - 1, 2 * (1 - y) - 1, 1);
-				// Set the projection matrix.
-				setMat4FromArray(hitVars.projectionMatrix, self.projectionMatrix_);
-
-				// Set the model view matrix.
-				setMat4FromArray(hitVars.modelViewMatrix, self.viewMatrix_);
-
-				// Combine the projection and model view matrices.
-				mat4.multiply(hitVars.projViewMatrix, hitVars.projectionMatrix, hitVars.modelViewMatrix);
-				// Invert the combined matrix because we need to go from screen -> world.
-				mat4.invert(hitVars.projViewMatrix, hitVars.projViewMatrix);
-
-				// Transform the screen-space ray start and end to world-space.
-				vec3.transformMat4(hitVars.worldRayStart, hitVars.rayStart, hitVars.projViewMatrix);
-				vec3.transformMat4(hitVars.worldRayEnd, hitVars.rayEnd, hitVars.projViewMatrix);
-
-				// Subtract start from end to get the ray direction and then normalize.
-				vec3.subtract(hitVars.worldRayDir, hitVars.worldRayEnd, hitVars.worldRayStart);
-				vec3.normalize(hitVars.worldRayDir, hitVars.worldRayDir);
-
-				// Go through all the anchors and test for intersections with the ray.
-				for (var i = 0; i < planes.length; i++) {
-					var plane = planes[i];
-					// Get the anchor transform.
-					setMat4FromArray(hitVars.planeMatrix, plane.modelMatrix);
-
-					// Get the position of the anchor in world-space.
-					vec3.set(hitVars.planeCenter, plane.center.x, plane.center.y, plane.center.z);
-					vec3.transformMat4(hitVars.planePosition, hitVars.planeCenter, hitVars.planeMatrix);
-
-					hitVars.planeAlignment = plane.alignment;
-
-					// Get the plane normal.
-					if (hitVars.planeAlignment === 0) {
-						vec3.set(hitVars.planeNormal, 0, 1, 0);
-					} else {
-						vec3.set(hitVars.planeNormal, hitVars.planeMatrix[4], hitVars.planeMatrix[5], hitVars.planeMatrix[6]);
-					}
-
-					// Check if the ray intersects the plane.
-					var t = rayIntersectsPlane(hitVars.planeNormal, hitVars.planePosition, hitVars.worldRayStart, hitVars.worldRayDir);
-
-					// if t < 0, there is no intersection.
-					if (t < 0) {
-						continue;
-					}
-
-					// Calculate the actual intersection point.
-					vec3.scale(hitVars.planeIntersection, hitVars.worldRayDir, t);
-					vec3.add(hitVars.planeIntersection, hitVars.worldRayStart, hitVars.planeIntersection);
-					// Get the plane extents (extents are in plane local space).
-					vec3.set(hitVars.planeExtent, plane.extent[0], 0, plane.extent[1]);
-
-					/*
-      ///////////////////////////////////////////////
-      // Test by converting extents to world-space.
-      // TODO: get this working to avoid matrix inversion in method below.
-     		 // Get the rotation component of the anchor transform.
-      mat4.getRotation(hitVars.planeQuaternion, hitVars.planeMatrix);
-     		 // Convert the extent into world space.
-      vec3.transformQuat(
-      hitVars.planeExtent, hitVars.planeExtent, hitVars.planeQuaternion);
-     		 // Check if intersection is outside of the extent of the anchor.
-      if (Math.abs(hitVars.planeIntersection[0] - hitVars.planePosition[0]) > hitVars.planeExtent[0] / 2) {
-      continue;
-      }
-      if (Math.abs(hitVars.planeIntersection[2] - hitVars.planePosition[2]) > hitVars.planeExtent[2] / 2) {
-      continue;
-      }
-      ////////////////////////////////////////////////
-      */
-
-					////////////////////////////////////////////////
-					mat4.getRotation(hitVars.planeQuaternion, hitVars.planeMatrix);
-
-					// Test by converting intersection into plane-space.
-
-					mat4.invert(hitVars.planeMatrix, hitVars.planeMatrix);
-					vec3.transformMat4(hitVars.planeIntersectionLocal, hitVars.planeIntersection, hitVars.planeMatrix);
-
-					// Check if intersection is outside of the extent of the anchor.
-					// Tolerance is added to match the behavior of the native hitTest call.
-					var tolerance = 0.0075;
-					if (Math.abs(hitVars.planeIntersectionLocal[0]) > hitVars.planeExtent[0] / 2 + tolerance) {
-						continue;
-					}
-					if (Math.abs(hitVars.planeIntersectionLocal[2]) > hitVars.planeExtent[2] / 2 + tolerance) {
-						continue;
-					}
-
-					////////////////////////////////////////////////
-
-					// The intersection is valid - create a matrix from hit position.
-					//mat4.fromTranslation(hitVars.planeHit, hitVars.planeIntersection);
-					mat4.fromRotationTranslation(hitVars.planeHit, hitVars.planeQuaternion, hitVars.planeIntersection);
-					var hit = new VRHit();
-					for (var j = 0; j < 16; j++) {
-						hit.modelMatrix[j] = hitVars.planeHit[j];
-					}
-					hit.i = i;
-					hits.push(hit);
-				}
-
-				// Sort the hits by distance.
-				hits.sort(sortFunction);
-				return hits;
-			};
-		}();
-		return _this;
-	}
-
-	_createClass(ARKitWrapper, [{
-		key: "waitForInit",
-		// True if this instance has received data via onWatch
-
-		/*
-  Useful for waiting for or immediately receiving notice of ARKit initialization
-  */
-		value: function waitForInit() {
-			var _this2 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (_this2._isInitialized) {
-					resolve();
-					return;
-				}
-				var callback = function callback() {
-					_this2.removeEventListener(ARKitWrapper.INIT_EVENT, callback, false);
-					resolve();
-				};
-				_this2.addEventListener(ARKitWrapper.INIT_EVENT, callback, false);
-			});
-		}
-
-		/*
-  getData looks into the most recent ARKit data (as received by onWatch) for a key
-  returns the key's value or null if it doesn't exist or if a key is not specified it returns all data
-  */
-
-	}, {
-		key: "getData",
-		value: function getData() {
-			var key = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			if (key === null) {
-				return this._rawARData;
-			}
-			if (this._rawARData && typeof this._rawARData[key] !== 'undefined') {
-				return this._rawARData[key];
-			}
-			return null;
-		}
-
-		/*
-  returns
-  	{
-  		uuid: DOMString,
-  		transform: [4x4 column major affine transform]
-  	}
-  	return null if object with `uuid` is not found
-  */
-
-	}, {
-		key: "getObject",
-		value: function getObject(uuid) {
-			if (!this._isInitialized) {
-				return null;
-			}
-			var objects = this.getKey('objects');
-			if (objects === null) return null;
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = objects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var object = _step.value;
-
-					if (object.uuid === uuid) {
-						return object;
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return null;
-		}
-
-		/*
-  Sends a hitTest message to ARKit to get hit testing results
-  x, y - screen coordinates normalized to 0..1 (0,0 is at top left and 1,1 is at bottom right)
-  types - bit mask of hit testing types
-  
-  Returns a Promise that resolves to a (possibly empty) array of hit test data:
-  [
-  	{
-  		type: 1,							// A packed mask of types ARKitWrapper.HIT_TEST_TYPE_*
-  		distance: 1.0216870307922363,		// The distance in meters from the camera to the detected anchor or feature point.
-  		world_transform:  [float x 16],		// The pose of the hit test result relative to the world coordinate system. 
-  		local_transform:  [float x 16],		// The pose of the hit test result relative to the nearest anchor or feature point
-  			// If the `type` is `HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE`, `HIT_TEST_TYPE_EXISTING_PLANE`, or `HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT` (2, 8, or 16) it will also have anchor data:
-  		anchor_center: { x:float, y:float, z:float },
-  		anchor_extent: { x:float, y:float },
-  		uuid: string,
-  			// If the `type` is `HIT_TEST_TYPE_EXISTING_PLANE` or `HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT` (8 or 16) it will also have an anchor transform:
-  		anchor_transform: [float x 16]
-  	},
-  	...
-  ]
-  @see https://developer.apple.com/documentation/arkit/arframe/2875718-hittest
-  */
-
-	}, {
-		key: "hitTest",
-		value: function hitTest(x, y) {
-			var _this3 = this;
-
-			var types = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ARKitWrapper.HIT_TEST_TYPE_ALL;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this3._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-				window.webkit.messageHandlers.hitTest.postMessage({
-					x: x,
-					y: y,
-					type: types,
-					callback: _this3._createPromiseCallback('hitTest', resolve)
-				});
-			});
-		}
-
-		/*
-  Sends an addAnchor message to ARKit
-  Returns a promise that returns:
-  {
-  	uuid - the anchor's uuid,
-  	transform - anchor transformation matrix
-  }
-  */
-
-	}, {
-		key: "addAnchor",
-		value: function addAnchor(uid, transform) {
-			var _this4 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this4._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-				window.webkit.messageHandlers.addAnchor.postMessage({
-					uuid: uid,
-					transform: transform,
-					callback: _this4._createPromiseCallback('addAnchor', resolve)
-				});
-			});
-		}
-	}, {
-		key: "removeAnchor",
-		value: function removeAnchor(uid) {
-			window.webkit.messageHandlers.removeAnchors.postMessage([uid]);
-		}
-
-		/*
-   * ask for an image anchor.
-   * 
-   * Provide a uid for the anchor that will be created.
-   * Supply the image in an ArrayBuffer, typedArray or ImageData
-   * width and height are in meters 
-   */
-
-	}, {
-		key: "createImageAnchor",
-		value: function createImageAnchor(uid, buffer, width, height, physicalWidthInMeters) {
-			var _this5 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this5._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-
-				var b64 = _base64Binary2.default.encode(buffer);
-
-				window.webkit.messageHandlers.createImageAnchor.postMessage({
-					uid: uid,
-					buffer: b64,
-					imageWidth: width,
-					imageHeight: height,
-					physicalWidth: physicalWidthInMeters,
-					callback: _this5._createPromiseCallback('createImageAnchor', resolve)
-				});
-			});
-		}
-
-		/***
-  * activateDetectionImage activates an image and waits for the detection
-   * @param uid The UID of the image to activate, previously created via "createImageAnchor"
-   * @returns {Promise<any>} a promise that will be resolved when ARKit detects the image, or an error otherwise
-   */
-
-	}, {
-		key: "activateDetectionImage",
-		value: function activateDetectionImage(uid) {
-			var _this6 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this6._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-
-				window.webkit.messageHandlers.activateDetectionImage.postMessage({
-					uid: uid,
-					callback: _this6._createPromiseCallback('activateDetectionImage', resolve)
-				});
-			});
-		}
-
-		/***
-   * getWorldMap requests a worldmap from the platform
-   * @returns {Promise<any>} a promise that will be resolved when the worldMap has been retrieved, or an error otherwise
-   */
-
-	}, {
-		key: "getWorldMap",
-		value: function getWorldMap() {
-			var _this7 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this7._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-
-				window.webkit.messageHandlers.getWorldMap.postMessage({
-					callback: _this7._createPromiseCallback('getWorldMap', resolve)
-				});
-			});
-		}
-
-		/***
-   * setWorldMap requests a worldmap for the platform be set
-   * @returns {Promise<any>} a promise that will be resolved when the worldMap has been set, or an error otherwise
-   */
-
-	}, {
-		key: "setWorldMap",
-		value: function setWorldMap(worldMap) {
-			var _this8 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this8._isInitialized) {
-					reject(new Error('ARKit is not initialized'));
-					return;
-				}
-
-				window.webkit.messageHandlers.setWorldMap.postMessage({
-					worldMap: worldMap.worldMap,
-					callback: _this8._createPromiseCallback('setWorldMap', resolve)
-				});
-			});
-		}
-
-		/* 
-  RACE CONDITION:  call stop, then watch:  stop does not set isWatching false until it gets a message back from the app,
-  so watch will return and not issue a watch command.   May want to set isWatching false immediately?
-  */
-
-		/*
-  If this instance is currently watching, send the stopAR message to ARKit to request that it stop sending data on onWatch
-  */
-
-	}, {
-		key: "stop",
-		value: function stop() {
-			var _this9 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (!_this9._isWatching) {
-					resolve();
-					return;
-				}
-				console.log('----STOP');
-				window.webkit.messageHandlers.stopAR.postMessage({
-					callback: _this9._createPromiseCallback('stop', resolve)
-				});
-			});
-		}
-
-		/*
-  If not already watching, send a watchAR message to ARKit to request that it start sending per-frame data to onWatch
-  options: the options map for ARKit
-  	{
-  		location: boolean,
-  		camera: boolean,
-  		objects: boolean,
-  		light_intensity: boolean,
-  		computer_vision_data: boolean
-  	}
-  */
-
-	}, {
-		key: "watch",
-		value: function watch() {
-			var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			if (!this._isInitialized) {
-				return false;
-			}
-			if (this._isWatching) {
-				return true;
-			}
-			this._isWatching = true;
-
-			var newO = Object.assign({}, this._defaultOptions);
-
-			if (options != null) {
-				newO = Object.assign(newO, options);
-			}
-
-			// option to WebXRView is different than the WebXR option
-			if (newO.videoFrames) {
-				delete newO.videoFrames;
-				newO.computer_vision_data = true;
-			}
-
-			var data = {
-				options: newO,
-				callback: this._globalCallbacksMap.onWatch
-			};
-			console.log('----WATCH');
-			window.webkit.messageHandlers.watchAR.postMessage(data);
-			return true;
-		}
-
-		/*
-  Sends a setUIOptions message to ARKit to set ui options (show or hide ui elements)
-  options: {
-  	browser: boolean,
-  	points: boolean,
-  	focus: boolean,
-  	rec: boolean,
-  	rec_time: boolean,
-  	mic: boolean,
-  	build: boolean,
-  	plane: boolean,
-  	warnings: boolean,
-  	anchors: boolean,
-  	debug: boolean,
-  	statistics: boolean
-  }
-  */
-
-	}, {
-		key: "setUIOptions",
-		value: function setUIOptions(options) {
-			window.webkit.messageHandlers.setUIOptions.postMessage(options);
-		}
-
-		/*
-  Called during instance creation to send a message to ARKit to initialize and create a device ID
-  Usually results in ARKit calling back to _onInit with a deviceId
-  options: {
-  	ui: {
-  		browser: boolean,
-  		points: boolean,
-  		focus: boolean,
-  		rec: boolean,
-  		rec_time: boolean,
-  		mic: boolean,
-  		build: boolean,
-  		plane: boolean,
-  		warnings: boolean,
-  		anchors: boolean,
-  		debug: boolean,
-  		statistics: boolean
-  	}
-  }
-  */
-
-	}, {
-		key: "_sendInit",
-		value: function _sendInit(options) {
-			// get device id
-			console.log('----INIT');
-			window.webkit.messageHandlers.initAR.postMessage({
-				options: options,
-				callback: this._globalCallbacksMap.onInit
-			});
-		}
-
-		/*
-  Callback for when ARKit is initialized
-  deviceId: DOMString with the AR device ID
-  */
-
-	}, {
-		key: "_onInit",
-		value: function _onInit(deviceId) {
-			this._deviceId = deviceId;
-			this._isInitialized = true;
-			try {
-				this.dispatchEvent(new CustomEvent(ARKitWrapper.INIT_EVENT, {
-					source: this
-				}));
-			} catch (e) {
-				console.error('INIT_EVENT event error', e);
-			}
-		}
-
-		/*
-  _onWatch is called from native ARKit on each frame:
-  	data:
-  	{
-  		"timestamp": time value
-  		"light_intensity": value
-  		"camera_view":[4x4 column major affine transform matrix],
-  		"projection_camera":[4x4 projection matrix],
-  		"newObjects": [
-  			{
-  				uuid: DOMString (unique UID),
-  				transform: [4x4 column major affine transform],
-  				plane_center: {x, y, z},  // only on planes
-  				plane_center: {x, y, z}	// only on planes, where x/z are used,
-  			}, ...
-  		],
-  		"removeObjects": [
-  			uuid: DOMString (unique UID), ...
-  		]
-  		"objects":[
-  			{
-  				uuid: DOMString (unique UID),
-  				transform: [4x4 column major affine transform]
-  				plane_center: {x, y, z},  // only on planes
-  				plane_center: {x, y, z}	// only on planes, where x/z are used,
-  			}, ...
-  		]
-  	}
-  	*/
-
-	}, {
-		key: "_onWatch",
-		value: function _onWatch(data) {
-			this._rawARData = data;
-			try {
-				this.dispatchEvent(new CustomEvent(ARKitWrapper.WATCH_EVENT, {
-					source: this,
-					detail: this._rawARData
-				}));
-			} catch (e) {
-				console.error('WATCH_EVENT event error', e);
-			}
-			this.timestamp = this._adjustARKitTime(data.timestamp);
-			this.lightIntensity = data.light_intensity;
-			this.viewMatrix_ = data.camera_view;
-			this.projectionMatrix_ = data.projection_camera;
-			this.worldMappingStatus = data.worldMappingStatus;
-			if (data.newObjects.length) {
-				for (var i = 0; i < data.newObjects.length; i++) {
-					var element = data.newObjects[i];
-					if (element.plane_center) {
-						this.planes_.set(element.uuid, {
-							id: element.uuid,
-							center: element.plane_center,
-							extent: [element.plane_extent.x, element.plane_extent.z],
-							modelMatrix: element.transform,
-							alignment: element.plane_alignment
-						});
-					} else {
-						this.anchors_.set(element.uuid, {
-							id: element.uuid,
-							modelMatrix: element.transform
-						});
-					}
-				}
-			}
-
-			if (data.removedObjects.length) {
-				for (var _i2 = 0; _i2 < data.removedObjects.length; _i2++) {
-					var _element = data.removedObjects[_i2];
-					if (this.planes_.get(_element)) {
-						this.planes_.delete(_element);
-					} else {
-						this.anchors_.delete(_element);
-					}
-				}
-			}
-
-			if (data.objects.length) {
-				for (var _i3 = 0; _i3 < data.objects.length; _i3++) {
-					var _element2 = data.objects[_i3];
-					if (_element2.plane_center) {
-						var plane = this.planes_.get(_element2.uuid);
-						if (!plane) {
-							this.planes_.set(_element2.uuid, {
-								id: _element2.uuid,
-								center: _element2.plane_center,
-								extent: [_element2.plane_extent.x, _element2.plane_extent.z],
-								modelMatrix: _element2.transform,
-								alignment: _element2.plane_alignment
-							});
-						} else {
-							plane.center = _element2.plane_center;
-							plane.extent[0] = _element2.plane_extent.x;
-							plane.extent[1] = _element2.plane_extent.z;
-							plane.modelMatrix = _element2.transform;
-							plane.alignment = _element2.plane_alignment;
-						}
-					} else {
-						var anchor = this.anchors_.get(_element2.uuid);
-						if (!anchor) {
-							this.anchors_.set(_element2.uuid, {
-								id: _element2.uuid,
-								modelMatrix: _element2.transform
-							});
-						} else {
-							anchor.modelMatrix = _element2.transform;
-						}
-					}
-				}
-			}
-		}
-
-		/*
-  Callback from ARKit for when sending per-frame data to onWatch is stopped
-  */
-
-	}, {
-		key: "_onStop",
-		value: function _onStop() {
-			this._isWatching = false;
-		}
-	}, {
-		key: "_createPromiseCallback",
-		value: function _createPromiseCallback(action, resolve) {
-			var _this10 = this;
-
-			var callbackName = this._generateCallbackUID(action);
-			window[callbackName] = function (data) {
-				delete window[callbackName];
-				var wrapperCallbackName = '_on' + action[0].toUpperCase() + action.slice(1);
-				if (typeof _this10[wrapperCallbackName] == 'function') {
-					_this10[wrapperCallbackName](data);
-				}
-				resolve(data);
-			};
-			return callbackName;
-		}
-	}, {
-		key: "_generateCallbackUID",
-		value: function _generateCallbackUID(prefix) {
-			return 'arkitCallback_' + prefix + '_' + new Date().getTime() + '_' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-		}
-
-		/*
-  The ARKit iOS app depends on several callbacks on `window`. This method sets them up.
-  They end up as window.arkitCallback? where ? is an integer.
-  You can map window.arkitCallback? to ARKitWrapper instance methods using _globalCallbacksMap
-  */
-
-	}, {
-		key: "_generateGlobalCallback",
-		value: function _generateGlobalCallback(callbackName, num) {
-			var name = 'arkitCallback' + num;
-			this._globalCallbacksMap[callbackName] = name;
-			var self = this;
-			window[name] = function (deviceData) {
-				self['_' + callbackName](deviceData);
-			};
-		}
-
-		/*
-  ev.detail contains:
-  	{
-  	  "frame": {
-  		"buffers": [ // Array of base64 encoded string buffers
-  		  {
-  			"size": {
-  			  "width": 320,
-  			  "height": 180,
-  			  "bytesPerRow": 320,
-  			  "bytesPerPixel": 1
-  			},
-  			"buffer": "e3x...d7d"   /// convert to Uint8 buffer in code below
-  		  },
-  		  {
-  			"size": {
-  			  "width": 160,
-  			  "height": 90,
-  			  "bytesPerRow": 320,
-  			  "bytesPerPixel": 2
-  			},
-  			"buffer": "ZZF.../fIJ7"  /// convert to Uint8 buffer in code below
-  		  }
-  		],
-  		"pixelFormatType": "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange",
-  		"pixelFormat": "YUV420P",  /// Added in the code below, clients should ignore pixelFormatType
-  		"timestamp": 337791
-  	  },
-  	  "camera": {
-  		"cameraIntrinsics": [3x3 matrix],
-  			fx 0   px
-  			0  fy  py
-  			0  0   1
-  			fx and fy are the focal length in pixels.
-  			px and py are the coordinates of the principal point in pixels.
-  			The origin is at the center of the upper-left pixel.
-  			"cameraImageResolution": {
-  		  "width": 1280,
-  		  "height": 720
-  		},
-  		"viewMatrix": [4x4 camera view matrix],
-  		"arCamera": true;
-  	    "cameraOrientation": 0,  // orientation in degrees of image relative to display
-                             // normally 0, but on video mixed displays that keep the camera in a fixed 
-                             // orientation, but rotate the UI, like on some phones, this will change
-                             // as the display orientation changes
-  		"interfaceOrientation": 3,
-  			// 0 UIDeviceOrientationUnknown
-  			// 1 UIDeviceOrientationPortrait
-  			// 2 UIDeviceOrientationPortraitUpsideDown
-  			// 3 UIDeviceOrientationLandscapeRight
-  			// 4 UIDeviceOrientationLandscapeLeft
-  		"projectionMatrix": [4x4 camera projection matrix]
-  	  }
-  	}
-   */
-
-	}, {
-		key: "_onComputerVisionData",
-		value: function _onComputerVisionData(detail) {
-			// convert the arrays
-			if (!detail) {
-				console.error("detail passed to _onComputerVisionData is null");
-				this._requestComputerVisionData();
-				return;
-			}
-			// convert the arrays
-			if (!detail.frame || !detail.frame.buffers || detail.frame.buffers.length <= 0) {
-				console.error("detail passed to _onComputerVisionData is bad, no buffers");
-				this._requestComputerVisionData();
-				return;
-			}
-
-			// the orientation matrix we get is relative to the current view orientation.  
-			// We need to add an orientation around z, so that we have the orientation that goes from 
-			// camera frame to the current view orientation, since the camera is fixed and the view
-			// changes as we rotate the device. 
-			//
-			// We also set a cameraOrientation value for the orientation of the camera relative to the
-			// display.  This will be particular to video-mixed-AR where the camera is the video on the
-			// screen, since any other setup would need to use the full orientation (and probably 
-			// wouldn't be rotating the content / UI)
-			detail.camera.arCamera = true;
-			var orientation = detail.camera.interfaceOrientation;
-			detail.camera.viewMatrix = detail.camera.inverse_viewMatrix;
-			// mat4.copy(this._mTemp, detail.camera.viewMatrix)
-			switch (orientation) {
-				case 1:
-					// rotate by -90;
-					detail.camera.cameraOrientation = -90;
-					// mat4.multiply(detail.camera.viewMatrix, this._mTemp, this._m90neg)
-					break;
-
-				case 2:
-					// rotate by 90;
-					detail.camera.cameraOrientation = 90;
-					// mat4.multiply(detail.camera.viewMatrix, this._mTemp, this._m90)
-					break;
-				case 3:
-					detail.camera.cameraOrientation = 0;
-					// rotate by nothing
-					break;
-				case 4:
-					// rotate by 180;
-					detail.camera.cameraOrientation = 180;
-					// mat4.multiply(detail.camera.viewMatrix, this._mTemp, this._m180)
-					break;
-			}
-			// convert buffers in place
-			//var buffers = detail.frame.buffers;
-
-			// if there are too many cached array buffers, drop the unneeded ones
-			// if (this._ab.length > buffers.length) {
-			// 	this._ab = this._ab.slice(0, buffer.length)
-			// }
-
-			// if (this._worker) {
-			// 	detail.ab = this._ab;
-			// 	if (this._ab) {
-			// 		this._worker.postMessage(detail, this._ab);
-			// 	} else {
-			// 		this._worker.postMessage(detail);
-			// 	}
-			// } else {
-			// for (var i = 0; i < buffers.length; i++) {
-			// 	// gradually increase the size of the ab[] array to hold the temp buffers, 
-			// 	// and add null so it gets allocated properly
-			// 	if (this._ab.length <= i) {
-			// 		this._ab.push(null)
-			// 	}
-			// 	var bufflen = buffers[i].buffer.length;
-			// 	this._ab[i] = buffers[i].buffer = base64.decodeArrayBuffer(buffers[i].buffer, this._ab[i]);
-			// 	var buffersize = buffers[i].buffer.byteLength;
-			// 	var imagesize = buffers[i].size.height * buffers[i].size.bytesPerRow;
-			// }
-			switch (detail.frame.pixelFormatType) {
-				case "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange":
-					detail.frame.pixelFormat = "YUV420P";
-					break;
-				default:
-					detail.frame.pixelFormat = detail.frame.pixelFormatType;
-					break;
-			}
-
-			var xrVideoFrame = new XRVideoFrame(detail.frame.buffers, detail.frame.pixelFormat, this._adjustARKitTime(detail.frame.timestamp), detail.camera);
-			try {
-				this.dispatchEvent(new CustomEvent(ARKitWrapper.COMPUTER_VISION_DATA, {
-					source: this,
-					detail: xrVideoFrame
-				}));
-			} catch (e) {
-				console.error('COMPUTER_VISION_DATA event error', e);
-			}
-			//}	
-		}
-
-		/*
-  Requests ARKit a new set of buffers for computer vision processing
-   */
-
-	}, {
-		key: "_requestComputerVisionData",
-		value: function _requestComputerVisionData() {
-			window.webkit.messageHandlers.requestComputerVisionData.postMessage({});
-		}
-
-		/*
-  Requests ARKit to start sending CV data (data is send automatically when requested and approved)
-   */
-
-	}, {
-		key: "_startSendingComputerVisionData",
-		value: function _startSendingComputerVisionData() {
-			window.webkit.messageHandlers.startSendingComputerVisionData.postMessage({});
-		}
-
-		/*
-  Requests ARKit to stop sending CV data
-   */
-
-	}, {
-		key: "_stopSendingComputerVisionData",
-		value: function _stopSendingComputerVisionData() {
-			window.webkit.messageHandlers.stopSendingComputerVisionData.postMessage({});
-		}
-
-		// _buildWorkerBlob() {
-		// 	var blobURL = URL.createObjectURL( new Blob([ '(',
-
-		// 	function(){
-		// 		// could not get workers working, so am not using this.
-		// 		//
-		// 		// Tried to use Transferable ArrayBuffers but kept getting DOM Error 25. 
-		// 		// 
-
-		// 		var b64 = {
-		// 			_keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-
-		// 			/* will return a  Uint8Array type */
-		// 			decodeArrayBuffer: function(input, buffer) {
-		// 				var bytes = (input.length/4) * 3;
-		// 				if (!buffer || buffer.byteLength != bytes) {
-		// 					// replace the buffer with a new, appropriately sized one
-		// 					buffer = new ArrayBuffer(bytes);
-		// 				}
-		// 				this.decode(input, buffer);
-
-		// 				return buffer;
-		// 			},
-
-		// 			removePaddingChars: function(input){
-		// 				var lkey = this._keyStr.indexOf(input.charAt(input.length - 1));
-		// 				if(lkey == 64){
-		// 					return input.substring(0,input.length - 1);
-		// 				}
-		// 				return input;
-		// 			},
-
-		// 			decode: function(input, arrayBuffer) {
-		// 				//get last chars to see if are valid
-		// 				input = this.removePaddingChars(input);
-		// 				input = this.removePaddingChars(input);
-
-		// 				var bytes = parseInt((input.length / 4) * 3, 10);
-
-		// 				var uarray;
-		// 				var chr1, chr2, chr3;
-		// 				var enc1, enc2, enc3, enc4;
-		// 				var i = 0;
-		// 				var j = 0;
-
-		// 				if (arrayBuffer)
-		// 					uarray = new Uint8Array(arrayBuffer);
-		// 				else
-		// 					uarray = new Uint8Array(bytes);
-
-		// 				input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-
-		// 				for (i=0; i<bytes; i+=3) {	
-		// 					//get the 3 octects in 4 ascii chars
-		// 					enc1 = this._keyStr.indexOf(input.charAt(j++));
-		// 					enc2 = this._keyStr.indexOf(input.charAt(j++));
-		// 					enc3 = this._keyStr.indexOf(input.charAt(j++));
-		// 					enc4 = this._keyStr.indexOf(input.charAt(j++));
-
-		// 					chr1 = (enc1 << 2) | (enc2 >> 4);
-		// 					chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-		// 					chr3 = ((enc3 & 3) << 6) | enc4;
-
-		// 					uarray[i] = chr1;			
-		// 					if (enc3 != 64) uarray[i+1] = chr2;
-		// 					if (enc4 != 64) uarray[i+2] = chr3;
-		// 				}
-
-		// 				return uarray;	
-		// 			}
-		// 		}
-
-		// 		self.addEventListener('message',  function(event){
-		// 			var frame = event.data.frame
-		// 			var camera = event.data.camera
-
-		// 			var ab = event.data.ab;
-
-		// 			// convert buffers in place
-		// 			var buffers = frame.buffers;
-		// 			var buffs = []
-		// 			// if there are too many cached array buffers, drop the unneeded ones
-		// 			if (ab.length > buffers.length) {
-		// 				ab = ab.slice(0, buffer.length)
-		// 			}
-		// 			for (var i = 0; i < buffers.length; i++) {
-		// 				// gradually increase the size of the ab[] array to hold the temp buffers, 
-		// 				// and add null so it gets allocated properly
-		// 				if (ab.length <= i) {
-		// 					ab.push(null)
-		// 				}
-		// 				ab[i] = buffers[i].buffer = b64.decodeArrayBuffer(buffers[i].buffer, ab[i]);
-		// 				buffs.push(buffers[i].buffer)
-		// 			}
-		// 			switch(frame.pixelFormatType) {
-		// 				case "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange":
-		// 					frame.pixelFormat = "YUV420P";
-		// 					break;
-		// 				default:
-		// 					frame.pixelFormat = frame.pixelFormatType; 
-		// 					break;
-		// 			}
-
-		// 			postMessage(event.data, buffs);
-		// 		});
-		// 	}.toString(),
-		// 	')()' ], { type: 'application/javascript' } ) )
-
-		// 	return( blobURL );			
-		// }
-
-	}, {
-		key: "deviceId",
-		get: function get() {
-			return this._deviceId;
-		} // The ARKit provided device ID
-
-	}, {
-		key: "isWatching",
-		get: function get() {
-			return this._isWatching;
-		} // True if ARKit is sending frame data
-
-	}, {
-		key: "isInitialized",
-		get: function get() {
-			return this._isInitialized;
-		} // True if this instance has received the onInit callback from ARKit
-
-	}, {
-		key: "hasData",
-		get: function get() {
-			return this._rawARData !== null;
-		}
-	}], [{
-		key: "GetOrCreate",
-		value: function GetOrCreate() {
-			var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			if (typeof ARKitWrapper.GLOBAL_INSTANCE === 'undefined') {
-				ARKitWrapper.GLOBAL_INSTANCE = new ARKitWrapper();
-				options = options && (typeof options === "undefined" ? "undefined" : _typeof(options)) == 'object' ? options : {};
-				var defaultUIOptions = {
-					browser: true,
-					points: true,
-					focus: false,
-					rec: true,
-					rec_time: true,
-					mic: false,
-					build: false,
-					plane: true,
-					warnings: true,
-					anchors: false,
-					debug: true,
-					statistics: false
-				};
-				var uiOptions = _typeof(options.ui) == 'object' ? options.ui : {};
-				options.ui = Object.assign(defaultUIOptions, uiOptions);
-				ARKitWrapper.GLOBAL_INSTANCE._sendInit(options);
-			}
-			return ARKitWrapper.GLOBAL_INSTANCE;
-		}
-	}, {
-		key: "HasARKit",
-		value: function HasARKit() {
-			return typeof window.webkit !== 'undefined';
-		}
-	}]);
-
-	return ARKitWrapper;
-}(_EventHandlerBase3.default);
-
-// ARKitWrapper event names:
-
-
-exports.default = ARKitWrapper;
-ARKitWrapper.INIT_EVENT = 'arkit-init';
-ARKitWrapper.WATCH_EVENT = 'arkit-watch';
-ARKitWrapper.RECORD_START_EVENT = 'arkit-record-start';
-ARKitWrapper.RECORD_STOP_EVENT = 'arkit-record-stop';
-ARKitWrapper.DID_MOVE_BACKGROUND_EVENT = 'arkit-did-move-background';
-ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT = 'arkit-will-enter-foreground';
-ARKitWrapper.INTERRUPTED_EVENT = 'arkit-interrupted';
-ARKitWrapper.INTERRUPTION_ENDED_EVENT = 'arkit-interruption-ended';
-ARKitWrapper.SHOW_DEBUG_EVENT = 'arkit-show-debug';
-ARKitWrapper.WINDOW_RESIZE_EVENT = 'arkit-window-resize';
-ARKitWrapper.ON_ERROR = 'on-error';
-ARKitWrapper.AR_TRACKING_CHANGED = 'ar_tracking_changed';
-ARKitWrapper.COMPUTER_VISION_DATA = 'cv_data';
-ARKitWrapper.USER_GRANTED_COMPUTER_VISION_DATA = 'user-granted-cv-data';
-ARKitWrapper.USER_GRANTED_WORLD_SENSING_DATA = 'user-granted-world-sensing-data';
-
-// ARKit Detection Image Orientations
-ARKitWrapper.ORIENTATION_UP = 1; // 0th row at top,    0th column on left   - default orientation
-ARKitWrapper.ORIENTATION_UP_MIRRORED = 2; // 0th row at top,    0th column on right  - horizontal flip
-ARKitWrapper.ORIENTATION_DOWN = 3; // 0th row at bottom, 0th column on right  - 180 deg rotation
-ARKitWrapper.ORIENTATION_DOWN_MIRRORED = 4; // 0th row at bottom, 0th column on left   - vertical flip
-ARKitWrapper.ORIENTATION_LEFT_MIRRORED = 5; // 0th row on left,   0th column at top
-ARKitWrapper.ORIENTATION_RIGHT = 6; // 0th row on right,  0th column at top    - 90 deg CW
-ARKitWrapper.ORIENTATION_RIGHT_MIRRORED = 7; // 0th row on right,  0th column on bottom
-ARKitWrapper.ORIENTATION_LEFT = 8; // 0th row on left,   0th column at bottom - 90 deg CCW
-
-// world mapping status
-ARKitWrapper.WEB_AR_WORLDMAPPING_NOT_AVAILABLE = "ar_worldmapping_not_available";
-ARKitWrapper.WEB_AR_WORLDMAPPING_LIMITED = "ar_worldmapping_limited";
-ARKitWrapper.WEB_AR_WORLDMAPPING_EXTENDING = "ar_worldmapping_extending";
-ARKitWrapper.WEB_AR_WORLDMAPPING_MAPPED = "ar_worldmapping_mapped";
-
-// hit test types
-ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT = 1;
-ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE = 2;
-ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_VERTICAL_PLANE = 4;
-ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE = 8;
-ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT = 16;
-ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_GEOMETRY = 32;
-
-ARKitWrapper.HIT_TEST_TYPE_ALL = ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE | ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-
-ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANES = ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-
-ARKitWrapper.ANCHOR_TYPE_PLANE = 'plane';
-ARKitWrapper.ANCHOR_TYPE_FACE = 'face';
-ARKitWrapper.ANCHOR_TYPE_ANCHOR = 'anchor';
-ARKitWrapper.ANCHOR_TYPE_IMAGE = 'image';
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-var _VirtualReality = __webpack_require__(26);
-
-var _VirtualReality2 = _interopRequireDefault(_VirtualReality);
-
-var _XRFieldOfView = __webpack_require__(16);
-
-var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
-
-var _Reality = __webpack_require__(7);
-
-var _Reality2 = _interopRequireDefault(_Reality);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-Each XRDisplay represents a method of using a specific type of hardware to render AR or VR realities and layers.
-
-This doesn't yet support a geospatial coordinate system
-*/
-var XRDisplay = function (_EventHandlerBase) {
-	_inherits(XRDisplay, _EventHandlerBase);
-
-	function XRDisplay(xr, displayName, isExternal, reality) {
-		_classCallCheck(this, XRDisplay);
-
-		var _this = _possibleConstructorReturn(this, (XRDisplay.__proto__ || Object.getPrototypeOf(XRDisplay)).call(this));
-
-		_this._xr = xr;
-		_this._displayName = displayName;
-		_this._isExternal = isExternal;
-		_this._reality = reality; // The Reality instance that is currently displayed
-
-		_this._headModelCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.HEAD_MODEL);
-		_this._eyeLevelCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.EYE_LEVEL);
-		_this._trackerCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.TRACKER);
-
-		_this._headPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
-		_this._eyeLevelPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
-		_this._trackerPoseModelMatrix = _MatrixMath2.default.mat4_generateIdentity();
-
-		_this._fovy = 70;
-		var fov = _this._fovy / 2;
-		_this._fov = new _XRFieldOfView2.default(fov, fov, fov, fov);
-		_this._depthNear = 0.1;
-		_this._depthFar = 1000;
-
-		_this._views = [];
-		return _this;
-	}
-
-	_createClass(XRDisplay, [{
-		key: 'supportsSession',
-		value: function supportsSession(parameters) {
-			// parameters: XRSessionCreateParametersInit 
-			// returns boolean
-			return this._supportedCreationParameters(parameters);
-		}
-	}, {
-		key: 'requestSession',
-		value: function requestSession(parameters) {
-			var _this2 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (_this2._supportedCreationParameters(parameters) === false) {
-					reject();
-					return;
-				}
-				if (parameters.type === XRSession.REALITY) {
-					_this2._reality = new _VirtualReality2.default();
-					_this2._xr._privateRealities.push(_this2._reality);
-				}
-				resolve(_this2._createSession(parameters));
-			});
-		}
-
-		// no-op unless display supports it
-
-	}, {
-		key: '_requestVideoFrame',
-		value: function _requestVideoFrame() {}
-	}, {
-		key: '_requestAnimationFrame',
-		value: function _requestAnimationFrame(callback) {
-			return window.requestAnimationFrame(callback);
-		}
-	}, {
-		key: '_cancelAnimationFrame',
-		value: function _cancelAnimationFrame(handle) {
-			return window.cancelAnimationFrame(handle);
-		}
-	}, {
-		key: '_createSession',
-		value: function _createSession(parameters) {
-			return new XRSession(this._xr, this, parameters);
-		}
-	}, {
-		key: '_supportedCreationParameters',
-		value: function _supportedCreationParameters(parameters) {
-			// returns true if the parameters are supported by this display
-			throw 'Should be implemented by extending class';
-		}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame(frame) {}
-
-		/*
-  Called by a session after it has handed the XRPresentationFrame to the app
-  Use this for any display submission calls that need to happen after the render has occurred.
-  */
-
-	}, {
-		key: '_handleAfterFrame',
-		value: function _handleAfterFrame(frame) {}
-
-		/*
-  Called by XRSession after the session.baseLayer is assigned a value
-  */
-
-	}, {
-		key: '_handleNewBaseLayer',
-		value: function _handleNewBaseLayer(baseLayer) {}
-
-		//attribute EventHandler ondeactivate;
-
-	}, {
-		key: 'displayName',
-		get: function get() {
-			return this._displayName;
-		}
-	}, {
-		key: 'isExternal',
-		get: function get() {
-			return this._isExternal;
-		}
-	}]);
-
-	return XRDisplay;
-}(_EventHandlerBase3.default);
-
-exports.default = XRDisplay;
-
-
-XRDisplay.VIDEO_FRAME = 'videoFrame';
-XRDisplay.TRACKING_CHANGED = 'tracking-changed';
-XRDisplay.NEW_WORLD_ANCHOR = 'world-anchor';
-XRDisplay.UPDATE_WORLD_ANCHOR = 'update-world-anchor';
-XRDisplay.REMOVE_WORLD_ANCHOR = 'remove-world-anchor';
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-A Reality represents a view of the world, be it the real world via sensors or a virtual world that is rendered with WebGL or WebGPU.
-*/
-var Reality = function (_EventHandlerBase) {
-	_inherits(Reality, _EventHandlerBase);
-
-	function Reality(xr, name, isShared, isPassthrough) {
-		_classCallCheck(this, Reality);
-
-		var _this = _possibleConstructorReturn(this, (Reality.__proto__ || Object.getPrototypeOf(Reality)).call(this));
-
-		_this._xr = xr;
-		_this._name = name;
-		_this._isShared = isShared;
-		_this._isPassthrough = isPassthrough;
-		_this._anchors = new Map();
-		return _this;
-	}
-
-	_createClass(Reality, [{
-		key: 'getCoordinateSystem',
-		value: function getCoordinateSystem() {
-			//XRCoordinateSystem? getCoordinateSystem(XRFrameOfReferenceType type, ...); // Tries the types in order, returning the first match or null if none is found
-			throw new Error('Not implemented');
-		}
-
-		/*
-  Called when at least one active XRSession is using this Reality
-  */
-
-	}, {
-		key: '_start',
-		value: function _start(parameters) {
-			throw new Error('Extending classes should implement _start');
-		}
-
-		/*
-  Called when no more active XRSessions are using this Reality
-  */
-
-	}, {
-		key: '_stop',
-		value: function _stop() {
-			throw new Error('Extending classes should implement _stop');
-		}
-
-		/*
-  Request another video frame be generated, typically from video-mixed Realities.
-  */
-
-	}, {
-		key: '_requestVideoFrame',
-		value: function _requestVideoFrame() {}
-
-		/*
-  Start or stop video frames
-  */
-
-	}, {
-		key: '_stopVideoFrames',
-		value: function _stopVideoFrames() {}
-	}, {
-		key: '_startVideoFrames',
-		value: function _startVideoFrames() {}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame() {}
-
-		/*
-  Create an anchor hung in space
-  */
-
-	}, {
-		key: '_addAnchor',
-		value: function _addAnchor(anchor, display) {
-			// returns DOMString anchor UID
-			throw new Error('Extending classes should implement _addAnchor');
-		}
-
-		/*
-  Create an anchor attached to a surface, as found by a ray
-  returns a Promise that resolves either to an AnchorOffset or null if the hit test failed
-  normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-  */
-
-	}, {
-		key: '_findAnchor',
-		value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
-			throw new Error('Extending classes should implement _findAnchor');
-		}
-	}, {
-		key: '_createImageAnchor',
-		value: function _createImageAnchor(uid, buffer, width, height, physicalWidthInMeters) {
-			throw new Error('Extending classes should implement _createImageAnchor');
-		}
-	}, {
-		key: 'activateDetectionImage',
-		value: function activateDetectionImage(uid, display) {
-			throw new Error('Extending classes should implement _activateDetectionImage');
-		}
-
-		/*
-  Find an XRAnchorOffset that is at floor level below the current head pose
-  returns a Promise that resolves either to an AnchorOffset or null if the floor level is unknown
-  */
-
-	}, {
-		key: '_findFloorAnchor',
-		value: function _findFloorAnchor(display) {
-			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			throw new Error('Extending classes should implement _findFloorAnchor');
-		}
-	}, {
-		key: '_getAnchor',
-		value: function _getAnchor(uid) {
-			return this._anchors.get(uid) || null;
-		}
-	}, {
-		key: '_removeAnchor',
-		value: function _removeAnchor(uid) {
-			// returns void
-			throw new Error('Extending classes should implement _removeAnchor');
-		}
-	}, {
-		key: '_hitTestNoAnchor',
-		value: function _hitTestNoAnchor(normalizedScreenX, normalizedScreenY, display) {
-			throw new Error('Extending classes should implement _hitTestNoAnchor');
-		}
-	}, {
-		key: '_getLightAmbientIntensity',
-		value: function _getLightAmbientIntensity() {
-			throw new Error('Extending classes should implement _getLightAmbientIntensity');
-		}
-	}, {
-		key: '_getWorldMap',
-		value: function _getWorldMap() {
-			throw new Error('Extending classes should implement _getWorldMap');
-		}
-	}, {
-		key: '_setWorldMap',
-		value: function _setWorldMap(worldMap) {
-			throw new Error('Extending classes should implement _setWorldMap');
-		}
-	}, {
-		key: '_getWorldMappingStatus',
-		value: function _getWorldMappingStatus() {
-			throw new Error('Extending classes should implement _getWorldMappingStatus');
-		}
-		// attribute EventHandler onchange;
-
-	}, {
-		key: 'name',
-		get: function get() {
-			return this._name;
-		}
-	}, {
-		key: 'isShared',
-		get: function get() {
-			return this._isShared;
-		}
-	}, {
-		key: 'isPassthrough',
-		get: function get() {
-			return this._isPassthrough;
-		}
-	}]);
-
-	return Reality;
-}(_EventHandlerBase3.default);
-
-exports.default = Reality;
-
-
-Reality.COMPUTER_VISION_DATA = 'cv_data';
-Reality.WINDOW_RESIZE_EVENT = 'window-resize';
-Reality.NEW_WORLD_ANCHOR = 'world-anchor';
-Reality.UPDATE_WORLD_ANCHOR = 'update-world-anchor';
-Reality.REMOVE_WORLD_ANCHOR = 'remove-world-anchor';
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRAnchor2 = __webpack_require__(1);
-
-var _XRAnchor3 = _interopRequireDefault(_XRAnchor2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRFaceAnchor represents a face anchor
-*/
-var XRFaceAnchor = function (_XRAnchor) {
-    _inherits(XRFaceAnchor, _XRAnchor);
-
-    function XRFaceAnchor(coordinateSystem) {
-        var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-        var geometry = arguments[2];
-        var blendShapeArray = arguments[3];
-
-        _classCallCheck(this, XRFaceAnchor);
-
-        var _this = _possibleConstructorReturn(this, (XRFaceAnchor.__proto__ || Object.getPrototypeOf(XRFaceAnchor)).call(this, coordinateSystem, uid));
-
-        _this.geometry = geometry;
-        _this.blendShapes = {};
-        _this.updateBlendShapes(blendShapeArray);
-        return _this;
-    }
-
-    _createClass(XRFaceAnchor, [{
-        key: "updateBlendShapes",
-        value: function updateBlendShapes(blendShapeArray) {
-            for (var i = 0; i < blendShapeNames.length; i++) {
-                this.blendShapes[blendShapeNames[i]] = blendShapeArray[i];
-            }
-        }
-    }]);
-
-    return XRFaceAnchor;
-}(_XRAnchor3.default);
-
-exports.default = XRFaceAnchor;
-
-
-var blendShapeNames = ["browDownLeft", "browDownRight", "browInnerUp", "browOuterUpLeft", "browOuterUpRight", "cheekPuff", "cheekSquintLeft", "cheekSquintRight", "eyeBlinkLeft", "eyeBlinkRight", "eyeLookDownLeft", "eyeLookDownRight", "eyeLookInLeft", "eyeLookInRight", "eyeLookOutLeft", "eyeLookOutRight", "eyeLookUpLeft", "eyeLookUpRight", "eyeSquintLeft", "eyeSquintRight", "eyeWideLeft", "eyeWideRight", "jawForward", "jawLeft", "jawOpen", "jawRight", "mouthClose", "mouthDimpleLeft", "mouthDimpleRight", "mouthFrownLeft", "mouthFrownRight", "mouthFunnel", "mouthLeft", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthPucker", "mouthRight", "mouthRollLower", "mouthRollUpper", "mouthShrugLower", "mouthShrugUpper", "mouthSmileLeft", "mouthSmileRight", "mouthStretchLeft", "mouthStretchRight", "mouthUpperUpLeft", "mouthUpperUpRight", "noseSneerLeft", "noseSneerRight"];
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _XRAnchor2 = __webpack_require__(1);
-
-var _XRAnchor3 = _interopRequireDefault(_XRAnchor2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRFaceAnchor represents an anchor
-*/
-var XRImageAnchor = function (_XRAnchor) {
-    _inherits(XRImageAnchor, _XRAnchor);
-
-    function XRImageAnchor(coordinateSystem) {
-        var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-        _classCallCheck(this, XRImageAnchor);
-
-        return _possibleConstructorReturn(this, (XRImageAnchor.__proto__ || Object.getPrototypeOf(XRImageAnchor)).call(this, coordinateSystem, uid));
-    }
-
-    return XRImageAnchor;
-}(_XRAnchor3.default);
-
-exports.default = XRImageAnchor;
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRAnchor2 = __webpack_require__(1);
-
-var _XRAnchor3 = _interopRequireDefault(_XRAnchor2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRPlaneAnchor represents a flat surfaces like floors, table tops, or walls.
-*/
-var XRPlaneAnchor = function (_XRAnchor) {
-	_inherits(XRPlaneAnchor, _XRAnchor);
-
-	function XRPlaneAnchor(coordinateSystem) {
-		var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-		var center = arguments[2];
-		var extent = arguments[3];
-		var alignment = arguments[4];
-		var geometry = arguments[5];
-
-		_classCallCheck(this, XRPlaneAnchor);
-
-		var _this = _possibleConstructorReturn(this, (XRPlaneAnchor.__proto__ || Object.getPrototypeOf(XRPlaneAnchor)).call(this, coordinateSystem, uid));
-
-		_this.center = center;
-		_this.extent = extent;
-		_this.alignment = alignment;
-		_this.geometry = geometry;
-		return _this;
-	}
-
-	_createClass(XRPlaneAnchor, [{
-		key: 'width',
-		get: function get() {
-			//readonly attribute double width;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'length',
-		get: function get() {
-			//readonly attribute double length;
-			throw 'Not implemented';
-		}
-	}]);
-
-	return XRPlaneAnchor;
-}(_XRAnchor3.default);
-
-exports.default = XRPlaneAnchor;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _XRDisplay = __webpack_require__(6);
-
-var _XRDisplay2 = _interopRequireDefault(_XRDisplay);
-
-var _XRFaceAnchor = __webpack_require__(8);
-
-var _XRFaceAnchor2 = _interopRequireDefault(_XRFaceAnchor);
-
-var _XRImageAnchor = __webpack_require__(9);
-
-var _XRImageAnchor2 = _interopRequireDefault(_XRImageAnchor);
-
-var _XRAnchor = __webpack_require__(1);
-
-var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
-
-var _ARKitWrapper = __webpack_require__(5);
-
-var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
-
-var _XRPlaneAnchor = __webpack_require__(10);
-
-var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-A script that wishes to make use of an XRDisplay can request an XRSession.
-An XRSession provides a list of the available Reality instances that the script may request as well as make a request for an animation frame.
-*/
-var XRSession = function (_EventHandlerBase) {
-	_inherits(XRSession, _EventHandlerBase);
-
-	function XRSession(xr, display, createParameters) {
-		_classCallCheck(this, XRSession);
-
-		var _this = _possibleConstructorReturn(this, (XRSession.__proto__ || Object.getPrototypeOf(XRSession)).call(this, xr));
-
-		_this._xr = xr;
-		_this._display = display;
-		_this._createParameters = createParameters;
-		_this._ended = false;
-
-		_this._baseLayer = null;
-		_this._stageBounds = null;
-
-		_this._skip = false;
-
-		_this._frameAnchors = [];
-		_this._tempMatrix = _MatrixMath2.default.mat4_generateIdentity();
-		_this._tempMatrix2 = _MatrixMath2.default.mat4_generateIdentity();
-
-		_this._display.addEventListener(_XRDisplay2.default.TRACKING_CHANGED, _this._handleTrackingChanged.bind(_this));
-		_this._display.addEventListener(_XRDisplay2.default.NEW_WORLD_ANCHOR, _this._handleNewWorldAnchor.bind(_this));
-		_this._display.addEventListener(_XRDisplay2.default.REMOVE_WORLD_ANCHOR, _this._handleRemoveWorldAnchor.bind(_this));
-		_this._display.addEventListener(_XRDisplay2.default.UPDATE_WORLD_ANCHOR, _this._handleUpdateWorldAnchor.bind(_this));
-		return _this;
-	}
-
-	_createClass(XRSession, [{
-		key: 'requestFrame',
-		value: function requestFrame(callback) {
-			if (this._ended) return null;
-			if (typeof callback !== 'function') {
-				throw 'Invalid callback';
-			}
-			return this._handleRequestFrame(callback);
-		}
-	}, {
-		key: '_handleRequestFrame',
-		value: function _handleRequestFrame(callback) {
-			var _this2 = this;
-
-			return this._display._requestAnimationFrame(function (timestamp) {
-				if (_this2._skip) {
-					_this2._skip = false;
-					return _this2._handleRequestFrame(callback);
-				}
-				//this._skip = true;  // try skipping every second raf
-				var frame = _this2._createPresentationFrame(timestamp);
-				_this2._updateCameraAnchor(frame);
-
-				_this2._display._reality._handleNewFrame(frame);
-				_this2._display._handleNewFrame(frame);
-				callback(frame);
-				_this2._display._handleAfterFrame(frame);
-			});
-		}
-	}, {
-		key: 'cancelFrame',
-		value: function cancelFrame(handle) {
-			return this._display._cancelAnimationFrame(handle);
-		}
-	}, {
-		key: 'end',
-		value: function end() {
-			if (this._ended) return;
-			for (var i = 0; i < this._frameAnchors.length; i++) {
-				this._display._reality._removeAnchor(this._frameAnchors[i].uid);
-			}
-			this._frameAnchors = [];
-			this._ended = true;
-			this._display._stop();
-			return new Promise(function (resolve, reject) {
-				resolve();
-			});
-		}
-	}, {
-		key: '_updateCameraAnchor',
-		value: function _updateCameraAnchor(frame) {
-			// new anchor each minute
-			if (this._frameAnchors.length == 0 || this._frameAnchors[0].timestamp + 60000 < frame.timestamp) {
-				var headCoordinateSystem = frame.getCoordinateSystem(XRCoordinateSystem.EYE_LEVEL);
-				var anchorUID = frame.addAnchor(headCoordinateSystem, [0, -1, 0], [0, 0, 0, 1], 'cameraAnchor-' + new Date().getTime() + '-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-				var anchor = frame.getAnchor(anchorUID);
-				anchor.timestamp = frame.timestamp;
-				this._frameAnchors.unshift(anchor);
-
-				if (this._frameAnchors.length > 10) {
-					var oldAnchor = this._frameAnchors.pop();
-					this._display._reality._removeAnchor(oldAnchor.uid);
-				}
-				return anchor;
-			} else {
-				return this._frameAnchors[0];
-			}
-		}
-	}, {
-		key: '_transformToCameraAnchor',
-		value: function _transformToCameraAnchor(camera) {
-			if (this._frameAnchors.length == 0) return camera.viewMatrix;
-
-			var matrix = camera.viewMatrix;
-			camera._anchorUid = this._frameAnchors[0].uid;
-
-			var anchorCoords = this._frameAnchors[0].coordinateSystem;
-
-			// should only have to invert anchor coords, but we're sending in the inverse
-			// of the camera pose ...
-
-			// get world to anchor by inverting anchor to world
-			_MatrixMath2.default.mat4_invert(this._tempMatrix, anchorCoords._poseModelMatrix);
-
-			// get camera to world by inverting world to camera
-			// MatrixMath.mat4_invert(this._tempMatrix2, matrix)
-			// MatrixMath.mat4_multiply(camera.viewMatrix, this._tempMatrix, this._tempMatrix2)
-			_MatrixMath2.default.mat4_multiply(camera.viewMatrix, this._tempMatrix, matrix);
-		}
-	}, {
-		key: 'setVideoFrameHandler',
-		value: function setVideoFrameHandler(callback) {
-			var _this3 = this;
-
-			if (callback instanceof Worker) {
-				var worker = callback;
-				callback = function callback(ev) {
-					// var cv = ev.detail
-					// var buffers = cv.frame.buffers
-					// var buffs = []
-					// for (var i = 0; i < buffers.length; i++) {
-					// 	buffs.push(buffers[i].buffer)
-					// }
-					// worker.postMessage(cv, buffs);
-					_this3._transformToCameraAnchor(ev.detail.camera);
-					ev.detail.postMessageToWorker(worker, { type: "newVideoFrame" });
-					ev.detail.release();
-				};
-			} else {
-				var originalCallback = callback;
-				callback = function callback(ev) {
-					_this3._transformToCameraAnchor(ev.detail.camera);
-					originalCallback(ev);
-				};
-			}
-			this._display.addEventListener("videoFrame", callback);
-		}
-	}, {
-		key: 'getVideoFramePose',
-		value: function getVideoFramePose(videoFrame, poseOut) {
-			if (!videoFrame.camera._anchorUid) return;
-
-			var anchorPose;
-			var anchor = this.reality._getAnchor(videoFrame.camera._anchorUid);
-			if (anchor) {
-				anchorPose = anchor.coordinateSystem._poseModelMatrix;
-			} else {
-				var i = 0;
-				for (; i < this._frameAnchors.length; i++) {
-					if (videoFrame.camera._anchorUid == this._frameAnchors[i].uid) {
-						anchorPose = this._frameAnchors[i].coordinateSystem._poseModelMatrix;
-						break;
-					}
-				}
-
-				if (i == this._frameAnchors.length) {
-					// shouldn't happen!
-					console.warn("should never get here: session.getVideoFramePose can't find anchor");
-					return;
-				}
-			}
-			_MatrixMath2.default.mat4_multiply(poseOut, anchorPose, videoFrame.camera.viewMatrix);
-		}
-
-		// normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-
-	}, {
-		key: 'hitTest',
-		value: function hitTest(normalizedScreenX, normalizedScreenY) {
-			var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-			// Promise<XRAnchorOffset?> findAnchor(float32, float32); // cast a ray to find or create an anchor at the first intersection in the Reality
-			return this.reality._findAnchor(normalizedScreenX, normalizedScreenY, this.display, options);
-		}
-	}, {
-		key: 'requestVideoFrame',
-		value: function requestVideoFrame() {
-			this._display._requestVideoFrame();
-		}
-	}, {
-		key: 'stopVideoFrames',
-		value: function stopVideoFrames() {
-			this._display._stopVideoFrames();
-		}
-	}, {
-		key: 'startVideoFrames',
-		value: function startVideoFrames() {
-			this._display._startVideoFrames();
-		}
-	}, {
-		key: '_createPresentationFrame',
-		value: function _createPresentationFrame(timestamp) {
-			return new XRPresentationFrame(this, timestamp);
-		}
-	}, {
-		key: '_getCoordinateSystem',
-		value: function _getCoordinateSystem() {
-			for (var _len = arguments.length, types = Array(_len), _key = 0; _key < _len; _key++) {
-				types[_key] = arguments[_key];
-			}
-
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = types[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var type = _step.value;
-
-					switch (type) {
-						case XRCoordinateSystem.HEAD_MODEL:
-							return this._display._headModelCoordinateSystem;
-						case XRCoordinateSystem.EYE_LEVEL:
-							return this._display._eyeLevelCoordinateSystem;
-						case XRCoordinateSystem.TRACKER:
-							return this._display._trackerCoordinateSystem;
-						case XRCoordinateSystem.GEOSPATIAL:
-						// Not supported yet
-						default:
-							continue;
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return null;
-		}
-	}, {
-		key: 'createImageAnchor',
-		value: function createImageAnchor(uid, buffer, width, height, physicalWidthInMeters) {
-			return this.reality._createImageAnchor(uid, buffer, width, height, physicalWidthInMeters);
-		}
-	}, {
-		key: 'activateDetectionImage',
-		value: function activateDetectionImage(uid) {
-			return this.reality._activateDetectionImage(uid, this._display);
-		}
-	}, {
-		key: '_handleNewWorldAnchor',
-		value: function _handleNewWorldAnchor(event) {
-			var xrAnchor = event.detail;
-			//console.log(`New world anchor: ${JSON.stringify(xrAnchor)}`)
-
-			if (!xrAnchor.uid.startsWith('cameraAnchor-')) {
-				try {
-					this.dispatchEvent(new CustomEvent(XRSession.NEW_WORLD_ANCHOR, {
-						source: this,
-						detail: xrAnchor
-					}));
-				} catch (e) {
-					console.error('NEW_WORLD_ANCHOR event error', e);
-				}
-			} else {
-				console.log('not passing NEW_WORLD_ANCHOR event to app for ', xrAnchor.uid);
-			}
-		}
-	}, {
-		key: '_handleUpdateWorldAnchor',
-		value: function _handleUpdateWorldAnchor(event) {
-			var xrAnchor = event.detail;
-			//console.log(`New world anchor: ${JSON.stringify(xrAnchor)}`)
-
-			try {
-				this.dispatchEvent(new CustomEvent(XRSession.UPDATE_WORLD_ANCHOR, {
-					source: this,
-					detail: xrAnchor
-				}));
-			} catch (e) {
-				console.error('UPDATE_WORLD_ANCHOR event error', e);
-			}
-		}
-	}, {
-		key: '_handleRemoveWorldAnchor',
-		value: function _handleRemoveWorldAnchor(event) {
-			var xrAnchor = event.detail;
-			//console.log(`Remove world anchor: ${JSON.stringify(xrAnchor)}`)
-
-			try {
-				this.dispatchEvent(new CustomEvent(XRSession.REMOVE_WORLD_ANCHOR, {
-					source: this,
-					detail: xrAnchor
-				}));
-			} catch (e) {
-				console.error('REMOVE_WORLD_ANCHOR event error', e);
-			}
-		}
-	}, {
-		key: '_handleTrackingChanged',
-		value: function _handleTrackingChanged(event) {
-			try {
-				this.dispatchEvent(new CustomEvent(XRSession.TRACKING_CHANGED, {
-					source: this,
-					detail: event.detail
-				}));
-			} catch (e) {
-				console.error('TRACKING_CHANGED event error', e);
-			}
-		}
-	}, {
-		key: 'getWorldMap',
-		value: function getWorldMap() {
-			return this.reality._getWorldMap();
-		}
-	}, {
-		key: 'setWorldMap',
-		value: function setWorldMap(worldMap) {
-			return this.reality._setWorldMap(worldMap);
-		}
-	}, {
-		key: 'getWorldMappingStatus',
-		value: function getWorldMappingStatus() {
-			return this.reality._getWorldMappingStatus();
-		}
-		/*
-  attribute EventHandler onblur;
-  attribute EventHandler onfocus;
-  attribute EventHandler onresetpose;
-  attribute EventHandler onrealitychanged;
-  attribute EventHandler onrealityconnect;
-  attribute EventHandler onrealitydisconnect;
-  attribute EventHandler onboundschange;
-  attribute EventHandler onended;
-  */
-
-	}, {
-		key: 'display',
-		get: function get() {
-			return this._display;
-		}
-	}, {
-		key: 'createParameters',
-		get: function get() {
-			return this._parameters;
-		}
-	}, {
-		key: 'realities',
-		get: function get() {
-			return this._xr._sharedRealities;
-		}
-	}, {
-		key: 'reality',
-		get: function get() {
-			return this._display._reality;
-		}
-	}, {
-		key: 'baseLayer',
-		get: function get() {
-			return this._baseLayer;
-		},
-		set: function set(value) {
-			this._baseLayer = value;
-			this._display._handleNewBaseLayer(this._baseLayer);
-		}
-	}, {
-		key: 'depthNear',
-		get: function get() {
-			this._display._depthNear;
-		},
-		set: function set(value) {
-			this._display._depthNear = value;
-		}
-	}, {
-		key: 'depthFar',
-		get: function get() {
-			this._display._depthFar;
-		},
-		set: function set(value) {
-			this._display._depthFar = value;
-		}
-	}, {
-		key: 'hasStageBounds',
-		get: function get() {
-			this._stageBounds !== null;
-		}
-	}, {
-		key: 'stageBounds',
-		get: function get() {
-			return this._stageBounds;
-		}
-	}]);
-
-	return XRSession;
-}(_EventHandlerBase3.default);
-
-exports.default = XRSession;
-
-
-XRSession.REALITY = 'reality';
-XRSession.AUGMENTATION = 'augmentation';
-
-XRSession.TYPES = [XRSession.REALITY, XRSession.AUGMENTATION];
-
-XRSession.TRACKING_CHANGED = 'tracking-changed';
-
-XRSession.NEW_WORLD_ANCHOR = 'world-anchor';
-XRSession.UPDATE_WORLD_ANCHOR = 'update-world-anchor';
-XRSession.REMOVE_WORLD_ANCHOR = 'remove-world-anchor';
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.forEach = exports.sqrLen = exports.len = exports.sqrDist = exports.dist = exports.div = exports.mul = exports.sub = undefined;
-exports.create = create;
-exports.clone = clone;
-exports.length = length;
-exports.fromValues = fromValues;
-exports.copy = copy;
-exports.set = set;
-exports.add = add;
-exports.subtract = subtract;
-exports.multiply = multiply;
-exports.divide = divide;
-exports.ceil = ceil;
-exports.floor = floor;
-exports.min = min;
-exports.max = max;
-exports.round = round;
-exports.scale = scale;
-exports.scaleAndAdd = scaleAndAdd;
-exports.distance = distance;
-exports.squaredDistance = squaredDistance;
-exports.squaredLength = squaredLength;
-exports.negate = negate;
-exports.inverse = inverse;
-exports.normalize = normalize;
-exports.dot = dot;
-exports.cross = cross;
-exports.lerp = lerp;
-exports.hermite = hermite;
-exports.bezier = bezier;
-exports.random = random;
-exports.transformMat4 = transformMat4;
-exports.transformMat3 = transformMat3;
-exports.transformQuat = transformQuat;
-exports.rotateX = rotateX;
-exports.rotateY = rotateY;
-exports.rotateZ = rotateZ;
-exports.angle = angle;
-exports.str = str;
-exports.exactEquals = exactEquals;
-exports.equals = equals;
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * 3 Dimensional Vector
- * @module vec3
- */
-
-/**
- * Creates a new, empty vec3
- *
- * @returns {vec3} a new 3D vector
- */
-function create() {
-  var out = new glMatrix.ARRAY_TYPE(3);
-  out[0] = 0;
-  out[1] = 0;
-  out[2] = 0;
-  return out;
-}
-
-/**
- * Creates a new vec3 initialized with values from an existing vector
- *
- * @param {vec3} a vector to clone
- * @returns {vec3} a new 3D vector
- */
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
-function clone(a) {
-  var out = new glMatrix.ARRAY_TYPE(3);
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  return out;
-}
-
-/**
- * Calculates the length of a vec3
- *
- * @param {vec3} a vector to calculate length of
- * @returns {Number} length of a
- */
-function length(a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  return Math.sqrt(x * x + y * y + z * z);
-}
-
-/**
- * Creates a new vec3 initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @returns {vec3} a new 3D vector
- */
-function fromValues(x, y, z) {
-  var out = new glMatrix.ARRAY_TYPE(3);
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  return out;
-}
-
-/**
- * Copy the values from one vec3 to another
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the source vector
- * @returns {vec3} out
- */
-function copy(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  return out;
-}
-
-/**
- * Set the components of a vec3 to the given values
- *
- * @param {vec3} out the receiving vector
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @returns {vec3} out
- */
-function set(out, x, y, z) {
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  return out;
-}
-
-/**
- * Adds two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function add(out, a, b) {
-  out[0] = a[0] + b[0];
-  out[1] = a[1] + b[1];
-  out[2] = a[2] + b[2];
-  return out;
-}
-
-/**
- * Subtracts vector b from vector a
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function subtract(out, a, b) {
-  out[0] = a[0] - b[0];
-  out[1] = a[1] - b[1];
-  out[2] = a[2] - b[2];
-  return out;
-}
-
-/**
- * Multiplies two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function multiply(out, a, b) {
-  out[0] = a[0] * b[0];
-  out[1] = a[1] * b[1];
-  out[2] = a[2] * b[2];
-  return out;
-}
-
-/**
- * Divides two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function divide(out, a, b) {
-  out[0] = a[0] / b[0];
-  out[1] = a[1] / b[1];
-  out[2] = a[2] / b[2];
-  return out;
-}
-
-/**
- * Math.ceil the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to ceil
- * @returns {vec3} out
- */
-function ceil(out, a) {
-  out[0] = Math.ceil(a[0]);
-  out[1] = Math.ceil(a[1]);
-  out[2] = Math.ceil(a[2]);
-  return out;
-}
-
-/**
- * Math.floor the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to floor
- * @returns {vec3} out
- */
-function floor(out, a) {
-  out[0] = Math.floor(a[0]);
-  out[1] = Math.floor(a[1]);
-  out[2] = Math.floor(a[2]);
-  return out;
-}
-
-/**
- * Returns the minimum of two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function min(out, a, b) {
-  out[0] = Math.min(a[0], b[0]);
-  out[1] = Math.min(a[1], b[1]);
-  out[2] = Math.min(a[2], b[2]);
-  return out;
-}
-
-/**
- * Returns the maximum of two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function max(out, a, b) {
-  out[0] = Math.max(a[0], b[0]);
-  out[1] = Math.max(a[1], b[1]);
-  out[2] = Math.max(a[2], b[2]);
-  return out;
-}
-
-/**
- * Math.round the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to round
- * @returns {vec3} out
- */
-function round(out, a) {
-  out[0] = Math.round(a[0]);
-  out[1] = Math.round(a[1]);
-  out[2] = Math.round(a[2]);
-  return out;
-}
-
-/**
- * Scales a vec3 by a scalar number
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {vec3} out
- */
-function scale(out, a, b) {
-  out[0] = a[0] * b;
-  out[1] = a[1] * b;
-  out[2] = a[2] * b;
-  return out;
-}
-
-/**
- * Adds two vec3's after scaling the second operand by a scalar value
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {Number} scale the amount to scale b by before adding
- * @returns {vec3} out
- */
-function scaleAndAdd(out, a, b, scale) {
-  out[0] = a[0] + b[0] * scale;
-  out[1] = a[1] + b[1] * scale;
-  out[2] = a[2] + b[2] * scale;
-  return out;
-}
-
-/**
- * Calculates the euclidian distance between two vec3's
- *
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {Number} distance between a and b
- */
-function distance(a, b) {
-  var x = b[0] - a[0];
-  var y = b[1] - a[1];
-  var z = b[2] - a[2];
-  return Math.sqrt(x * x + y * y + z * z);
-}
-
-/**
- * Calculates the squared euclidian distance between two vec3's
- *
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {Number} squared distance between a and b
- */
-function squaredDistance(a, b) {
-  var x = b[0] - a[0];
-  var y = b[1] - a[1];
-  var z = b[2] - a[2];
-  return x * x + y * y + z * z;
-}
-
-/**
- * Calculates the squared length of a vec3
- *
- * @param {vec3} a vector to calculate squared length of
- * @returns {Number} squared length of a
- */
-function squaredLength(a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  return x * x + y * y + z * z;
-}
-
-/**
- * Negates the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to negate
- * @returns {vec3} out
- */
-function negate(out, a) {
-  out[0] = -a[0];
-  out[1] = -a[1];
-  out[2] = -a[2];
-  return out;
-}
-
-/**
- * Returns the inverse of the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to invert
- * @returns {vec3} out
- */
-function inverse(out, a) {
-  out[0] = 1.0 / a[0];
-  out[1] = 1.0 / a[1];
-  out[2] = 1.0 / a[2];
-  return out;
-}
-
-/**
- * Normalize a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to normalize
- * @returns {vec3} out
- */
-function normalize(out, a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  var len = x * x + y * y + z * z;
-  if (len > 0) {
-    //TODO: evaluate use of glm_invsqrt here?
-    len = 1 / Math.sqrt(len);
-    out[0] = a[0] * len;
-    out[1] = a[1] * len;
-    out[2] = a[2] * len;
-  }
-  return out;
-}
-
-/**
- * Calculates the dot product of two vec3's
- *
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {Number} dot product of a and b
- */
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-
-/**
- * Computes the cross product of two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-function cross(out, a, b) {
-  var ax = a[0],
-      ay = a[1],
-      az = a[2];
-  var bx = b[0],
-      by = b[1],
-      bz = b[2];
-
-  out[0] = ay * bz - az * by;
-  out[1] = az * bx - ax * bz;
-  out[2] = ax * by - ay * bx;
-  return out;
-}
-
-/**
- * Performs a linear interpolation between two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-function lerp(out, a, b, t) {
-  var ax = a[0];
-  var ay = a[1];
-  var az = a[2];
-  out[0] = ax + t * (b[0] - ax);
-  out[1] = ay + t * (b[1] - ay);
-  out[2] = az + t * (b[2] - az);
-  return out;
-}
-
-/**
- * Performs a hermite interpolation with two control points
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {vec3} c the third operand
- * @param {vec3} d the fourth operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-function hermite(out, a, b, c, d, t) {
-  var factorTimes2 = t * t;
-  var factor1 = factorTimes2 * (2 * t - 3) + 1;
-  var factor2 = factorTimes2 * (t - 2) + t;
-  var factor3 = factorTimes2 * (t - 1);
-  var factor4 = factorTimes2 * (3 - 2 * t);
-
-  out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
-  out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
-  out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
-
-  return out;
-}
-
-/**
- * Performs a bezier interpolation with two control points
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {vec3} c the third operand
- * @param {vec3} d the fourth operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-function bezier(out, a, b, c, d, t) {
-  var inverseFactor = 1 - t;
-  var inverseFactorTimesTwo = inverseFactor * inverseFactor;
-  var factorTimes2 = t * t;
-  var factor1 = inverseFactorTimesTwo * inverseFactor;
-  var factor2 = 3 * t * inverseFactorTimesTwo;
-  var factor3 = 3 * factorTimes2 * inverseFactor;
-  var factor4 = factorTimes2 * t;
-
-  out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
-  out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
-  out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
-
-  return out;
-}
-
-/**
- * Generates a random vector with the given scale
- *
- * @param {vec3} out the receiving vector
- * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
- * @returns {vec3} out
- */
-function random(out, scale) {
-  scale = scale || 1.0;
-
-  var r = glMatrix.RANDOM() * 2.0 * Math.PI;
-  var z = glMatrix.RANDOM() * 2.0 - 1.0;
-  var zScale = Math.sqrt(1.0 - z * z) * scale;
-
-  out[0] = Math.cos(r) * zScale;
-  out[1] = Math.sin(r) * zScale;
-  out[2] = z * scale;
-  return out;
-}
-
-/**
- * Transforms the vec3 with a mat4.
- * 4th vector component is implicitly '1'
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {mat4} m matrix to transform with
- * @returns {vec3} out
- */
-function transformMat4(out, a, m) {
-  var x = a[0],
-      y = a[1],
-      z = a[2];
-  var w = m[3] * x + m[7] * y + m[11] * z + m[15];
-  w = w || 1.0;
-  out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
-  out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
-  out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
-  return out;
-}
-
-/**
- * Transforms the vec3 with a mat3.
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {mat3} m the 3x3 matrix to transform with
- * @returns {vec3} out
- */
-function transformMat3(out, a, m) {
-  var x = a[0],
-      y = a[1],
-      z = a[2];
-  out[0] = x * m[0] + y * m[3] + z * m[6];
-  out[1] = x * m[1] + y * m[4] + z * m[7];
-  out[2] = x * m[2] + y * m[5] + z * m[8];
-  return out;
-}
-
-/**
- * Transforms the vec3 with a quat
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {quat} q quaternion to transform with
- * @returns {vec3} out
- */
-function transformQuat(out, a, q) {
-  // benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
-
-  var x = a[0],
-      y = a[1],
-      z = a[2];
-  var qx = q[0],
-      qy = q[1],
-      qz = q[2],
-      qw = q[3];
-
-  // calculate quat * vec
-  var ix = qw * x + qy * z - qz * y;
-  var iy = qw * y + qz * x - qx * z;
-  var iz = qw * z + qx * y - qy * x;
-  var iw = -qx * x - qy * y - qz * z;
-
-  // calculate result * inverse quat
-  out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-  out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-  out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-  return out;
-}
-
-/**
- * Rotate a 3D vector around the x-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-function rotateX(out, a, b, c) {
-  var p = [],
-      r = [];
-  //Translate point to the origin
-  p[0] = a[0] - b[0];
-  p[1] = a[1] - b[1];
-  p[2] = a[2] - b[2];
-
-  //perform rotation
-  r[0] = p[0];
-  r[1] = p[1] * Math.cos(c) - p[2] * Math.sin(c);
-  r[2] = p[1] * Math.sin(c) + p[2] * Math.cos(c);
-
-  //translate to correct position
-  out[0] = r[0] + b[0];
-  out[1] = r[1] + b[1];
-  out[2] = r[2] + b[2];
-
-  return out;
-}
-
-/**
- * Rotate a 3D vector around the y-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-function rotateY(out, a, b, c) {
-  var p = [],
-      r = [];
-  //Translate point to the origin
-  p[0] = a[0] - b[0];
-  p[1] = a[1] - b[1];
-  p[2] = a[2] - b[2];
-
-  //perform rotation
-  r[0] = p[2] * Math.sin(c) + p[0] * Math.cos(c);
-  r[1] = p[1];
-  r[2] = p[2] * Math.cos(c) - p[0] * Math.sin(c);
-
-  //translate to correct position
-  out[0] = r[0] + b[0];
-  out[1] = r[1] + b[1];
-  out[2] = r[2] + b[2];
-
-  return out;
-}
-
-/**
- * Rotate a 3D vector around the z-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-function rotateZ(out, a, b, c) {
-  var p = [],
-      r = [];
-  //Translate point to the origin
-  p[0] = a[0] - b[0];
-  p[1] = a[1] - b[1];
-  p[2] = a[2] - b[2];
-
-  //perform rotation
-  r[0] = p[0] * Math.cos(c) - p[1] * Math.sin(c);
-  r[1] = p[0] * Math.sin(c) + p[1] * Math.cos(c);
-  r[2] = p[2];
-
-  //translate to correct position
-  out[0] = r[0] + b[0];
-  out[1] = r[1] + b[1];
-  out[2] = r[2] + b[2];
-
-  return out;
-}
-
-/**
- * Get the angle between two 3D vectors
- * @param {vec3} a The first operand
- * @param {vec3} b The second operand
- * @returns {Number} The angle in radians
- */
-function angle(a, b) {
-  var tempA = fromValues(a[0], a[1], a[2]);
-  var tempB = fromValues(b[0], b[1], b[2]);
-
-  normalize(tempA, tempA);
-  normalize(tempB, tempB);
-
-  var cosine = dot(tempA, tempB);
-
-  if (cosine > 1.0) {
-    return 0;
-  } else if (cosine < -1.0) {
-    return Math.PI;
-  } else {
-    return Math.acos(cosine);
-  }
-}
-
-/**
- * Returns a string representation of a vector
- *
- * @param {vec3} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-function str(a) {
-  return 'vec3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ')';
-}
-
-/**
- * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
- *
- * @param {vec3} a The first vector.
- * @param {vec3} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-function exactEquals(a, b) {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-}
-
-/**
- * Returns whether or not the vectors have approximately the same elements in the same position.
- *
- * @param {vec3} a The first vector.
- * @param {vec3} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-function equals(a, b) {
-  var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2];
-  var b0 = b[0],
-      b1 = b[1],
-      b2 = b[2];
-  return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2));
-}
-
-/**
- * Alias for {@link vec3.subtract}
- * @function
- */
-var sub = exports.sub = subtract;
-
-/**
- * Alias for {@link vec3.multiply}
- * @function
- */
-var mul = exports.mul = multiply;
-
-/**
- * Alias for {@link vec3.divide}
- * @function
- */
-var div = exports.div = divide;
-
-/**
- * Alias for {@link vec3.distance}
- * @function
- */
-var dist = exports.dist = distance;
-
-/**
- * Alias for {@link vec3.squaredDistance}
- * @function
- */
-var sqrDist = exports.sqrDist = squaredDistance;
-
-/**
- * Alias for {@link vec3.length}
- * @function
- */
-var len = exports.len = length;
-
-/**
- * Alias for {@link vec3.squaredLength}
- * @function
- */
-var sqrLen = exports.sqrLen = squaredLength;
-
-/**
- * Perform some operation over an array of vec3s.
- *
- * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each vec3. If 0 assumes tightly packed
- * @param {Number} offset Number of elements to skip at the beginning of the array
- * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
- * @param {Function} fn Function to call for each vector in the array
- * @param {Object} [arg] additional argument to pass to fn
- * @returns {Array} a
- * @function
- */
-var forEach = exports.forEach = function () {
-  var vec = create();
-
-  return function (a, stride, offset, count, fn, arg) {
-    var i = void 0,
-        l = void 0;
-    if (!stride) {
-      stride = 3;
-    }
-
-    if (!offset) {
-      offset = 0;
-    }
-
-    if (count) {
-      l = Math.min(count * stride + offset, a.length);
-    } else {
-      l = a.length;
-    }
-
-    for (i = offset; i < l; i += stride) {
-      vec[0] = a[i];vec[1] = a[i + 1];vec[2] = a[i + 2];
-      fn(vec, vec, arg);
-      a[i] = vec[0];a[i + 1] = vec[1];a[i + 2] = vec[2];
-    }
-
-    return a;
-  };
-}();
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRViewport = __webpack_require__(22);
-
-var _XRViewport2 = _interopRequireDefault(_XRViewport);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-An XRView describes a single view into an XR scene.
-It provides several values directly, and acts as a key to query view-specific values from other interfaces.
-*/
-var XRView = function () {
-	function XRView(fov, depthNear, depthFar) {
-		var eye = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
-		_classCallCheck(this, XRView);
-
-		this._fov = fov;
-		this._depthNear = depthNear;
-		this._depthFar = depthFar;
-		this._eye = eye;
-		this._viewport = new _XRViewport2.default(0, 0, 1, 1);
-		this._projectionMatrix = new Float32Array(16);
-		this._viewMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-		_MatrixMath2.default.mat4_perspectiveFromFieldOfView(this._projectionMatrix, this._fov, this._depthNear, this._depthFar);
-	}
-
-	_createClass(XRView, [{
-		key: 'setProjectionMatrix',
-		value: function setProjectionMatrix(array16) {
-			for (var i = 0; i < 16; i++) {
-				this._projectionMatrix[i] = array16[i];
-			}
-		}
-	}, {
-		key: 'setViewMatrix',
-		value: function setViewMatrix(array16) {
-			for (var i = 0; i < 16; i++) {
-				this._viewMatrix[i] = array16[i];
-			}
-		}
-	}, {
-		key: 'getViewport',
-		value: function getViewport(layer) {
-			if (this._eye === XRView.LEFT) {
-				this._viewport.x = 0;
-				this._viewport.y = 0;
-				this._viewport.width = layer.framebufferWidth / 2;
-				this._viewport.height = layer.framebufferHeight;
-			} else if (this._eye === XRView.RIGHT) {
-				this._viewport.x = layer.framebufferWidth / 2;
-				this._viewport.y = 0;
-				this._viewport.width = layer.framebufferWidth / 2;
-				this._viewport.height = layer.framebufferHeight;
-			} else {
-				this._viewport.x = 0;
-				this._viewport.y = 0;
-				this._viewport.width = layer.framebufferWidth;
-				this._viewport.height = layer.framebufferHeight;
-			}
-			return this._viewport;
-		}
-	}, {
-		key: 'fov',
-		set: function set(value) {
-			this._fov = value;
-			_MatrixMath2.default.mat4_perspectiveFromFieldOfView(this._projectionMatrix, this._fov, this._depthNear, this._depthFar);
-		}
-	}, {
-		key: 'eye',
-		get: function get() {
-			return this._eye;
-		}
-	}, {
-		key: 'projectionMatrix',
-		get: function get() {
-			return this._projectionMatrix;
-		}
-	}, {
-		key: 'viewMatrix',
-		get: function get() {
-			return this._viewMatrix;
-		}
-	}]);
-
-	return XRView;
-}();
-
-exports.default = XRView;
-
-
-XRView.LEFT = 'left';
-XRView.RIGHT = 'right';
-XRView.EYES = [XRView.LEFT, XRView.RIGHT];
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRDevicePose describes the position and orientation of an XRDisplay relative to the query XRCoordinateSystem.
-It also describes the view and projection matrices that should be used by the application to render a frame of the XR scene.
-*/
-var XRViewPose = function () {
-	function XRViewPose() {
-		var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0, 0];
-		var orientation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
-
-		_classCallCheck(this, XRViewPose);
-
-		this._poseModelMatrix = new Float32Array(16);
-		_MatrixMath2.default.mat4_fromRotationTranslation(this._poseModelMatrix, orientation, position);
-	}
-
-	_createClass(XRViewPose, [{
-		key: '_setPoseModelMatrix',
-		value: function _setPoseModelMatrix(array16) {
-			for (var i = 0; i < 16; i++) {
-				this._poseModelMatrix[i] = array16[i];
-			}
-		}
-	}, {
-		key: '_translate',
-		value: function _translate(array3) {
-			this._poseModelMatrix[12] += array3[0];
-			this._poseModelMatrix[13] += array3[1];
-			this._poseModelMatrix[14] += array3[2];
-		}
-	}, {
-		key: 'getViewMatrix',
-		value: function getViewMatrix(view) {
-			var out = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			if (out === null) {
-				out = new Float32Array(16);
-			}
-			_MatrixMath2.default.mat4_eyeView(out, this._poseModelMatrix); // TODO offsets
-			return out;
-		}
-	}, {
-		key: 'poseModelMatrix',
-		get: function get() {
-			return this._poseModelMatrix;
-		}
-	}, {
-		key: '_position',
-		get: function get() {
-			return [this._poseModelMatrix[12], this._poseModelMatrix[13], this._poseModelMatrix[14]];
-		},
-		set: function set(array3) {
-			this._poseModelMatrix[12] = array3[0];
-			this._poseModelMatrix[13] = array3[1];
-			this._poseModelMatrix[14] = array3[2];
-		}
-	}, {
-		key: '_orientation',
-		get: function get() {
-			var quat = new _Quaternion2.default();
-			quat.setFromRotationMatrix(this._poseModelMatrix);
-			return quat.toArray();
-		},
-		set: function set(array4) {
-			_MatrixMath2.default.mat4_fromRotationTranslation(this._poseModelMatrix, array4, this._position);
-		}
-	}]);
-
-	return XRViewPose;
-}();
-
-// We are not going to use this any more.  The way it was handled was broken, we'll just
-// use the raw values for the coordinate systems.
-
-
-exports.default = XRViewPose;
-XRViewPose.SITTING_EYE_HEIGHT = 0; // meters
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-Vector3 wraps a vector of length 3, often used as a position in 3D space.
-
-Taken from https://github.com/googlevr/webvr-polyfill/blob/master/src/math-util.js which took it from Three.js
-*/
-var Vector3 = function () {
-	function Vector3() {
-		var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-		var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-		var z = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-
-		_classCallCheck(this, Vector3);
-
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-
-	_createClass(Vector3, [{
-		key: "set",
-		value: function set(x, y, z) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			return this;
-		}
-	}, {
-		key: "copy",
-		value: function copy(v) {
-			this.x = v.x;
-			this.y = v.y;
-			this.z = v.z;
-			return this;
-		}
-	}, {
-		key: "toArray",
-		value: function toArray() {
-			return [this.x, this.y, this.z];
-		}
-	}, {
-		key: "length",
-		value: function length() {
-			return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-		}
-	}, {
-		key: "add",
-		value: function add(x, y, z) {
-			this.x += x;
-			this.y += y;
-			this.z += z;
-		}
-	}, {
-		key: "normalize",
-		value: function normalize() {
-			var scalar = this.length();
-			if (scalar !== 0) {
-				this.multiplyScalar(1 / scalar);
-			} else {
-				this.x = 0;
-				this.y = 0;
-				this.z = 0;
-			}
-			return this;
-		}
-	}, {
-		key: "multiplyScalar",
-		value: function multiplyScalar(scalar) {
-			this.x *= scalar;
-			this.y *= scalar;
-			this.z *= scalar;
-		}
-	}, {
-		key: "applyQuaternion",
-		value: function applyQuaternion(q) {
-			var x = this.x;
-			var y = this.y;
-			var z = this.z;
-
-			var qx = q.x;
-			var qy = q.y;
-			var qz = q.z;
-			var qw = q.w;
-
-			// calculate quat * vector
-			var ix = qw * x + qy * z - qz * y;
-			var iy = qw * y + qz * x - qx * z;
-			var iz = qw * z + qx * y - qy * x;
-			var iw = -qx * x - qy * y - qz * z;
-
-			// calculate result * inverse quat
-			this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-			this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-			this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-
-			return this;
-		}
-	}, {
-		key: "applyMatrix4",
-		value: function applyMatrix4(matrix) {
-			var x = this.x;
-			var y = this.y;
-			var z = this.z;
-			var w = 1 / (matrix[3] * x + matrix[7] * y + matrix[11] * z + matrix[15]);
-			this.x = (matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12]) * w;
-			this.y = (matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13]) * w;
-			this.z = (matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14]) * w;
-			return this;
-		}
-	}, {
-		key: "dot",
-		value: function dot(v) {
-			return this.x * v.x + this.y * v.y + this.z * v.z;
-		}
-	}, {
-		key: "crossVectors",
-		value: function crossVectors(a, b) {
-			var ax = a.x,
-			    ay = a.y,
-			    az = a.z;
-			var bx = b.x,
-			    by = b.y,
-			    bz = b.z;
-			this.x = ay * bz - az * by;
-			this.y = az * bx - ax * bz;
-			this.z = ax * by - ay * bx;
-			return this;
-		}
-	}]);
-
-	return Vector3;
-}();
-
-exports.default = Vector3;
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRFieldOFView represents the four boundaries of a camera's field of view: up, down, left, and right.
-*/
-var XRFieldOfView = function () {
-	function XRFieldOfView(upDegrees, downDegrees, leftDegrees, rightDegrees) {
-		_classCallCheck(this, XRFieldOfView);
-
-		this._upDegrees = upDegrees;
-		this._downDegrees = downDegrees;
-		this._leftDegrees = leftDegrees;
-		this._rightDegrees = rightDegrees;
-	}
-
-	_createClass(XRFieldOfView, [{
-		key: "upDegrees",
-		get: function get() {
-			return this._upDegrees;
-		}
-	}, {
-		key: "downDegrees",
-		get: function get() {
-			return this._downDegrees;
-		}
-	}, {
-		key: "leftDegrees",
-		get: function get() {
-			return this._leftDegrees;
-		}
-	}, {
-		key: "rightDegrees",
-		get: function get() {
-			return this._rightDegrees;
-		}
-	}]);
-
-	return XRFieldOfView;
-}();
-
-exports.default = XRFieldOfView;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.sub = exports.mul = undefined;
-exports.create = create;
-exports.clone = clone;
-exports.copy = copy;
-exports.fromValues = fromValues;
-exports.set = set;
-exports.identity = identity;
-exports.transpose = transpose;
-exports.invert = invert;
-exports.adjoint = adjoint;
-exports.determinant = determinant;
-exports.multiply = multiply;
-exports.translate = translate;
-exports.scale = scale;
-exports.rotate = rotate;
-exports.rotateX = rotateX;
-exports.rotateY = rotateY;
-exports.rotateZ = rotateZ;
-exports.fromTranslation = fromTranslation;
-exports.fromScaling = fromScaling;
-exports.fromRotation = fromRotation;
-exports.fromXRotation = fromXRotation;
-exports.fromYRotation = fromYRotation;
-exports.fromZRotation = fromZRotation;
-exports.fromRotationTranslation = fromRotationTranslation;
-exports.getTranslation = getTranslation;
-exports.getScaling = getScaling;
-exports.getRotation = getRotation;
-exports.fromRotationTranslationScale = fromRotationTranslationScale;
-exports.fromRotationTranslationScaleOrigin = fromRotationTranslationScaleOrigin;
-exports.fromQuat = fromQuat;
-exports.frustum = frustum;
-exports.perspective = perspective;
-exports.perspectiveFromFieldOfView = perspectiveFromFieldOfView;
-exports.ortho = ortho;
-exports.lookAt = lookAt;
-exports.targetTo = targetTo;
-exports.str = str;
-exports.frob = frob;
-exports.add = add;
-exports.subtract = subtract;
-exports.multiplyScalar = multiplyScalar;
-exports.multiplyScalarAndAdd = multiplyScalarAndAdd;
-exports.exactEquals = exactEquals;
-exports.equals = equals;
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * 4x4 Matrix
- * @module mat4
- */
-
-/**
- * Creates a new identity mat4
- *
- * @returns {mat4} a new 4x4 matrix
- */
-function create() {
-  var out = new glMatrix.ARRAY_TYPE(16);
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = 1;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = 1;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a new mat4 initialized with values from an existing matrix
- *
- * @param {mat4} a matrix to clone
- * @returns {mat4} a new 4x4 matrix
- */
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
-function clone(a) {
-  var out = new glMatrix.ARRAY_TYPE(16);
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  out[4] = a[4];
-  out[5] = a[5];
-  out[6] = a[6];
-  out[7] = a[7];
-  out[8] = a[8];
-  out[9] = a[9];
-  out[10] = a[10];
-  out[11] = a[11];
-  out[12] = a[12];
-  out[13] = a[13];
-  out[14] = a[14];
-  out[15] = a[15];
-  return out;
-}
-
-/**
- * Copy the values from one mat4 to another
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-function copy(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  out[4] = a[4];
-  out[5] = a[5];
-  out[6] = a[6];
-  out[7] = a[7];
-  out[8] = a[8];
-  out[9] = a[9];
-  out[10] = a[10];
-  out[11] = a[11];
-  out[12] = a[12];
-  out[13] = a[13];
-  out[14] = a[14];
-  out[15] = a[15];
-  return out;
-}
-
-/**
- * Create a new mat4 with the given values
- *
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m03 Component in column 0, row 3 position (index 3)
- * @param {Number} m10 Component in column 1, row 0 position (index 4)
- * @param {Number} m11 Component in column 1, row 1 position (index 5)
- * @param {Number} m12 Component in column 1, row 2 position (index 6)
- * @param {Number} m13 Component in column 1, row 3 position (index 7)
- * @param {Number} m20 Component in column 2, row 0 position (index 8)
- * @param {Number} m21 Component in column 2, row 1 position (index 9)
- * @param {Number} m22 Component in column 2, row 2 position (index 10)
- * @param {Number} m23 Component in column 2, row 3 position (index 11)
- * @param {Number} m30 Component in column 3, row 0 position (index 12)
- * @param {Number} m31 Component in column 3, row 1 position (index 13)
- * @param {Number} m32 Component in column 3, row 2 position (index 14)
- * @param {Number} m33 Component in column 3, row 3 position (index 15)
- * @returns {mat4} A new mat4
- */
-function fromValues(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
-  var out = new glMatrix.ARRAY_TYPE(16);
-  out[0] = m00;
-  out[1] = m01;
-  out[2] = m02;
-  out[3] = m03;
-  out[4] = m10;
-  out[5] = m11;
-  out[6] = m12;
-  out[7] = m13;
-  out[8] = m20;
-  out[9] = m21;
-  out[10] = m22;
-  out[11] = m23;
-  out[12] = m30;
-  out[13] = m31;
-  out[14] = m32;
-  out[15] = m33;
-  return out;
-}
-
-/**
- * Set the components of a mat4 to the given values
- *
- * @param {mat4} out the receiving matrix
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m03 Component in column 0, row 3 position (index 3)
- * @param {Number} m10 Component in column 1, row 0 position (index 4)
- * @param {Number} m11 Component in column 1, row 1 position (index 5)
- * @param {Number} m12 Component in column 1, row 2 position (index 6)
- * @param {Number} m13 Component in column 1, row 3 position (index 7)
- * @param {Number} m20 Component in column 2, row 0 position (index 8)
- * @param {Number} m21 Component in column 2, row 1 position (index 9)
- * @param {Number} m22 Component in column 2, row 2 position (index 10)
- * @param {Number} m23 Component in column 2, row 3 position (index 11)
- * @param {Number} m30 Component in column 3, row 0 position (index 12)
- * @param {Number} m31 Component in column 3, row 1 position (index 13)
- * @param {Number} m32 Component in column 3, row 2 position (index 14)
- * @param {Number} m33 Component in column 3, row 3 position (index 15)
- * @returns {mat4} out
- */
-function set(out, m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
-  out[0] = m00;
-  out[1] = m01;
-  out[2] = m02;
-  out[3] = m03;
-  out[4] = m10;
-  out[5] = m11;
-  out[6] = m12;
-  out[7] = m13;
-  out[8] = m20;
-  out[9] = m21;
-  out[10] = m22;
-  out[11] = m23;
-  out[12] = m30;
-  out[13] = m31;
-  out[14] = m32;
-  out[15] = m33;
-  return out;
-}
-
-/**
- * Set a mat4 to the identity matrix
- *
- * @param {mat4} out the receiving matrix
- * @returns {mat4} out
- */
-function identity(out) {
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = 1;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = 1;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Transpose the values of a mat4
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-function transpose(out, a) {
-  // If we are transposing ourselves we can skip a few steps but have to cache some values
-  if (out === a) {
-    var a01 = a[1],
-        a02 = a[2],
-        a03 = a[3];
-    var a12 = a[6],
-        a13 = a[7];
-    var a23 = a[11];
-
-    out[1] = a[4];
-    out[2] = a[8];
-    out[3] = a[12];
-    out[4] = a01;
-    out[6] = a[9];
-    out[7] = a[13];
-    out[8] = a02;
-    out[9] = a12;
-    out[11] = a[14];
-    out[12] = a03;
-    out[13] = a13;
-    out[14] = a23;
-  } else {
-    out[0] = a[0];
-    out[1] = a[4];
-    out[2] = a[8];
-    out[3] = a[12];
-    out[4] = a[1];
-    out[5] = a[5];
-    out[6] = a[9];
-    out[7] = a[13];
-    out[8] = a[2];
-    out[9] = a[6];
-    out[10] = a[10];
-    out[11] = a[14];
-    out[12] = a[3];
-    out[13] = a[7];
-    out[14] = a[11];
-    out[15] = a[15];
-  }
-
-  return out;
-}
-
-/**
- * Inverts a mat4
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-function invert(out, a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
-  var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
-  var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
-  var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
-
-  var b00 = a00 * a11 - a01 * a10;
-  var b01 = a00 * a12 - a02 * a10;
-  var b02 = a00 * a13 - a03 * a10;
-  var b03 = a01 * a12 - a02 * a11;
-  var b04 = a01 * a13 - a03 * a11;
-  var b05 = a02 * a13 - a03 * a12;
-  var b06 = a20 * a31 - a21 * a30;
-  var b07 = a20 * a32 - a22 * a30;
-  var b08 = a20 * a33 - a23 * a30;
-  var b09 = a21 * a32 - a22 * a31;
-  var b10 = a21 * a33 - a23 * a31;
-  var b11 = a22 * a33 - a23 * a32;
-
-  // Calculate the determinant
-  var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-
-  if (!det) {
-    return null;
-  }
-  det = 1.0 / det;
-
-  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
-  out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
-  out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
-  out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
-  out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
-  out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
-  out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
-  out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
-  out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
-  out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
-  out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
-  out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
-  out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
-  out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
-  out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
-  out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
-
-  return out;
-}
-
-/**
- * Calculates the adjugate of a mat4
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-function adjoint(out, a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
-  var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
-  var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
-  var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
-
-  out[0] = a11 * (a22 * a33 - a23 * a32) - a21 * (a12 * a33 - a13 * a32) + a31 * (a12 * a23 - a13 * a22);
-  out[1] = -(a01 * (a22 * a33 - a23 * a32) - a21 * (a02 * a33 - a03 * a32) + a31 * (a02 * a23 - a03 * a22));
-  out[2] = a01 * (a12 * a33 - a13 * a32) - a11 * (a02 * a33 - a03 * a32) + a31 * (a02 * a13 - a03 * a12);
-  out[3] = -(a01 * (a12 * a23 - a13 * a22) - a11 * (a02 * a23 - a03 * a22) + a21 * (a02 * a13 - a03 * a12));
-  out[4] = -(a10 * (a22 * a33 - a23 * a32) - a20 * (a12 * a33 - a13 * a32) + a30 * (a12 * a23 - a13 * a22));
-  out[5] = a00 * (a22 * a33 - a23 * a32) - a20 * (a02 * a33 - a03 * a32) + a30 * (a02 * a23 - a03 * a22);
-  out[6] = -(a00 * (a12 * a33 - a13 * a32) - a10 * (a02 * a33 - a03 * a32) + a30 * (a02 * a13 - a03 * a12));
-  out[7] = a00 * (a12 * a23 - a13 * a22) - a10 * (a02 * a23 - a03 * a22) + a20 * (a02 * a13 - a03 * a12);
-  out[8] = a10 * (a21 * a33 - a23 * a31) - a20 * (a11 * a33 - a13 * a31) + a30 * (a11 * a23 - a13 * a21);
-  out[9] = -(a00 * (a21 * a33 - a23 * a31) - a20 * (a01 * a33 - a03 * a31) + a30 * (a01 * a23 - a03 * a21));
-  out[10] = a00 * (a11 * a33 - a13 * a31) - a10 * (a01 * a33 - a03 * a31) + a30 * (a01 * a13 - a03 * a11);
-  out[11] = -(a00 * (a11 * a23 - a13 * a21) - a10 * (a01 * a23 - a03 * a21) + a20 * (a01 * a13 - a03 * a11));
-  out[12] = -(a10 * (a21 * a32 - a22 * a31) - a20 * (a11 * a32 - a12 * a31) + a30 * (a11 * a22 - a12 * a21));
-  out[13] = a00 * (a21 * a32 - a22 * a31) - a20 * (a01 * a32 - a02 * a31) + a30 * (a01 * a22 - a02 * a21);
-  out[14] = -(a00 * (a11 * a32 - a12 * a31) - a10 * (a01 * a32 - a02 * a31) + a30 * (a01 * a12 - a02 * a11));
-  out[15] = a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11);
-  return out;
-}
-
-/**
- * Calculates the determinant of a mat4
- *
- * @param {mat4} a the source matrix
- * @returns {Number} determinant of a
- */
-function determinant(a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
-  var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
-  var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
-  var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
-
-  var b00 = a00 * a11 - a01 * a10;
-  var b01 = a00 * a12 - a02 * a10;
-  var b02 = a00 * a13 - a03 * a10;
-  var b03 = a01 * a12 - a02 * a11;
-  var b04 = a01 * a13 - a03 * a11;
-  var b05 = a02 * a13 - a03 * a12;
-  var b06 = a20 * a31 - a21 * a30;
-  var b07 = a20 * a32 - a22 * a30;
-  var b08 = a20 * a33 - a23 * a30;
-  var b09 = a21 * a32 - a22 * a31;
-  var b10 = a21 * a33 - a23 * a31;
-  var b11 = a22 * a33 - a23 * a32;
-
-  // Calculate the determinant
-  return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-}
-
-/**
- * Multiplies two mat4s
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-function multiply(out, a, b) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
-  var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
-  var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
-  var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
-
-  // Cache only the current line of the second matrix
-  var b0 = b[0],
-      b1 = b[1],
-      b2 = b[2],
-      b3 = b[3];
-  out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-  out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-  out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-  out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-  b0 = b[4];b1 = b[5];b2 = b[6];b3 = b[7];
-  out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-  out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-  out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-  out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-  b0 = b[8];b1 = b[9];b2 = b[10];b3 = b[11];
-  out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-  out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-  out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-  out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-  b0 = b[12];b1 = b[13];b2 = b[14];b3 = b[15];
-  out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-  out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-  out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-  out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-  return out;
-}
-
-/**
- * Translate a mat4 by the given vector
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to translate
- * @param {vec3} v vector to translate by
- * @returns {mat4} out
- */
-function translate(out, a, v) {
-  var x = v[0],
-      y = v[1],
-      z = v[2];
-  var a00 = void 0,
-      a01 = void 0,
-      a02 = void 0,
-      a03 = void 0;
-  var a10 = void 0,
-      a11 = void 0,
-      a12 = void 0,
-      a13 = void 0;
-  var a20 = void 0,
-      a21 = void 0,
-      a22 = void 0,
-      a23 = void 0;
-
-  if (a === out) {
-    out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
-    out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
-    out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
-    out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
-  } else {
-    a00 = a[0];a01 = a[1];a02 = a[2];a03 = a[3];
-    a10 = a[4];a11 = a[5];a12 = a[6];a13 = a[7];
-    a20 = a[8];a21 = a[9];a22 = a[10];a23 = a[11];
-
-    out[0] = a00;out[1] = a01;out[2] = a02;out[3] = a03;
-    out[4] = a10;out[5] = a11;out[6] = a12;out[7] = a13;
-    out[8] = a20;out[9] = a21;out[10] = a22;out[11] = a23;
-
-    out[12] = a00 * x + a10 * y + a20 * z + a[12];
-    out[13] = a01 * x + a11 * y + a21 * z + a[13];
-    out[14] = a02 * x + a12 * y + a22 * z + a[14];
-    out[15] = a03 * x + a13 * y + a23 * z + a[15];
-  }
-
-  return out;
-}
-
-/**
- * Scales the mat4 by the dimensions in the given vec3 not using vectorization
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {vec3} v the vec3 to scale the matrix by
- * @returns {mat4} out
- **/
-function scale(out, a, v) {
-  var x = v[0],
-      y = v[1],
-      z = v[2];
-
-  out[0] = a[0] * x;
-  out[1] = a[1] * x;
-  out[2] = a[2] * x;
-  out[3] = a[3] * x;
-  out[4] = a[4] * y;
-  out[5] = a[5] * y;
-  out[6] = a[6] * y;
-  out[7] = a[7] * y;
-  out[8] = a[8] * z;
-  out[9] = a[9] * z;
-  out[10] = a[10] * z;
-  out[11] = a[11] * z;
-  out[12] = a[12];
-  out[13] = a[13];
-  out[14] = a[14];
-  out[15] = a[15];
-  return out;
-}
-
-/**
- * Rotates a mat4 by the given angle around the given axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-function rotate(out, a, rad, axis) {
-  var x = axis[0],
-      y = axis[1],
-      z = axis[2];
-  var len = Math.sqrt(x * x + y * y + z * z);
-  var s = void 0,
-      c = void 0,
-      t = void 0;
-  var a00 = void 0,
-      a01 = void 0,
-      a02 = void 0,
-      a03 = void 0;
-  var a10 = void 0,
-      a11 = void 0,
-      a12 = void 0,
-      a13 = void 0;
-  var a20 = void 0,
-      a21 = void 0,
-      a22 = void 0,
-      a23 = void 0;
-  var b00 = void 0,
-      b01 = void 0,
-      b02 = void 0;
-  var b10 = void 0,
-      b11 = void 0,
-      b12 = void 0;
-  var b20 = void 0,
-      b21 = void 0,
-      b22 = void 0;
-
-  if (Math.abs(len) < glMatrix.EPSILON) {
-    return null;
-  }
-
-  len = 1 / len;
-  x *= len;
-  y *= len;
-  z *= len;
-
-  s = Math.sin(rad);
-  c = Math.cos(rad);
-  t = 1 - c;
-
-  a00 = a[0];a01 = a[1];a02 = a[2];a03 = a[3];
-  a10 = a[4];a11 = a[5];a12 = a[6];a13 = a[7];
-  a20 = a[8];a21 = a[9];a22 = a[10];a23 = a[11];
-
-  // Construct the elements of the rotation matrix
-  b00 = x * x * t + c;b01 = y * x * t + z * s;b02 = z * x * t - y * s;
-  b10 = x * y * t - z * s;b11 = y * y * t + c;b12 = z * y * t + x * s;
-  b20 = x * z * t + y * s;b21 = y * z * t - x * s;b22 = z * z * t + c;
-
-  // Perform rotation-specific matrix multiplication
-  out[0] = a00 * b00 + a10 * b01 + a20 * b02;
-  out[1] = a01 * b00 + a11 * b01 + a21 * b02;
-  out[2] = a02 * b00 + a12 * b01 + a22 * b02;
-  out[3] = a03 * b00 + a13 * b01 + a23 * b02;
-  out[4] = a00 * b10 + a10 * b11 + a20 * b12;
-  out[5] = a01 * b10 + a11 * b11 + a21 * b12;
-  out[6] = a02 * b10 + a12 * b11 + a22 * b12;
-  out[7] = a03 * b10 + a13 * b11 + a23 * b12;
-  out[8] = a00 * b20 + a10 * b21 + a20 * b22;
-  out[9] = a01 * b20 + a11 * b21 + a21 * b22;
-  out[10] = a02 * b20 + a12 * b21 + a22 * b22;
-  out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-
-  if (a !== out) {
-    // If the source and destination differ, copy the unchanged last row
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-  }
-  return out;
-}
-
-/**
- * Rotates a matrix by the given angle around the X axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function rotateX(out, a, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-  var a10 = a[4];
-  var a11 = a[5];
-  var a12 = a[6];
-  var a13 = a[7];
-  var a20 = a[8];
-  var a21 = a[9];
-  var a22 = a[10];
-  var a23 = a[11];
-
-  if (a !== out) {
-    // If the source and destination differ, copy the unchanged rows
-    out[0] = a[0];
-    out[1] = a[1];
-    out[2] = a[2];
-    out[3] = a[3];
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-  }
-
-  // Perform axis-specific matrix multiplication
-  out[4] = a10 * c + a20 * s;
-  out[5] = a11 * c + a21 * s;
-  out[6] = a12 * c + a22 * s;
-  out[7] = a13 * c + a23 * s;
-  out[8] = a20 * c - a10 * s;
-  out[9] = a21 * c - a11 * s;
-  out[10] = a22 * c - a12 * s;
-  out[11] = a23 * c - a13 * s;
-  return out;
-}
-
-/**
- * Rotates a matrix by the given angle around the Y axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function rotateY(out, a, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-  var a00 = a[0];
-  var a01 = a[1];
-  var a02 = a[2];
-  var a03 = a[3];
-  var a20 = a[8];
-  var a21 = a[9];
-  var a22 = a[10];
-  var a23 = a[11];
-
-  if (a !== out) {
-    // If the source and destination differ, copy the unchanged rows
-    out[4] = a[4];
-    out[5] = a[5];
-    out[6] = a[6];
-    out[7] = a[7];
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-  }
-
-  // Perform axis-specific matrix multiplication
-  out[0] = a00 * c - a20 * s;
-  out[1] = a01 * c - a21 * s;
-  out[2] = a02 * c - a22 * s;
-  out[3] = a03 * c - a23 * s;
-  out[8] = a00 * s + a20 * c;
-  out[9] = a01 * s + a21 * c;
-  out[10] = a02 * s + a22 * c;
-  out[11] = a03 * s + a23 * c;
-  return out;
-}
-
-/**
- * Rotates a matrix by the given angle around the Z axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function rotateZ(out, a, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-  var a00 = a[0];
-  var a01 = a[1];
-  var a02 = a[2];
-  var a03 = a[3];
-  var a10 = a[4];
-  var a11 = a[5];
-  var a12 = a[6];
-  var a13 = a[7];
-
-  if (a !== out) {
-    // If the source and destination differ, copy the unchanged last row
-    out[8] = a[8];
-    out[9] = a[9];
-    out[10] = a[10];
-    out[11] = a[11];
-    out[12] = a[12];
-    out[13] = a[13];
-    out[14] = a[14];
-    out[15] = a[15];
-  }
-
-  // Perform axis-specific matrix multiplication
-  out[0] = a00 * c + a10 * s;
-  out[1] = a01 * c + a11 * s;
-  out[2] = a02 * c + a12 * s;
-  out[3] = a03 * c + a13 * s;
-  out[4] = a10 * c - a00 * s;
-  out[5] = a11 * c - a01 * s;
-  out[6] = a12 * c - a02 * s;
-  out[7] = a13 * c - a03 * s;
-  return out;
-}
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-function fromTranslation(out, v) {
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = 1;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = 1;
-  out[11] = 0;
-  out[12] = v[0];
-  out[13] = v[1];
-  out[14] = v[2];
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.scale(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Scaling vector
- * @returns {mat4} out
- */
-function fromScaling(out, v) {
-  out[0] = v[0];
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = v[1];
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = v[2];
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from a given angle around a given axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotate(dest, dest, rad, axis);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-function fromRotation(out, rad, axis) {
-  var x = axis[0],
-      y = axis[1],
-      z = axis[2];
-  var len = Math.sqrt(x * x + y * y + z * z);
-  var s = void 0,
-      c = void 0,
-      t = void 0;
-
-  if (Math.abs(len) < glMatrix.EPSILON) {
-    return null;
-  }
-
-  len = 1 / len;
-  x *= len;
-  y *= len;
-  z *= len;
-
-  s = Math.sin(rad);
-  c = Math.cos(rad);
-  t = 1 - c;
-
-  // Perform rotation-specific matrix multiplication
-  out[0] = x * x * t + c;
-  out[1] = y * x * t + z * s;
-  out[2] = z * x * t - y * s;
-  out[3] = 0;
-  out[4] = x * y * t - z * s;
-  out[5] = y * y * t + c;
-  out[6] = z * y * t + x * s;
-  out[7] = 0;
-  out[8] = x * z * t + y * s;
-  out[9] = y * z * t - x * s;
-  out[10] = z * z * t + c;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from the given angle around the X axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateX(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function fromXRotation(out, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-
-  // Perform axis-specific matrix multiplication
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = c;
-  out[6] = s;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = -s;
-  out[10] = c;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from the given angle around the Y axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateY(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function fromYRotation(out, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-
-  // Perform axis-specific matrix multiplication
-  out[0] = c;
-  out[1] = 0;
-  out[2] = -s;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = 1;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = s;
-  out[9] = 0;
-  out[10] = c;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from the given angle around the Z axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateZ(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-function fromZRotation(out, rad) {
-  var s = Math.sin(rad);
-  var c = Math.cos(rad);
-
-  // Perform axis-specific matrix multiplication
-  out[0] = c;
-  out[1] = s;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = -s;
-  out[5] = c;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = 1;
-  out[11] = 0;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from a quaternion rotation and vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-function fromRotationTranslation(out, q, v) {
-  // Quaternion math
-  var x = q[0],
-      y = q[1],
-      z = q[2],
-      w = q[3];
-  var x2 = x + x;
-  var y2 = y + y;
-  var z2 = z + z;
-
-  var xx = x * x2;
-  var xy = x * y2;
-  var xz = x * z2;
-  var yy = y * y2;
-  var yz = y * z2;
-  var zz = z * z2;
-  var wx = w * x2;
-  var wy = w * y2;
-  var wz = w * z2;
-
-  out[0] = 1 - (yy + zz);
-  out[1] = xy + wz;
-  out[2] = xz - wy;
-  out[3] = 0;
-  out[4] = xy - wz;
-  out[5] = 1 - (xx + zz);
-  out[6] = yz + wx;
-  out[7] = 0;
-  out[8] = xz + wy;
-  out[9] = yz - wx;
-  out[10] = 1 - (xx + yy);
-  out[11] = 0;
-  out[12] = v[0];
-  out[13] = v[1];
-  out[14] = v[2];
-  out[15] = 1;
-
-  return out;
-}
-
-/**
- * Returns the translation vector component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslation,
- *  the returned vector will be the same as the translation vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive translation component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-function getTranslation(out, mat) {
-  out[0] = mat[12];
-  out[1] = mat[13];
-  out[2] = mat[14];
-
-  return out;
-}
-
-/**
- * Returns the scaling factor component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslationScale
- *  with a normalized Quaternion paramter, the returned vector will be
- *  the same as the scaling vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive scaling factor component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-function getScaling(out, mat) {
-  var m11 = mat[0];
-  var m12 = mat[1];
-  var m13 = mat[2];
-  var m21 = mat[4];
-  var m22 = mat[5];
-  var m23 = mat[6];
-  var m31 = mat[8];
-  var m32 = mat[9];
-  var m33 = mat[10];
-
-  out[0] = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
-  out[1] = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
-  out[2] = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
-
-  return out;
-}
-
-/**
- * Returns a quaternion representing the rotational component
- *  of a transformation matrix. If a matrix is built with
- *  fromRotationTranslation, the returned quaternion will be the
- *  same as the quaternion originally supplied.
- * @param {quat} out Quaternion to receive the rotation component
- * @param {mat4} mat Matrix to be decomposed (input)
- * @return {quat} out
- */
-function getRotation(out, mat) {
-  // Algorithm taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-  var trace = mat[0] + mat[5] + mat[10];
-  var S = 0;
-
-  if (trace > 0) {
-    S = Math.sqrt(trace + 1.0) * 2;
-    out[3] = 0.25 * S;
-    out[0] = (mat[6] - mat[9]) / S;
-    out[1] = (mat[8] - mat[2]) / S;
-    out[2] = (mat[1] - mat[4]) / S;
-  } else if (mat[0] > mat[5] && mat[0] > mat[10]) {
-    S = Math.sqrt(1.0 + mat[0] - mat[5] - mat[10]) * 2;
-    out[3] = (mat[6] - mat[9]) / S;
-    out[0] = 0.25 * S;
-    out[1] = (mat[1] + mat[4]) / S;
-    out[2] = (mat[8] + mat[2]) / S;
-  } else if (mat[5] > mat[10]) {
-    S = Math.sqrt(1.0 + mat[5] - mat[0] - mat[10]) * 2;
-    out[3] = (mat[8] - mat[2]) / S;
-    out[0] = (mat[1] + mat[4]) / S;
-    out[1] = 0.25 * S;
-    out[2] = (mat[6] + mat[9]) / S;
-  } else {
-    S = Math.sqrt(1.0 + mat[10] - mat[0] - mat[5]) * 2;
-    out[3] = (mat[1] - mat[4]) / S;
-    out[0] = (mat[8] + mat[2]) / S;
-    out[1] = (mat[6] + mat[9]) / S;
-    out[2] = 0.25 * S;
-  }
-
-  return out;
-}
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @returns {mat4} out
- */
-function fromRotationTranslationScale(out, q, v, s) {
-  // Quaternion math
-  var x = q[0],
-      y = q[1],
-      z = q[2],
-      w = q[3];
-  var x2 = x + x;
-  var y2 = y + y;
-  var z2 = z + z;
-
-  var xx = x * x2;
-  var xy = x * y2;
-  var xz = x * z2;
-  var yy = y * y2;
-  var yz = y * z2;
-  var zz = z * z2;
-  var wx = w * x2;
-  var wy = w * y2;
-  var wz = w * z2;
-  var sx = s[0];
-  var sy = s[1];
-  var sz = s[2];
-
-  out[0] = (1 - (yy + zz)) * sx;
-  out[1] = (xy + wz) * sx;
-  out[2] = (xz - wy) * sx;
-  out[3] = 0;
-  out[4] = (xy - wz) * sy;
-  out[5] = (1 - (xx + zz)) * sy;
-  out[6] = (yz + wx) * sy;
-  out[7] = 0;
-  out[8] = (xz + wy) * sz;
-  out[9] = (yz - wx) * sz;
-  out[10] = (1 - (xx + yy)) * sz;
-  out[11] = 0;
-  out[12] = v[0];
-  out[13] = v[1];
-  out[14] = v[2];
-  out[15] = 1;
-
-  return out;
-}
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     mat4.translate(dest, origin);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *     mat4.translate(dest, negativeOrigin);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @param {vec3} o The origin vector around which to scale and rotate
- * @returns {mat4} out
- */
-function fromRotationTranslationScaleOrigin(out, q, v, s, o) {
-  // Quaternion math
-  var x = q[0],
-      y = q[1],
-      z = q[2],
-      w = q[3];
-  var x2 = x + x;
-  var y2 = y + y;
-  var z2 = z + z;
-
-  var xx = x * x2;
-  var xy = x * y2;
-  var xz = x * z2;
-  var yy = y * y2;
-  var yz = y * z2;
-  var zz = z * z2;
-  var wx = w * x2;
-  var wy = w * y2;
-  var wz = w * z2;
-
-  var sx = s[0];
-  var sy = s[1];
-  var sz = s[2];
-
-  var ox = o[0];
-  var oy = o[1];
-  var oz = o[2];
-
-  var out0 = (1 - (yy + zz)) * sx;
-  var out1 = (xy + wz) * sx;
-  var out2 = (xz - wy) * sx;
-  var out4 = (xy - wz) * sy;
-  var out5 = (1 - (xx + zz)) * sy;
-  var out6 = (yz + wx) * sy;
-  var out8 = (xz + wy) * sz;
-  var out9 = (yz - wx) * sz;
-  var out10 = (1 - (xx + yy)) * sz;
-
-  out[0] = out0;
-  out[1] = out1;
-  out[2] = out2;
-  out[3] = 0;
-  out[4] = out4;
-  out[5] = out5;
-  out[6] = out6;
-  out[7] = 0;
-  out[8] = out8;
-  out[9] = out9;
-  out[10] = out10;
-  out[11] = 0;
-  out[12] = v[0] + ox - (out0 * ox + out4 * oy + out8 * oz);
-  out[13] = v[1] + oy - (out1 * ox + out5 * oy + out9 * oz);
-  out[14] = v[2] + oz - (out2 * ox + out6 * oy + out10 * oz);
-  out[15] = 1;
-
-  return out;
-}
-
-/**
- * Calculates a 4x4 matrix from the given quaternion
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat} q Quaternion to create matrix from
- *
- * @returns {mat4} out
- */
-function fromQuat(out, q) {
-  var x = q[0],
-      y = q[1],
-      z = q[2],
-      w = q[3];
-  var x2 = x + x;
-  var y2 = y + y;
-  var z2 = z + z;
-
-  var xx = x * x2;
-  var yx = y * x2;
-  var yy = y * y2;
-  var zx = z * x2;
-  var zy = z * y2;
-  var zz = z * z2;
-  var wx = w * x2;
-  var wy = w * y2;
-  var wz = w * z2;
-
-  out[0] = 1 - yy - zz;
-  out[1] = yx + wz;
-  out[2] = zx - wy;
-  out[3] = 0;
-
-  out[4] = yx - wz;
-  out[5] = 1 - xx - zz;
-  out[6] = zy + wx;
-  out[7] = 0;
-
-  out[8] = zx + wy;
-  out[9] = zy - wx;
-  out[10] = 1 - xx - yy;
-  out[11] = 0;
-
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  out[15] = 1;
-
-  return out;
-}
-
-/**
- * Generates a frustum matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {Number} left Left bound of the frustum
- * @param {Number} right Right bound of the frustum
- * @param {Number} bottom Bottom bound of the frustum
- * @param {Number} top Top bound of the frustum
- * @param {Number} near Near bound of the frustum
- * @param {Number} far Far bound of the frustum
- * @returns {mat4} out
- */
-function frustum(out, left, right, bottom, top, near, far) {
-  var rl = 1 / (right - left);
-  var tb = 1 / (top - bottom);
-  var nf = 1 / (near - far);
-  out[0] = near * 2 * rl;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = near * 2 * tb;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = (right + left) * rl;
-  out[9] = (top + bottom) * tb;
-  out[10] = (far + near) * nf;
-  out[11] = -1;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = far * near * 2 * nf;
-  out[15] = 0;
-  return out;
-}
-
-/**
- * Generates a perspective projection matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {number} fovy Vertical field of view in radians
- * @param {number} aspect Aspect ratio. typically viewport width/height
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-function perspective(out, fovy, aspect, near, far) {
-  var f = 1.0 / Math.tan(fovy / 2);
-  var nf = 1 / (near - far);
-  out[0] = f / aspect;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = f;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = (far + near) * nf;
-  out[11] = -1;
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 2 * far * near * nf;
-  out[15] = 0;
-  return out;
-}
-
-/**
- * Generates a perspective projection matrix with the given field of view.
- * This is primarily useful for generating projection matrices to be used
- * with the still experiemental WebVR API.
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-function perspectiveFromFieldOfView(out, fov, near, far) {
-  var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
-  var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
-  var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
-  var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
-  var xScale = 2.0 / (leftTan + rightTan);
-  var yScale = 2.0 / (upTan + downTan);
-
-  out[0] = xScale;
-  out[1] = 0.0;
-  out[2] = 0.0;
-  out[3] = 0.0;
-  out[4] = 0.0;
-  out[5] = yScale;
-  out[6] = 0.0;
-  out[7] = 0.0;
-  out[8] = -((leftTan - rightTan) * xScale * 0.5);
-  out[9] = (upTan - downTan) * yScale * 0.5;
-  out[10] = far / (near - far);
-  out[11] = -1.0;
-  out[12] = 0.0;
-  out[13] = 0.0;
-  out[14] = far * near / (near - far);
-  out[15] = 0.0;
-  return out;
-}
-
-/**
- * Generates a orthogonal projection matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {number} left Left bound of the frustum
- * @param {number} right Right bound of the frustum
- * @param {number} bottom Bottom bound of the frustum
- * @param {number} top Top bound of the frustum
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-function ortho(out, left, right, bottom, top, near, far) {
-  var lr = 1 / (left - right);
-  var bt = 1 / (bottom - top);
-  var nf = 1 / (near - far);
-  out[0] = -2 * lr;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 0;
-  out[5] = -2 * bt;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 0;
-  out[9] = 0;
-  out[10] = 2 * nf;
-  out[11] = 0;
-  out[12] = (left + right) * lr;
-  out[13] = (top + bottom) * bt;
-  out[14] = (far + near) * nf;
-  out[15] = 1;
-  return out;
-}
-
-/**
- * Generates a look-at matrix with the given eye position, focal point, and up axis. 
- * If you want a matrix that actually makes an object look at another object, you should use targetTo instead.
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {vec3} eye Position of the viewer
- * @param {vec3} center Point the viewer is looking at
- * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
- */
-function lookAt(out, eye, center, up) {
-  var x0 = void 0,
-      x1 = void 0,
-      x2 = void 0,
-      y0 = void 0,
-      y1 = void 0,
-      y2 = void 0,
-      z0 = void 0,
-      z1 = void 0,
-      z2 = void 0,
-      len = void 0;
-  var eyex = eye[0];
-  var eyey = eye[1];
-  var eyez = eye[2];
-  var upx = up[0];
-  var upy = up[1];
-  var upz = up[2];
-  var centerx = center[0];
-  var centery = center[1];
-  var centerz = center[2];
-
-  if (Math.abs(eyex - centerx) < glMatrix.EPSILON && Math.abs(eyey - centery) < glMatrix.EPSILON && Math.abs(eyez - centerz) < glMatrix.EPSILON) {
-    return identity(out);
-  }
-
-  z0 = eyex - centerx;
-  z1 = eyey - centery;
-  z2 = eyez - centerz;
-
-  len = 1 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
-  z0 *= len;
-  z1 *= len;
-  z2 *= len;
-
-  x0 = upy * z2 - upz * z1;
-  x1 = upz * z0 - upx * z2;
-  x2 = upx * z1 - upy * z0;
-  len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-  if (!len) {
-    x0 = 0;
-    x1 = 0;
-    x2 = 0;
-  } else {
-    len = 1 / len;
-    x0 *= len;
-    x1 *= len;
-    x2 *= len;
-  }
-
-  y0 = z1 * x2 - z2 * x1;
-  y1 = z2 * x0 - z0 * x2;
-  y2 = z0 * x1 - z1 * x0;
-
-  len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-  if (!len) {
-    y0 = 0;
-    y1 = 0;
-    y2 = 0;
-  } else {
-    len = 1 / len;
-    y0 *= len;
-    y1 *= len;
-    y2 *= len;
-  }
-
-  out[0] = x0;
-  out[1] = y0;
-  out[2] = z0;
-  out[3] = 0;
-  out[4] = x1;
-  out[5] = y1;
-  out[6] = z1;
-  out[7] = 0;
-  out[8] = x2;
-  out[9] = y2;
-  out[10] = z2;
-  out[11] = 0;
-  out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-  out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-  out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-  out[15] = 1;
-
-  return out;
-}
-
-/**
- * Generates a matrix that makes something look at something else.
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {vec3} eye Position of the viewer
- * @param {vec3} center Point the viewer is looking at
- * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
- */
-function targetTo(out, eye, target, up) {
-  var eyex = eye[0],
-      eyey = eye[1],
-      eyez = eye[2],
-      upx = up[0],
-      upy = up[1],
-      upz = up[2];
-
-  var z0 = eyex - target[0],
-      z1 = eyey - target[1],
-      z2 = eyez - target[2];
-
-  var len = z0 * z0 + z1 * z1 + z2 * z2;
-  if (len > 0) {
-    len = 1 / Math.sqrt(len);
-    z0 *= len;
-    z1 *= len;
-    z2 *= len;
-  }
-
-  var x0 = upy * z2 - upz * z1,
-      x1 = upz * z0 - upx * z2,
-      x2 = upx * z1 - upy * z0;
-
-  len = x0 * x0 + x1 * x1 + x2 * x2;
-  if (len > 0) {
-    len = 1 / Math.sqrt(len);
-    x0 *= len;
-    x1 *= len;
-    x2 *= len;
-  }
-
-  out[0] = x0;
-  out[1] = x1;
-  out[2] = x2;
-  out[3] = 0;
-  out[4] = z1 * x2 - z2 * x1;
-  out[5] = z2 * x0 - z0 * x2;
-  out[6] = z0 * x1 - z1 * x0;
-  out[7] = 0;
-  out[8] = z0;
-  out[9] = z1;
-  out[10] = z2;
-  out[11] = 0;
-  out[12] = eyex;
-  out[13] = eyey;
-  out[14] = eyez;
-  out[15] = 1;
-  return out;
-};
-
-/**
- * Returns a string representation of a mat4
- *
- * @param {mat4} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-function str(a) {
-  return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' + a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
-}
-
-/**
- * Returns Frobenius norm of a mat4
- *
- * @param {mat4} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-function frob(a) {
-  return Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2) + Math.pow(a[9], 2) + Math.pow(a[10], 2) + Math.pow(a[11], 2) + Math.pow(a[12], 2) + Math.pow(a[13], 2) + Math.pow(a[14], 2) + Math.pow(a[15], 2));
-}
-
-/**
- * Adds two mat4's
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-function add(out, a, b) {
-  out[0] = a[0] + b[0];
-  out[1] = a[1] + b[1];
-  out[2] = a[2] + b[2];
-  out[3] = a[3] + b[3];
-  out[4] = a[4] + b[4];
-  out[5] = a[5] + b[5];
-  out[6] = a[6] + b[6];
-  out[7] = a[7] + b[7];
-  out[8] = a[8] + b[8];
-  out[9] = a[9] + b[9];
-  out[10] = a[10] + b[10];
-  out[11] = a[11] + b[11];
-  out[12] = a[12] + b[12];
-  out[13] = a[13] + b[13];
-  out[14] = a[14] + b[14];
-  out[15] = a[15] + b[15];
-  return out;
-}
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-function subtract(out, a, b) {
-  out[0] = a[0] - b[0];
-  out[1] = a[1] - b[1];
-  out[2] = a[2] - b[2];
-  out[3] = a[3] - b[3];
-  out[4] = a[4] - b[4];
-  out[5] = a[5] - b[5];
-  out[6] = a[6] - b[6];
-  out[7] = a[7] - b[7];
-  out[8] = a[8] - b[8];
-  out[9] = a[9] - b[9];
-  out[10] = a[10] - b[10];
-  out[11] = a[11] - b[11];
-  out[12] = a[12] - b[12];
-  out[13] = a[13] - b[13];
-  out[14] = a[14] - b[14];
-  out[15] = a[15] - b[15];
-  return out;
-}
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat4} out
- */
-function multiplyScalar(out, a, b) {
-  out[0] = a[0] * b;
-  out[1] = a[1] * b;
-  out[2] = a[2] * b;
-  out[3] = a[3] * b;
-  out[4] = a[4] * b;
-  out[5] = a[5] * b;
-  out[6] = a[6] * b;
-  out[7] = a[7] * b;
-  out[8] = a[8] * b;
-  out[9] = a[9] * b;
-  out[10] = a[10] * b;
-  out[11] = a[11] * b;
-  out[12] = a[12] * b;
-  out[13] = a[13] * b;
-  out[14] = a[14] * b;
-  out[15] = a[15] * b;
-  return out;
-}
-
-/**
- * Adds two mat4's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat4} out the receiving vector
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat4} out
- */
-function multiplyScalarAndAdd(out, a, b, scale) {
-  out[0] = a[0] + b[0] * scale;
-  out[1] = a[1] + b[1] * scale;
-  out[2] = a[2] + b[2] * scale;
-  out[3] = a[3] + b[3] * scale;
-  out[4] = a[4] + b[4] * scale;
-  out[5] = a[5] + b[5] * scale;
-  out[6] = a[6] + b[6] * scale;
-  out[7] = a[7] + b[7] * scale;
-  out[8] = a[8] + b[8] * scale;
-  out[9] = a[9] + b[9] * scale;
-  out[10] = a[10] + b[10] * scale;
-  out[11] = a[11] + b[11] * scale;
-  out[12] = a[12] + b[12] * scale;
-  out[13] = a[13] + b[13] * scale;
-  out[14] = a[14] + b[14] * scale;
-  out[15] = a[15] + b[15] * scale;
-  return out;
-}
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-function exactEquals(a, b) {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6] && a[7] === b[7] && a[8] === b[8] && a[9] === b[9] && a[10] === b[10] && a[11] === b[11] && a[12] === b[12] && a[13] === b[13] && a[14] === b[14] && a[15] === b[15];
-}
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-function equals(a, b) {
-  var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2],
-      a3 = a[3];
-  var a4 = a[4],
-      a5 = a[5],
-      a6 = a[6],
-      a7 = a[7];
-  var a8 = a[8],
-      a9 = a[9],
-      a10 = a[10],
-      a11 = a[11];
-  var a12 = a[12],
-      a13 = a[13],
-      a14 = a[14],
-      a15 = a[15];
-
-  var b0 = b[0],
-      b1 = b[1],
-      b2 = b[2],
-      b3 = b[3];
-  var b4 = b[4],
-      b5 = b[5],
-      b6 = b[6],
-      b7 = b[7];
-  var b8 = b[8],
-      b9 = b[9],
-      b10 = b[10],
-      b11 = b[11];
-  var b12 = b[12],
-      b13 = b[13],
-      b14 = b[14],
-      b15 = b[15];
-
-  return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) && Math.abs(a8 - b8) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8)) && Math.abs(a9 - b9) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a9), Math.abs(b9)) && Math.abs(a10 - b10) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a10), Math.abs(b10)) && Math.abs(a11 - b11) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a11), Math.abs(b11)) && Math.abs(a12 - b12) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a12), Math.abs(b12)) && Math.abs(a13 - b13) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a13), Math.abs(b13)) && Math.abs(a14 - b14) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a14), Math.abs(b14)) && Math.abs(a15 - b15) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a15), Math.abs(b15));
-}
-
-/**
- * Alias for {@link mat4.multiply}
- * @function
- */
-var mul = exports.mul = multiply;
-
-/**
- * Alias for {@link mat4.subtract}
- * @function
- */
-var sub = exports.sub = subtract;
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = undefined;
-exports.create = create;
-exports.identity = identity;
-exports.setAxisAngle = setAxisAngle;
-exports.getAxisAngle = getAxisAngle;
-exports.multiply = multiply;
-exports.rotateX = rotateX;
-exports.rotateY = rotateY;
-exports.rotateZ = rotateZ;
-exports.calculateW = calculateW;
-exports.slerp = slerp;
-exports.invert = invert;
-exports.conjugate = conjugate;
-exports.fromMat3 = fromMat3;
-exports.fromEuler = fromEuler;
-exports.str = str;
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-var _mat = __webpack_require__(27);
-
-var mat3 = _interopRequireWildcard(_mat);
-
-var _vec = __webpack_require__(12);
-
-var vec3 = _interopRequireWildcard(_vec);
-
-var _vec2 = __webpack_require__(28);
-
-var vec4 = _interopRequireWildcard(_vec2);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * Quaternion
- * @module quat
- */
-
-/**
- * Creates a new identity quat
- *
- * @returns {quat} a new quaternion
- */
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
-function create() {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  out[0] = 0;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 1;
-  return out;
-}
-
-/**
- * Set a quat to the identity quaternion
- *
- * @param {quat} out the receiving quaternion
- * @returns {quat} out
- */
-function identity(out) {
-  out[0] = 0;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 1;
-  return out;
-}
-
-/**
- * Sets a quat from the given angle and rotation axis,
- * then returns it.
- *
- * @param {quat} out the receiving quaternion
- * @param {vec3} axis the axis around which to rotate
- * @param {Number} rad the angle in radians
- * @returns {quat} out
- **/
-function setAxisAngle(out, axis, rad) {
-  rad = rad * 0.5;
-  var s = Math.sin(rad);
-  out[0] = s * axis[0];
-  out[1] = s * axis[1];
-  out[2] = s * axis[2];
-  out[3] = Math.cos(rad);
-  return out;
-}
-
-/**
- * Gets the rotation axis and angle for a given
- *  quaternion. If a quaternion is created with
- *  setAxisAngle, this method will return the same
- *  values as providied in the original parameter list
- *  OR functionally equivalent values.
- * Example: The quaternion formed by axis [0, 0, 1] and
- *  angle -90 is the same as the quaternion formed by
- *  [0, 0, 1] and 270. This method favors the latter.
- * @param  {vec3} out_axis  Vector receiving the axis of rotation
- * @param  {quat} q     Quaternion to be decomposed
- * @return {Number}     Angle, in radians, of the rotation
- */
-function getAxisAngle(out_axis, q) {
-  var rad = Math.acos(q[3]) * 2.0;
-  var s = Math.sin(rad / 2.0);
-  if (s != 0.0) {
-    out_axis[0] = q[0] / s;
-    out_axis[1] = q[1] / s;
-    out_axis[2] = q[2] / s;
-  } else {
-    // If s is zero, return any axis (no rotation - axis does not matter)
-    out_axis[0] = 1;
-    out_axis[1] = 0;
-    out_axis[2] = 0;
-  }
-  return rad;
-}
-
-/**
- * Multiplies two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- */
-function multiply(out, a, b) {
-  var ax = a[0],
-      ay = a[1],
-      az = a[2],
-      aw = a[3];
-  var bx = b[0],
-      by = b[1],
-      bz = b[2],
-      bw = b[3];
-
-  out[0] = ax * bw + aw * bx + ay * bz - az * by;
-  out[1] = ay * bw + aw * by + az * bx - ax * bz;
-  out[2] = az * bw + aw * bz + ax * by - ay * bx;
-  out[3] = aw * bw - ax * bx - ay * by - az * bz;
-  return out;
-}
-
-/**
- * Rotates a quaternion by the given angle about the X axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-function rotateX(out, a, rad) {
-  rad *= 0.5;
-
-  var ax = a[0],
-      ay = a[1],
-      az = a[2],
-      aw = a[3];
-  var bx = Math.sin(rad),
-      bw = Math.cos(rad);
-
-  out[0] = ax * bw + aw * bx;
-  out[1] = ay * bw + az * bx;
-  out[2] = az * bw - ay * bx;
-  out[3] = aw * bw - ax * bx;
-  return out;
-}
-
-/**
- * Rotates a quaternion by the given angle about the Y axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-function rotateY(out, a, rad) {
-  rad *= 0.5;
-
-  var ax = a[0],
-      ay = a[1],
-      az = a[2],
-      aw = a[3];
-  var by = Math.sin(rad),
-      bw = Math.cos(rad);
-
-  out[0] = ax * bw - az * by;
-  out[1] = ay * bw + aw * by;
-  out[2] = az * bw + ax * by;
-  out[3] = aw * bw - ay * by;
-  return out;
-}
-
-/**
- * Rotates a quaternion by the given angle about the Z axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-function rotateZ(out, a, rad) {
-  rad *= 0.5;
-
-  var ax = a[0],
-      ay = a[1],
-      az = a[2],
-      aw = a[3];
-  var bz = Math.sin(rad),
-      bw = Math.cos(rad);
-
-  out[0] = ax * bw + ay * bz;
-  out[1] = ay * bw - ax * bz;
-  out[2] = az * bw + aw * bz;
-  out[3] = aw * bw - az * bz;
-  return out;
-}
-
-/**
- * Calculates the W component of a quat from the X, Y, and Z components.
- * Assumes that quaternion is 1 unit in length.
- * Any existing W component will be ignored.
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate W component of
- * @returns {quat} out
- */
-function calculateW(out, a) {
-  var x = a[0],
-      y = a[1],
-      z = a[2];
-
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  out[3] = Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
-  return out;
-}
-
-/**
- * Performs a spherical linear interpolation between two quat
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {quat} out
- */
-function slerp(out, a, b, t) {
-  // benchmarks:
-  //    http://jsperf.com/quaternion-slerp-implementations
-  var ax = a[0],
-      ay = a[1],
-      az = a[2],
-      aw = a[3];
-  var bx = b[0],
-      by = b[1],
-      bz = b[2],
-      bw = b[3];
-
-  var omega = void 0,
-      cosom = void 0,
-      sinom = void 0,
-      scale0 = void 0,
-      scale1 = void 0;
-
-  // calc cosine
-  cosom = ax * bx + ay * by + az * bz + aw * bw;
-  // adjust signs (if necessary)
-  if (cosom < 0.0) {
-    cosom = -cosom;
-    bx = -bx;
-    by = -by;
-    bz = -bz;
-    bw = -bw;
-  }
-  // calculate coefficients
-  if (1.0 - cosom > 0.000001) {
-    // standard case (slerp)
-    omega = Math.acos(cosom);
-    sinom = Math.sin(omega);
-    scale0 = Math.sin((1.0 - t) * omega) / sinom;
-    scale1 = Math.sin(t * omega) / sinom;
-  } else {
-    // "from" and "to" quaternions are very close
-    //  ... so we can do a linear interpolation
-    scale0 = 1.0 - t;
-    scale1 = t;
-  }
-  // calculate final values
-  out[0] = scale0 * ax + scale1 * bx;
-  out[1] = scale0 * ay + scale1 * by;
-  out[2] = scale0 * az + scale1 * bz;
-  out[3] = scale0 * aw + scale1 * bw;
-
-  return out;
-}
-
-/**
- * Calculates the inverse of a quat
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate inverse of
- * @returns {quat} out
- */
-function invert(out, a) {
-  var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2],
-      a3 = a[3];
-  var dot = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
-  var invDot = dot ? 1.0 / dot : 0;
-
-  // TODO: Would be faster to return [0,0,0,0] immediately if dot == 0
-
-  out[0] = -a0 * invDot;
-  out[1] = -a1 * invDot;
-  out[2] = -a2 * invDot;
-  out[3] = a3 * invDot;
-  return out;
-}
-
-/**
- * Calculates the conjugate of a quat
- * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate conjugate of
- * @returns {quat} out
- */
-function conjugate(out, a) {
-  out[0] = -a[0];
-  out[1] = -a[1];
-  out[2] = -a[2];
-  out[3] = a[3];
-  return out;
-}
-
-/**
- * Creates a quaternion from the given 3x3 rotation matrix.
- *
- * NOTE: The resultant quaternion is not normalized, so you should be sure
- * to renormalize the quaternion yourself where necessary.
- *
- * @param {quat} out the receiving quaternion
- * @param {mat3} m rotation matrix
- * @returns {quat} out
- * @function
- */
-function fromMat3(out, m) {
-  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-  // article "Quaternion Calculus and Fast Animation".
-  var fTrace = m[0] + m[4] + m[8];
-  var fRoot = void 0;
-
-  if (fTrace > 0.0) {
-    // |w| > 1/2, may as well choose w > 1/2
-    fRoot = Math.sqrt(fTrace + 1.0); // 2w
-    out[3] = 0.5 * fRoot;
-    fRoot = 0.5 / fRoot; // 1/(4w)
-    out[0] = (m[5] - m[7]) * fRoot;
-    out[1] = (m[6] - m[2]) * fRoot;
-    out[2] = (m[1] - m[3]) * fRoot;
-  } else {
-    // |w| <= 1/2
-    var i = 0;
-    if (m[4] > m[0]) i = 1;
-    if (m[8] > m[i * 3 + i]) i = 2;
-    var j = (i + 1) % 3;
-    var k = (i + 2) % 3;
-
-    fRoot = Math.sqrt(m[i * 3 + i] - m[j * 3 + j] - m[k * 3 + k] + 1.0);
-    out[i] = 0.5 * fRoot;
-    fRoot = 0.5 / fRoot;
-    out[3] = (m[j * 3 + k] - m[k * 3 + j]) * fRoot;
-    out[j] = (m[j * 3 + i] + m[i * 3 + j]) * fRoot;
-    out[k] = (m[k * 3 + i] + m[i * 3 + k]) * fRoot;
-  }
-
-  return out;
-}
-
-/**
- * Creates a quaternion from the given euler angle x, y, z.
- *
- * @param {quat} out the receiving quaternion
- * @param {x} Angle to rotate around X axis in degrees.
- * @param {y} Angle to rotate around Y axis in degrees.
- * @param {z} Angle to rotate around Z axis in degrees.
- * @returns {quat} out
- * @function
- */
-function fromEuler(out, x, y, z) {
-  var halfToRad = 0.5 * Math.PI / 180.0;
-  x *= halfToRad;
-  y *= halfToRad;
-  z *= halfToRad;
-
-  var sx = Math.sin(x);
-  var cx = Math.cos(x);
-  var sy = Math.sin(y);
-  var cy = Math.cos(y);
-  var sz = Math.sin(z);
-  var cz = Math.cos(z);
-
-  out[0] = sx * cy * cz - cx * sy * sz;
-  out[1] = cx * sy * cz + sx * cy * sz;
-  out[2] = cx * cy * sz - sx * sy * cz;
-  out[3] = cx * cy * cz + sx * sy * sz;
-
-  return out;
-}
-
-/**
- * Returns a string representation of a quatenion
- *
- * @param {quat} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-function str(a) {
-  return 'quat(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
-}
-
-/**
- * Creates a new quat initialized with values from an existing quaternion
- *
- * @param {quat} a quaternion to clone
- * @returns {quat} a new quaternion
- * @function
- */
-var clone = exports.clone = vec4.clone;
-
-/**
- * Creates a new quat initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} a new quaternion
- * @function
- */
-var fromValues = exports.fromValues = vec4.fromValues;
-
-/**
- * Copy the values from one quat to another
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the source quaternion
- * @returns {quat} out
- * @function
- */
-var copy = exports.copy = vec4.copy;
-
-/**
- * Set the components of a quat to the given values
- *
- * @param {quat} out the receiving quaternion
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} out
- * @function
- */
-var set = exports.set = vec4.set;
-
-/**
- * Adds two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- * @function
- */
-var add = exports.add = vec4.add;
-
-/**
- * Alias for {@link quat.multiply}
- * @function
- */
-var mul = exports.mul = multiply;
-
-/**
- * Scales a quat by a scalar number
- *
- * @param {quat} out the receiving vector
- * @param {quat} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {quat} out
- * @function
- */
-var scale = exports.scale = vec4.scale;
-
-/**
- * Calculates the dot product of two quat's
- *
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {Number} dot product of a and b
- * @function
- */
-var dot = exports.dot = vec4.dot;
-
-/**
- * Performs a linear interpolation between two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {quat} out
- * @function
- */
-var lerp = exports.lerp = vec4.lerp;
-
-/**
- * Calculates the length of a quat
- *
- * @param {quat} a vector to calculate length of
- * @returns {Number} length of a
- */
-var length = exports.length = vec4.length;
-
-/**
- * Alias for {@link quat.length}
- * @function
- */
-var len = exports.len = length;
-
-/**
- * Calculates the squared length of a quat
- *
- * @param {quat} a vector to calculate squared length of
- * @returns {Number} squared length of a
- * @function
- */
-var squaredLength = exports.squaredLength = vec4.squaredLength;
-
-/**
- * Alias for {@link quat.squaredLength}
- * @function
- */
-var sqrLen = exports.sqrLen = squaredLength;
-
-/**
- * Normalize a quat
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quaternion to normalize
- * @returns {quat} out
- * @function
- */
-var normalize = exports.normalize = vec4.normalize;
-
-/**
- * Returns whether or not the quaternions have exactly the same elements in the same position (when compared with ===)
- *
- * @param {quat} a The first quaternion.
- * @param {quat} b The second quaternion.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-var exactEquals = exports.exactEquals = vec4.exactEquals;
-
-/**
- * Returns whether or not the quaternions have approximately the same elements in the same position.
- *
- * @param {quat} a The first vector.
- * @param {quat} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-var equals = exports.equals = vec4.equals;
-
-/**
- * Sets a quaternion to represent the shortest rotation from one
- * vector to another.
- *
- * Both vectors are assumed to be unit length.
- *
- * @param {quat} out the receiving quaternion.
- * @param {vec3} a the initial vector
- * @param {vec3} b the destination vector
- * @returns {quat} out
- */
-var rotationTo = exports.rotationTo = function () {
-  var tmpvec3 = vec3.create();
-  var xUnitVec3 = vec3.fromValues(1, 0, 0);
-  var yUnitVec3 = vec3.fromValues(0, 1, 0);
-
-  return function (out, a, b) {
-    var dot = vec3.dot(a, b);
-    if (dot < -0.999999) {
-      vec3.cross(tmpvec3, xUnitVec3, a);
-      if (vec3.len(tmpvec3) < 0.000001) vec3.cross(tmpvec3, yUnitVec3, a);
-      vec3.normalize(tmpvec3, tmpvec3);
-      setAxisAngle(out, tmpvec3, Math.PI);
-      return out;
-    } else if (dot > 0.999999) {
-      out[0] = 0;
-      out[1] = 0;
-      out[2] = 0;
-      out[3] = 1;
-      return out;
-    } else {
-      vec3.cross(tmpvec3, a, b);
-      out[0] = tmpvec3[0];
-      out[1] = tmpvec3[1];
-      out[2] = tmpvec3[2];
-      out[3] = 1 + dot;
-      return normalize(out, out);
-    }
-  };
-}();
-
-/**
- * Performs a spherical linear interpolation with two control points
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @param {quat} c the third operand
- * @param {quat} d the fourth operand
- * @param {Number} t interpolation amount
- * @returns {quat} out
- */
-var sqlerp = exports.sqlerp = function () {
-  var temp1 = create();
-  var temp2 = create();
-
-  return function (out, a, b, c, d, t) {
-    slerp(temp1, a, d, t);
-    slerp(temp2, b, c, t);
-    slerp(out, temp1, temp2, 2 * t * (1 - t));
-
-    return out;
-  };
-}();
-
-/**
- * Sets the specified quaternion with values corresponding to the given
- * axes. Each axis is a vec3 and is expected to be unit length and
- * perpendicular to all other specified axes.
- *
- * @param {vec3} view  the vector representing the viewing direction
- * @param {vec3} right the vector representing the local "right" direction
- * @param {vec3} up    the vector representing the local "up" direction
- * @returns {quat} out
- */
-var setAxes = exports.setAxes = function () {
-  var matr = mat3.create();
-
-  return function (out, view, right, up) {
-    matr[0] = right[0];
-    matr[3] = right[1];
-    matr[6] = right[2];
-
-    matr[1] = up[0];
-    matr[4] = up[1];
-    matr[7] = up[2];
-
-    matr[2] = -view[0];
-    matr[5] = -view[1];
-    matr[8] = -view[2];
-
-    return normalize(out, fromMat3(out, matr));
-  };
-}();
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-Copyright (c) 2011, Daniel Guerrero
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL DANIEL GUERRERO BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
- * Uses the new array typed in javascript to binary base64 encode/decode
- * at the moment just decodes a binary base64 encoded
- * into either an ArrayBuffer (decodeArrayBuffer)
- * or into an Uint8Array (decode)
- * 
- * References:
- * https://developer.mozilla.org/en/JavaScript_typed_arrays/ArrayBuffer
- * https://developer.mozilla.org/en/JavaScript_typed_arrays/Uint8Array
- */
-
-var base64 = function () {
-	function base64() {
-		_classCallCheck(this, base64);
-	}
-
-	_createClass(base64, null, [{
-		key: 'decodeLength',
-		value: function decodeLength(input) {
-			return input.length / 4 * 3;
-		}
-
-		/* will return a  Uint8Array type */
-
-	}, {
-		key: 'decodeArrayBuffer',
-		value: function decodeArrayBuffer(input, buffer) {
-			var bytes = input.length / 4 * 3;
-			if (!buffer || buffer.byteLength != bytes) {
-				// replace the buffer with a new, appropriately sized one
-				buffer = new ArrayBuffer(bytes);
-			}
-			this.decode(input, buffer);
-
-			return buffer;
-		}
-	}, {
-		key: 'removePaddingChars',
-		value: function removePaddingChars(input) {
-			var lkey = this._keyStr.indexOf(input.charAt(input.length - 1));
-			if (lkey == 64) {
-				return input.substring(0, input.length - 1);
-			}
-			return input;
-		}
-	}, {
-		key: 'decode',
-		value: function decode(input, arrayBuffer) {
-			//get last chars to see if are valid
-			input = this.removePaddingChars(input);
-			input = this.removePaddingChars(input);
-
-			var bytes = parseInt(input.length / 4 * 3, 10);
-
-			var uarray;
-			var chr1, chr2, chr3;
-			var enc1, enc2, enc3, enc4;
-			var i = 0;
-			var j = 0;
-
-			if (arrayBuffer) uarray = new Uint8Array(arrayBuffer);else uarray = new Uint8Array(bytes);
-
-			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-
-			for (i = 0; i < bytes; i += 3) {
-				//get the 3 octects in 4 ascii chars
-				enc1 = this._keyStr.indexOf(input.charAt(j++));
-				enc2 = this._keyStr.indexOf(input.charAt(j++));
-				enc3 = this._keyStr.indexOf(input.charAt(j++));
-				enc4 = this._keyStr.indexOf(input.charAt(j++));
-
-				chr1 = enc1 << 2 | enc2 >> 4;
-				chr2 = (enc2 & 15) << 4 | enc3 >> 2;
-				chr3 = (enc3 & 3) << 6 | enc4;
-
-				uarray[i] = chr1;
-				if (enc3 != 64) uarray[i + 1] = chr2;
-				if (enc4 != 64) uarray[i + 2] = chr3;
-			}
-
-			return uarray;
-		}
-
-		// pass in a typedArray, ArrayBuffer, or ImageData object
-
-	}, {
-		key: 'encode',
-		value: function encode(buffer) {
-			var base64 = '';
-			var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-			var bytes = buffer; // assume it's a typedArrayBuffer 
-
-			if (buffer instanceof ArrayBuffer) {
-				bytes = new Uint8Array(arrayBuffer);
-			} else if (buffer instanceof ImageData) {
-				bytes = buffer.data;
-			}
-
-			var byteLength = buffer.length;
-			var byteRemainder = byteLength % 3;
-			var mainLength = byteLength - byteRemainder;
-
-			var a, b, c, d;
-			var chunk;
-
-			// Main loop deals with bytes in chunks of 3
-			for (var i = 0; i < mainLength; i = i + 3) {
-				// Combine the three bytes into a single integer
-				chunk = bytes[i] << 16 | bytes[i + 1] << 8 | bytes[i + 2];
-
-				// Use bitmasks to extract 6-bit segments from the triplet
-				a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
-				b = (chunk & 258048) >> 12; // 258048   = (2^6 - 1) << 12
-				c = (chunk & 4032) >> 6; // 4032     = (2^6 - 1) << 6
-				d = chunk & 63; // 63       = 2^6 - 1
-
-				// Convert the raw binary segments to the appropriate ASCII encoding
-				base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
-			}
-
-			// Deal with the remaining bytes and padding
-			if (byteRemainder == 1) {
-				chunk = bytes[mainLength];
-
-				a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
-
-				// Set the 4 least significant bits to zero
-				b = (chunk & 3) << 4; // 3   = 2^2 - 1
-
-				base64 += encodings[a] + encodings[b] + '==';
-			} else if (byteRemainder == 2) {
-				chunk = bytes[mainLength] << 8 | bytes[mainLength + 1];
-
-				a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
-				b = (chunk & 1008) >> 4; // 1008  = (2^6 - 1) << 4
-
-				// Set the 2 least significant bits to zero
-				c = (chunk & 15) << 2; // 15    = 2^4 - 1
-
-				base64 += encodings[a] + encodings[b] + encodings[c] + '=';
-			}
-
-			return base64;
-		}
-	}]);
-
-	return base64;
-}();
-
-exports.default = base64;
-
-base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRLightEstimate represents the attributes of environmental light as supplied by the device's sensors.
-*/
-var XRLightEstimate = function () {
-	function XRLightEstimate() {
-		_classCallCheck(this, XRLightEstimate);
-
-		this._ambientLightIntensity = 1;
-	}
-
-	_createClass(XRLightEstimate, [{
-		key: 'getAmbientColorTemperature',
-		value: function getAmbientColorTemperature() {
-			//readonly attribute double ambientColorTemperature;
-			throw new Error('Not implemented');
-		}
-	}, {
-		key: 'ambientIntensity',
-		set: function set(value) {
-			// A value of 1000 represents "neutral" lighting. (https://developer.apple.com/documentation/arkit/arlightestimate/2878308-ambientintensity)
-			this._ambientLightIntensity = value / 1000;
-		},
-		get: function get() {
-			//readonly attribute double ambientIntensity;
-			return this._ambientLightIntensity;
-		}
-	}]);
-
-	return XRLightEstimate;
-}();
-
-exports.default = XRLightEstimate;
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _XRAnchor = __webpack_require__(1);
-
-var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRAnchorOffset represents a pose in relation to an XRAnchor
-*/
-var XRAnchorOffset = function () {
-	function XRAnchorOffset(anchorUID) {
-		var poseMatrix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-		_classCallCheck(this, XRAnchorOffset);
-
-		this._anchorUID = anchorUID;
-		this._tempArray = new Float32Array(16);
-		this._poseMatrix = poseMatrix || _MatrixMath2.default.mat4_generateIdentity();
-	}
-
-	_createClass(XRAnchorOffset, [{
-		key: 'setIdentityOffset',
-		value: function setIdentityOffset() {
-			var p = this._poseMatrix;
-			p[0] = p[5] = p[10] = p[15] = 1;
-			p[1] = p[2] = p[3] = 0;
-			p[4] = p[6] = p[7] = 0;
-			p[8] = p[9] = p[11] = 0;
-			p[12] = p[13] = p[14] = 0;
-		}
-	}, {
-		key: 'getOffsetTransform',
-
-
-		/*
-  Return a transform matrix that is offset by this XRAnchorOffset.poseMatrix relative to coordinateSystem
-  */
-		value: function getOffsetTransform(coordinateSystem) {
-			return _MatrixMath2.default.mat4_multiply(this._tempArray, this._poseMatrix, coordinateSystem._poseModelMatrix);
-		}
-	}, {
-		key: 'anchorUID',
-		get: function get() {
-			return this._anchorUID;
-		}
-
-		/*
-  A Float32Array(16) representing a column major affine transform matrix
-  */
-
-	}, {
-		key: 'poseMatrix',
-		get: function get() {
-			return this._poseMatrix;
-		},
-		set: function set(array16) {
-			for (var i = 0; i < 16; i++) {
-				this._poseMatrix[i] = array16[i];
-			}
-		}
-
-		/*
-  returns a Float32Array(4) representing an x, y, z position from this.poseMatrix
-  */
-
-	}, {
-		key: 'position',
-		get: function get() {
-			return new Float32Array([this._poseMatrix[12], this._poseMatrix[13], this._poseMatrix[14]]);
-		}
-
-		/*
-  returns a Float32Array(4) representing x, y, z, w of a quaternion from this.poseMatrix
-  */
-
-	}, {
-		key: 'orientation',
-		get: function get() {
-			var quat = new _Quaternion2.default();
-			quat.setFromRotationMatrix(this._poseMatrix);
-			return quat.toArray();
-		}
-	}]);
-
-	return XRAnchorOffset;
-}();
-
-exports.default = XRAnchorOffset;
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRViewport represents the dimensions in pixels of an XRView.
-*/
-var XRViewport = function () {
-	function XRViewport(x, y, width, height) {
-		_classCallCheck(this, XRViewport);
-
-		this._x = x;
-		this._y = y;
-		this._width = width;
-		this._height = height;
-	}
-
-	_createClass(XRViewport, [{
-		key: "x",
-		get: function get() {
-			return this._x;
-		},
-		set: function set(value) {
-			this._x = value;
-		}
-	}, {
-		key: "y",
-		get: function get() {
-			return this._y;
-		},
-		set: function set(value) {
-			this._y = value;
-		}
-	}, {
-		key: "width",
-		get: function get() {
-			return this._width;
-		},
-		set: function set(value) {
-			this._width = value;
-		}
-	}, {
-		key: "height",
-		get: function get() {
-			return this._height;
-		},
-		set: function set(value) {
-			this._height = value;
-		}
-	}]);
-
-	return XRViewport;
-}();
-
-exports.default = XRViewport;
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRLayer defines a source of bitmap images and a description of how the image is to be rendered in the XRDisplay
-*/
-var XRLayer = function (_EventHandlerBase) {
-	_inherits(XRLayer, _EventHandlerBase);
-
-	function XRLayer() {
-		_classCallCheck(this, XRLayer);
-
-		return _possibleConstructorReturn(this, (XRLayer.__proto__ || Object.getPrototypeOf(XRLayer)).apply(this, arguments));
-	}
-
-	return XRLayer;
-}(_EventHandlerBase3.default);
-
-exports.default = XRLayer;
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-var _Vector = __webpack_require__(15);
-
-var _Vector2 = _interopRequireDefault(_Vector);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _Euler = __webpack_require__(38);
-
-var _Euler2 = _interopRequireDefault(_Euler);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-DeviceOrientationTracker keeps track of device orientation, which can be queried usnig `getOrientation`
-*/
-var DeviceOrientationTracker = function (_EventHandlerBase) {
-	_inherits(DeviceOrientationTracker, _EventHandlerBase);
-
-	function DeviceOrientationTracker() {
-		_classCallCheck(this, DeviceOrientationTracker);
-
-		var _this = _possibleConstructorReturn(this, (DeviceOrientationTracker.__proto__ || Object.getPrototypeOf(DeviceOrientationTracker)).call(this));
-
-		_this._deviceOrientation = null;
-		_this._windowOrientation = 0;
-
-		window.addEventListener('orientationchange', function () {
-			_this._windowOrientation = window.orientation || 0;
-		}, false);
-		window.addEventListener('deviceorientation', function (ev) {
-			_this._deviceOrientation = ev;
-			try {
-				_this.dispatchEvent(new CustomEvent(DeviceOrientationTracker.ORIENTATION_UPDATE_EVENT, {
-					deviceOrientation: _this._deviceOrientation,
-					windowOrientation: _this._windowOrientation
-				}));
-			} catch (e) {
-				console.error('deviceorientation event handler error', e);
-			}
-		}, false);
-		return _this;
-	}
-
-	/*
- getOrientation sets the value of outQuaternion to the most recently tracked device orientation
- returns true if a device orientation has been received, otherwise false
- */
-
-
-	_createClass(DeviceOrientationTracker, [{
-		key: 'getOrientation',
-		value: function getOrientation(outQuaternion) {
-			if (this._deviceOrientation === null) {
-				outQuaternion.set(0, 0, 0, 1);
-				return false;
-			}
-			DeviceOrientationTracker.WORKING_EULER.set(this._deviceOrientation.beta * DeviceOrientationTracker.DEG_TO_RAD, this._deviceOrientation.alpha * DeviceOrientationTracker.DEG_TO_RAD, -1 * this._deviceOrientation.gamma * DeviceOrientationTracker.DEG_TO_RAD, 'YXZ');
-			outQuaternion.setFromEuler(DeviceOrientationTracker.WORKING_EULER.x, DeviceOrientationTracker.WORKING_EULER.y, DeviceOrientationTracker.WORKING_EULER.z, DeviceOrientationTracker.WORKING_EULER.order);
-			outQuaternion.multiply(DeviceOrientationTracker.HALF_PI_AROUND_X);
-			outQuaternion.multiply(DeviceOrientationTracker.WORKING_QUATERNION.setFromAxisAngle(DeviceOrientationTracker.Z_AXIS, -this._windowOrientation * DeviceOrientationTracker.DEG_TO_RAD));
-			return true;
-		}
-	}]);
-
-	return DeviceOrientationTracker;
-}(_EventHandlerBase3.default);
-
-exports.default = DeviceOrientationTracker;
-
-
-DeviceOrientationTracker.ORIENTATION_UPDATE_EVENT = 'orientation-update';
-
-DeviceOrientationTracker.Z_AXIS = new _Vector2.default(0, 0, 1);
-DeviceOrientationTracker.WORKING_EULER = new _Euler2.default();
-DeviceOrientationTracker.WORKING_QUATERNION = new _Quaternion2.default();
-DeviceOrientationTracker.HALF_PI_AROUND_X = new _Quaternion2.default(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
-DeviceOrientationTracker.DEG_TO_RAD = Math.PI / 180;
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRDisplay2 = __webpack_require__(6);
-
-var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
-
-var _XRSession2 = __webpack_require__(11);
-
-var _XRSession3 = _interopRequireDefault(_XRSession2);
-
-var _XRSessionCreateParameters2 = __webpack_require__(29);
-
-var _XRSessionCreateParameters3 = _interopRequireDefault(_XRSessionCreateParameters2);
-
-var _Reality2 = __webpack_require__(7);
-
-var _Reality3 = _interopRequireDefault(_Reality2);
-
-var _XRPointCloud2 = __webpack_require__(30);
-
-var _XRPointCloud3 = _interopRequireDefault(_XRPointCloud2);
-
-var _XRLightEstimate2 = __webpack_require__(20);
-
-var _XRLightEstimate3 = _interopRequireDefault(_XRLightEstimate2);
-
-var _XRAnchor2 = __webpack_require__(1);
-
-var _XRAnchor3 = _interopRequireDefault(_XRAnchor2);
-
-var _XRPlaneAnchor2 = __webpack_require__(10);
-
-var _XRPlaneAnchor3 = _interopRequireDefault(_XRPlaneAnchor2);
-
-var _XRFaceAnchor2 = __webpack_require__(8);
-
-var _XRFaceAnchor3 = _interopRequireDefault(_XRFaceAnchor2);
-
-var _XRImageAnchor2 = __webpack_require__(9);
-
-var _XRImageAnchor3 = _interopRequireDefault(_XRImageAnchor2);
-
-var _XRAnchorOffset2 = __webpack_require__(21);
-
-var _XRAnchorOffset3 = _interopRequireDefault(_XRAnchorOffset2);
-
-var _XRStageBounds2 = __webpack_require__(31);
-
-var _XRStageBounds3 = _interopRequireDefault(_XRStageBounds2);
-
-var _XRStageBoundsPoint2 = __webpack_require__(32);
-
-var _XRStageBoundsPoint3 = _interopRequireDefault(_XRStageBoundsPoint2);
-
-var _XRPresentationFrame2 = __webpack_require__(33);
-
-var _XRPresentationFrame3 = _interopRequireDefault(_XRPresentationFrame2);
-
-var _XRView2 = __webpack_require__(13);
-
-var _XRView3 = _interopRequireDefault(_XRView2);
-
-var _XRViewport2 = __webpack_require__(22);
-
-var _XRViewport3 = _interopRequireDefault(_XRViewport2);
-
-var _XRCoordinateSystem2 = __webpack_require__(34);
-
-var _XRCoordinateSystem3 = _interopRequireDefault(_XRCoordinateSystem2);
-
-var _XRViewPose2 = __webpack_require__(14);
-
-var _XRViewPose3 = _interopRequireDefault(_XRViewPose2);
-
-var _XRLayer2 = __webpack_require__(23);
-
-var _XRLayer3 = _interopRequireDefault(_XRLayer2);
-
-var _XRWebGLLayer2 = __webpack_require__(35);
-
-var _XRWebGLLayer3 = _interopRequireDefault(_XRWebGLLayer2);
-
-var _XRVideoFrame2 = __webpack_require__(36);
-
-var _XRVideoFrame3 = _interopRequireDefault(_XRVideoFrame2);
-
-var _EventHandlerBase2 = __webpack_require__(3);
-
-var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
-
-var _FlatDisplay = __webpack_require__(37);
-
-var _FlatDisplay2 = _interopRequireDefault(_FlatDisplay);
-
-var _HeadMountedDisplay = __webpack_require__(39);
-
-var _HeadMountedDisplay2 = _interopRequireDefault(_HeadMountedDisplay);
-
-var _CameraReality = __webpack_require__(40);
-
-var _CameraReality2 = _interopRequireDefault(_CameraReality);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRPolyfill implements the window.XR functionality as a polyfill
-
-Code below will check for window.XR and if it doesn't exist will install this polyfill,
-so you can safely include this script in any page.
-*/
-var XRPolyfill = function (_EventHandlerBase) {
-	_inherits(XRPolyfill, _EventHandlerBase);
-
-	function XRPolyfill() {
-		_classCallCheck(this, XRPolyfill);
-
-		var _this = _possibleConstructorReturn(this, (XRPolyfill.__proto__ || Object.getPrototypeOf(XRPolyfill)).call(this));
-
-		window.XRDisplay = _XRDisplay3.default;
-		window.XRSession = _XRSession3.default;
-		window.XRSessionCreateParameters = _XRSessionCreateParameters3.default;
-		window.Reality = _Reality3.default;
-		window.XRPointCloud = _XRPointCloud3.default;
-		window.XRLightEstimate = _XRLightEstimate3.default;
-		window.XRAnchor = _XRAnchor3.default;
-		window.XRPlaneAnchor = _XRPlaneAnchor3.default;
-		window.XRFaceAnchor = _XRFaceAnchor3.default;
-		window.XRImageAnchor = _XRImageAnchor3.default;
-		window.XRAnchorOffset = _XRAnchorOffset3.default;
-		window.XRStageBounds = _XRStageBounds3.default;
-		window.XRStageBoundsPoint = _XRStageBoundsPoint3.default;
-		window.XRPresentationFrame = _XRPresentationFrame3.default;
-		window.XRView = _XRView3.default;
-		window.XRViewport = _XRViewport3.default;
-		window.XRCoordinateSystem = _XRCoordinateSystem3.default;
-		window.XRViewPose = _XRViewPose3.default;
-		window.XRLayer = _XRLayer3.default;
-		window.XRWebGLLayer = _XRWebGLLayer3.default;
-		window.XRVideoFrame = _XRVideoFrame3.default;
-
-		XRDisplay = window.XRDisplay;
-		XRSession = window.XRSession;
-		XRSessionCreateParameters = window.XRSessionCreateParameters;
-		Reality = window.Reality;
-		XRPointCloud = window.XRPointCloud;
-		XRLightEstimate = window.XRLightEstimate;
-		XRAnchor = window.XRAnchor;
-		XRPlaneAnchor = window.XRPlaneAnchor;
-		XRFaceAnchor = window.XRFaceAnchor;
-		XRImageAnchor = window.XRImageAnchor;
-		XRAnchorOffset = window.XRAnchorOffset;
-		XRStageBounds = window.XRStageBounds;
-		XRStageBoundsPoint = window.XRStageBoundsPoint;
-		XRPresentationFrame = window.XRPresentationFrame;
-		XRView = window.XRView;
-		XRViewport = window.XRViewport;
-		XRCoordinateSystem = window.XRCoordinateSystem;
-		XRViewPose = window.XRViewPose;
-		XRLayer = window.XRLayer;
-		XRWebGLLayer = window.XRWebGLLayer;
-		XRVideoFrame = window.XRVideoFrame;
-
-		_this._getVRDisplaysFinished = false;
-
-		// Reality instances that may be shared by multiple XRSessions
-		_this._sharedRealities = [new _CameraReality2.default(_this)];
-		_this._privateRealities = [];
-
-		_this._displays = [new _FlatDisplay2.default(_this, _this._sharedRealities[0])];
-
-		if (typeof navigator.getVRDisplays === 'function') {
-			navigator.getVRDisplays().then(function (displays) {
-				var _iteratorNormalCompletion = true;
-				var _didIteratorError = false;
-				var _iteratorError = undefined;
-
-				try {
-					for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var display = _step.value;
-
-						if (display === null) continue;
-						if (display.capabilities.canPresent) {
-							_this._displays.push(new _HeadMountedDisplay2.default(_this, _this._sharedRealities[0], display));
-						}
-					}
-				} catch (err) {
-					_didIteratorError = true;
-					_iteratorError = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion && _iterator.return) {
-							_iterator.return();
-						}
-					} finally {
-						if (_didIteratorError) {
-							throw _iteratorError;
-						}
-					}
-				}
-
-				_this._getVRDisplaysFinished = true;
-			});
-		} else {
-			// if no WebVR, we don't need to wait
-			_this._getVRDisplaysFinished = true;
-		}
-
-		// These elements are at the beginning of the body and absolutely positioned to fill the entire window
-		// Sessions and realities add their elements to these divs so that they are in the right render order
-		_this._sessionEls = document.createElement('div');
-		_this._sessionEls.setAttribute('class', 'webxr-sessions');
-		_this._realityEls = document.createElement('div');
-		_this._realityEls.setAttribute('class', 'webxr-realities');
-		var _arr = [_this._sessionEls, _this._realityEls];
-		for (var _i = 0; _i < _arr.length; _i++) {
-			var el = _arr[_i];
-			el.style.position = 'absolute';
-			el.style.width = '100%';
-			el.style.height = '100%';
-		}
-
-		var prependElements = function prependElements() {
-			document.body.style.width = '100%';
-			document.body.style.height = '100%';
-			document.body.prepend(_this._sessionEls);
-			document.body.prepend(_this._realityEls); // realities must render behind the sessions
-		};
-
-		if (document.readyState !== 'loading') {
-			prependElements();
-		} else {
-			document.addEventListener('DOMContentLoaded', prependElements);
-		}
-		return _this;
-	}
-
-	_createClass(XRPolyfill, [{
-		key: 'getDisplays',
-		value: function getDisplays() {
-			var self = this;
-			var waitTillDisplaysChecked = function waitTillDisplaysChecked(resolve) {
-				if (!self._getVRDisplaysFinished) {
-					setTimeout(waitTillDisplaysChecked.bind(self, resolve), 30);
-				} else {
-					resolve(self._displays);
-				}
-			};
-			return new Promise(function (resolve, reject) {
-				waitTillDisplaysChecked(resolve);
-			});
-		}
-
-		//attribute EventHandler ondisplayconnect;
-		//attribute EventHandler ondisplaydisconnect;
-
-	}]);
-
-	return XRPolyfill;
-}(_EventHandlerBase3.default);
-
-/* Install XRPolyfill if window.XR does not exist */
-
-
-if (typeof navigator.XR === 'undefined') {
-	navigator.XR = new XRPolyfill();
-}
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Reality2 = __webpack_require__(7);
-
-var _Reality3 = _interopRequireDefault(_Reality2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-VirtualReality is a Reality that is empty and waiting for fanstastic CG scenes.
-*/
-var VirtualReality = function (_Reality) {
-	_inherits(VirtualReality, _Reality);
-
-	function VirtualReality(xr) {
-		_classCallCheck(this, VirtualReality);
-
-		return _possibleConstructorReturn(this, (VirtualReality.__proto__ || Object.getPrototypeOf(VirtualReality)).call(this, xr, 'Virtual', false, false));
-	}
-
-	/*
- Called when at least one active XRSession is using this Reality
- */
-
-
-	_createClass(VirtualReality, [{
-		key: '_start',
-		value: function _start(parameters) {}
-
-		/*
-  Called when no more active XRSessions are using this Reality
-  */
-
-	}, {
-		key: '_stop',
-		value: function _stop() {}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame() {}
-
-		/*
-  Create an anchor hung in space
-  */
-
-	}, {
-		key: '_addAnchor',
-		value: function _addAnchor(anchor, display) {
-			this._anchors.set(anchor.uid, anchor);
-			return anchor.uid;
-		}
-
-		/*
-  Create an anchor attached to a surface, as found by a ray
-  normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-  */
-
-	}, {
-		key: '_findAnchor',
-		value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
-			var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
-			return new Promise(function (resolve, reject) {
-				resolve(null);
-			});
-		}
-	}, {
-		key: '_removeAnchor',
-		value: function _removeAnchor(uid) {
-			this._anchors.delete(uid);
-		}
-	}, {
-		key: '_hitTestNoAnchor',
-		value: function _hitTestNoAnchor(normalizedScreenX, normalizedScreenY, display) {
-			return null;
-		}
-	}, {
-		key: '_getHasLightEstimate',
-		value: function _getHasLightEstimate() {
-			return false;
-		}
-
-		/*
-  Find an XRAnchorOffset that is at floor level below the current head pose
-  returns a Promise that resolves either to an AnchorOffset or null if the floor level is unknown
-  */
-
-	}, {
-		key: '_findFloorAnchor',
-		value: function _findFloorAnchor(display) {
-			var _this2 = this;
-
-			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			// Copy the head model matrix for the current pose so we have it in the promise below
-			var headModelMatrix = new Float32Array(display._headPose.poseModelMatrix);
-			return new Promise(function (resolve, reject) {
-				// For now, just create an anchor at origin level.  Probably want to use stage more intelligently
-				headModelMatrix[13] = 0;
-				var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-				coordinateSystem._relativeMatrix = headModelMatrix;
-				var anchor = new XRAnchor(coordinateSystem, uid);
-				_this2._addAnchor(anchor, display);
-				resolve(new XRAnchorOffset(anchor.uid));
-			});
-		}
-	}, {
-		key: '_getTimeStamp',
-		value: function _getTimeStamp(timestamp) {
-			return timestamp;
-		}
-	}]);
-
-	return VirtualReality;
-}(_Reality3.default);
-
-exports.default = VirtualReality;
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.sub = exports.mul = undefined;
-exports.create = create;
-exports.fromMat4 = fromMat4;
-exports.clone = clone;
-exports.copy = copy;
-exports.fromValues = fromValues;
-exports.set = set;
-exports.identity = identity;
-exports.transpose = transpose;
-exports.invert = invert;
-exports.adjoint = adjoint;
-exports.determinant = determinant;
-exports.multiply = multiply;
-exports.translate = translate;
-exports.rotate = rotate;
-exports.scale = scale;
-exports.fromTranslation = fromTranslation;
-exports.fromRotation = fromRotation;
-exports.fromScaling = fromScaling;
-exports.fromMat2d = fromMat2d;
-exports.fromQuat = fromQuat;
-exports.normalFromMat4 = normalFromMat4;
-exports.projection = projection;
-exports.str = str;
-exports.frob = frob;
-exports.add = add;
-exports.subtract = subtract;
-exports.multiplyScalar = multiplyScalar;
-exports.multiplyScalarAndAdd = multiplyScalarAndAdd;
-exports.exactEquals = exactEquals;
-exports.equals = equals;
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * 3x3 Matrix
- * @module mat3
- */
-
-/**
- * Creates a new identity mat3
- *
- * @returns {mat3} a new 3x3 matrix
- */
-function create() {
-  var out = new glMatrix.ARRAY_TYPE(9);
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 1;
-  out[5] = 0;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Copies the upper-left 3x3 values into the given mat3.
- *
- * @param {mat3} out the receiving 3x3 matrix
- * @param {mat4} a   the source 4x4 matrix
- * @returns {mat3} out
- */
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
-function fromMat4(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[4];
-  out[4] = a[5];
-  out[5] = a[6];
-  out[6] = a[8];
-  out[7] = a[9];
-  out[8] = a[10];
-  return out;
-}
-
-/**
- * Creates a new mat3 initialized with values from an existing matrix
- *
- * @param {mat3} a matrix to clone
- * @returns {mat3} a new 3x3 matrix
- */
-function clone(a) {
-  var out = new glMatrix.ARRAY_TYPE(9);
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  out[4] = a[4];
-  out[5] = a[5];
-  out[6] = a[6];
-  out[7] = a[7];
-  out[8] = a[8];
-  return out;
-}
-
-/**
- * Copy the values from one mat3 to another
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-function copy(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  out[4] = a[4];
-  out[5] = a[5];
-  out[6] = a[6];
-  out[7] = a[7];
-  out[8] = a[8];
-  return out;
-}
-
-/**
- * Create a new mat3 with the given values
- *
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m10 Component in column 1, row 0 position (index 3)
- * @param {Number} m11 Component in column 1, row 1 position (index 4)
- * @param {Number} m12 Component in column 1, row 2 position (index 5)
- * @param {Number} m20 Component in column 2, row 0 position (index 6)
- * @param {Number} m21 Component in column 2, row 1 position (index 7)
- * @param {Number} m22 Component in column 2, row 2 position (index 8)
- * @returns {mat3} A new mat3
- */
-function fromValues(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
-  var out = new glMatrix.ARRAY_TYPE(9);
-  out[0] = m00;
-  out[1] = m01;
-  out[2] = m02;
-  out[3] = m10;
-  out[4] = m11;
-  out[5] = m12;
-  out[6] = m20;
-  out[7] = m21;
-  out[8] = m22;
-  return out;
-}
-
-/**
- * Set the components of a mat3 to the given values
- *
- * @param {mat3} out the receiving matrix
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m10 Component in column 1, row 0 position (index 3)
- * @param {Number} m11 Component in column 1, row 1 position (index 4)
- * @param {Number} m12 Component in column 1, row 2 position (index 5)
- * @param {Number} m20 Component in column 2, row 0 position (index 6)
- * @param {Number} m21 Component in column 2, row 1 position (index 7)
- * @param {Number} m22 Component in column 2, row 2 position (index 8)
- * @returns {mat3} out
- */
-function set(out, m00, m01, m02, m10, m11, m12, m20, m21, m22) {
-  out[0] = m00;
-  out[1] = m01;
-  out[2] = m02;
-  out[3] = m10;
-  out[4] = m11;
-  out[5] = m12;
-  out[6] = m20;
-  out[7] = m21;
-  out[8] = m22;
-  return out;
-}
-
-/**
- * Set a mat3 to the identity matrix
- *
- * @param {mat3} out the receiving matrix
- * @returns {mat3} out
- */
-function identity(out) {
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 1;
-  out[5] = 0;
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Transpose the values of a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-function transpose(out, a) {
-  // If we are transposing ourselves we can skip a few steps but have to cache some values
-  if (out === a) {
-    var a01 = a[1],
-        a02 = a[2],
-        a12 = a[5];
-    out[1] = a[3];
-    out[2] = a[6];
-    out[3] = a01;
-    out[5] = a[7];
-    out[6] = a02;
-    out[7] = a12;
-  } else {
-    out[0] = a[0];
-    out[1] = a[3];
-    out[2] = a[6];
-    out[3] = a[1];
-    out[4] = a[4];
-    out[5] = a[7];
-    out[6] = a[2];
-    out[7] = a[5];
-    out[8] = a[8];
-  }
-
-  return out;
-}
-
-/**
- * Inverts a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-function invert(out, a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2];
-  var a10 = a[3],
-      a11 = a[4],
-      a12 = a[5];
-  var a20 = a[6],
-      a21 = a[7],
-      a22 = a[8];
-
-  var b01 = a22 * a11 - a12 * a21;
-  var b11 = -a22 * a10 + a12 * a20;
-  var b21 = a21 * a10 - a11 * a20;
-
-  // Calculate the determinant
-  var det = a00 * b01 + a01 * b11 + a02 * b21;
-
-  if (!det) {
-    return null;
-  }
-  det = 1.0 / det;
-
-  out[0] = b01 * det;
-  out[1] = (-a22 * a01 + a02 * a21) * det;
-  out[2] = (a12 * a01 - a02 * a11) * det;
-  out[3] = b11 * det;
-  out[4] = (a22 * a00 - a02 * a20) * det;
-  out[5] = (-a12 * a00 + a02 * a10) * det;
-  out[6] = b21 * det;
-  out[7] = (-a21 * a00 + a01 * a20) * det;
-  out[8] = (a11 * a00 - a01 * a10) * det;
-  return out;
-}
-
-/**
- * Calculates the adjugate of a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-function adjoint(out, a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2];
-  var a10 = a[3],
-      a11 = a[4],
-      a12 = a[5];
-  var a20 = a[6],
-      a21 = a[7],
-      a22 = a[8];
-
-  out[0] = a11 * a22 - a12 * a21;
-  out[1] = a02 * a21 - a01 * a22;
-  out[2] = a01 * a12 - a02 * a11;
-  out[3] = a12 * a20 - a10 * a22;
-  out[4] = a00 * a22 - a02 * a20;
-  out[5] = a02 * a10 - a00 * a12;
-  out[6] = a10 * a21 - a11 * a20;
-  out[7] = a01 * a20 - a00 * a21;
-  out[8] = a00 * a11 - a01 * a10;
-  return out;
-}
-
-/**
- * Calculates the determinant of a mat3
- *
- * @param {mat3} a the source matrix
- * @returns {Number} determinant of a
- */
-function determinant(a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2];
-  var a10 = a[3],
-      a11 = a[4],
-      a12 = a[5];
-  var a20 = a[6],
-      a21 = a[7],
-      a22 = a[8];
-
-  return a00 * (a22 * a11 - a12 * a21) + a01 * (-a22 * a10 + a12 * a20) + a02 * (a21 * a10 - a11 * a20);
-}
-
-/**
- * Multiplies two mat3's
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-function multiply(out, a, b) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2];
-  var a10 = a[3],
-      a11 = a[4],
-      a12 = a[5];
-  var a20 = a[6],
-      a21 = a[7],
-      a22 = a[8];
-
-  var b00 = b[0],
-      b01 = b[1],
-      b02 = b[2];
-  var b10 = b[3],
-      b11 = b[4],
-      b12 = b[5];
-  var b20 = b[6],
-      b21 = b[7],
-      b22 = b[8];
-
-  out[0] = b00 * a00 + b01 * a10 + b02 * a20;
-  out[1] = b00 * a01 + b01 * a11 + b02 * a21;
-  out[2] = b00 * a02 + b01 * a12 + b02 * a22;
-
-  out[3] = b10 * a00 + b11 * a10 + b12 * a20;
-  out[4] = b10 * a01 + b11 * a11 + b12 * a21;
-  out[5] = b10 * a02 + b11 * a12 + b12 * a22;
-
-  out[6] = b20 * a00 + b21 * a10 + b22 * a20;
-  out[7] = b20 * a01 + b21 * a11 + b22 * a21;
-  out[8] = b20 * a02 + b21 * a12 + b22 * a22;
-  return out;
-}
-
-/**
- * Translate a mat3 by the given vector
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to translate
- * @param {vec2} v vector to translate by
- * @returns {mat3} out
- */
-function translate(out, a, v) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a10 = a[3],
-      a11 = a[4],
-      a12 = a[5],
-      a20 = a[6],
-      a21 = a[7],
-      a22 = a[8],
-      x = v[0],
-      y = v[1];
-
-  out[0] = a00;
-  out[1] = a01;
-  out[2] = a02;
-
-  out[3] = a10;
-  out[4] = a11;
-  out[5] = a12;
-
-  out[6] = x * a00 + y * a10 + a20;
-  out[7] = x * a01 + y * a11 + a21;
-  out[8] = x * a02 + y * a12 + a22;
-  return out;
-}
-
-/**
- * Rotates a mat3 by the given angle
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat3} out
- */
-function rotate(out, a, rad) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a10 = a[3],
-      a11 = a[4],
-      a12 = a[5],
-      a20 = a[6],
-      a21 = a[7],
-      a22 = a[8],
-      s = Math.sin(rad),
-      c = Math.cos(rad);
-
-  out[0] = c * a00 + s * a10;
-  out[1] = c * a01 + s * a11;
-  out[2] = c * a02 + s * a12;
-
-  out[3] = c * a10 - s * a00;
-  out[4] = c * a11 - s * a01;
-  out[5] = c * a12 - s * a02;
-
-  out[6] = a20;
-  out[7] = a21;
-  out[8] = a22;
-  return out;
-};
-
-/**
- * Scales the mat3 by the dimensions in the given vec2
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to rotate
- * @param {vec2} v the vec2 to scale the matrix by
- * @returns {mat3} out
- **/
-function scale(out, a, v) {
-  var x = v[0],
-      y = v[1];
-
-  out[0] = x * a[0];
-  out[1] = x * a[1];
-  out[2] = x * a[2];
-
-  out[3] = y * a[3];
-  out[4] = y * a[4];
-  out[5] = y * a[5];
-
-  out[6] = a[6];
-  out[7] = a[7];
-  out[8] = a[8];
-  return out;
-}
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.translate(dest, dest, vec);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {vec2} v Translation vector
- * @returns {mat3} out
- */
-function fromTranslation(out, v) {
-  out[0] = 1;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = 1;
-  out[5] = 0;
-  out[6] = v[0];
-  out[7] = v[1];
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from a given angle
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.rotate(dest, dest, rad);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat3} out
- */
-function fromRotation(out, rad) {
-  var s = Math.sin(rad),
-      c = Math.cos(rad);
-
-  out[0] = c;
-  out[1] = s;
-  out[2] = 0;
-
-  out[3] = -s;
-  out[4] = c;
-  out[5] = 0;
-
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.scale(dest, dest, vec);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {vec2} v Scaling vector
- * @returns {mat3} out
- */
-function fromScaling(out, v) {
-  out[0] = v[0];
-  out[1] = 0;
-  out[2] = 0;
-
-  out[3] = 0;
-  out[4] = v[1];
-  out[5] = 0;
-
-  out[6] = 0;
-  out[7] = 0;
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Copies the values from a mat2d into a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat2d} a the matrix to copy
- * @returns {mat3} out
- **/
-function fromMat2d(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = 0;
-
-  out[3] = a[2];
-  out[4] = a[3];
-  out[5] = 0;
-
-  out[6] = a[4];
-  out[7] = a[5];
-  out[8] = 1;
-  return out;
-}
-
-/**
-* Calculates a 3x3 matrix from the given quaternion
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {quat} q Quaternion to create matrix from
-*
-* @returns {mat3} out
-*/
-function fromQuat(out, q) {
-  var x = q[0],
-      y = q[1],
-      z = q[2],
-      w = q[3];
-  var x2 = x + x;
-  var y2 = y + y;
-  var z2 = z + z;
-
-  var xx = x * x2;
-  var yx = y * x2;
-  var yy = y * y2;
-  var zx = z * x2;
-  var zy = z * y2;
-  var zz = z * z2;
-  var wx = w * x2;
-  var wy = w * y2;
-  var wz = w * z2;
-
-  out[0] = 1 - yy - zz;
-  out[3] = yx - wz;
-  out[6] = zx + wy;
-
-  out[1] = yx + wz;
-  out[4] = 1 - xx - zz;
-  out[7] = zy - wx;
-
-  out[2] = zx - wy;
-  out[5] = zy + wx;
-  out[8] = 1 - xx - yy;
-
-  return out;
-}
-
-/**
-* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {mat4} a Mat4 to derive the normal matrix from
-*
-* @returns {mat3} out
-*/
-function normalFromMat4(out, a) {
-  var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
-  var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
-  var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
-  var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
-
-  var b00 = a00 * a11 - a01 * a10;
-  var b01 = a00 * a12 - a02 * a10;
-  var b02 = a00 * a13 - a03 * a10;
-  var b03 = a01 * a12 - a02 * a11;
-  var b04 = a01 * a13 - a03 * a11;
-  var b05 = a02 * a13 - a03 * a12;
-  var b06 = a20 * a31 - a21 * a30;
-  var b07 = a20 * a32 - a22 * a30;
-  var b08 = a20 * a33 - a23 * a30;
-  var b09 = a21 * a32 - a22 * a31;
-  var b10 = a21 * a33 - a23 * a31;
-  var b11 = a22 * a33 - a23 * a32;
-
-  // Calculate the determinant
-  var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-
-  if (!det) {
-    return null;
-  }
-  det = 1.0 / det;
-
-  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
-  out[1] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
-  out[2] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
-
-  out[3] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
-  out[4] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
-  out[5] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
-
-  out[6] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
-  out[7] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
-  out[8] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
-
-  return out;
-}
-
-/**
- * Generates a 2D projection matrix with the given bounds
- *
- * @param {mat3} out mat3 frustum matrix will be written into
- * @param {number} width Width of your gl context
- * @param {number} height Height of gl context
- * @returns {mat3} out
- */
-function projection(out, width, height) {
-  out[0] = 2 / width;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  out[4] = -2 / height;
-  out[5] = 0;
-  out[6] = -1;
-  out[7] = 1;
-  out[8] = 1;
-  return out;
-}
-
-/**
- * Returns a string representation of a mat3
- *
- * @param {mat3} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-function str(a) {
-  return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' + a[8] + ')';
-}
-
-/**
- * Returns Frobenius norm of a mat3
- *
- * @param {mat3} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-function frob(a) {
-  return Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2));
-}
-
-/**
- * Adds two mat3's
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-function add(out, a, b) {
-  out[0] = a[0] + b[0];
-  out[1] = a[1] + b[1];
-  out[2] = a[2] + b[2];
-  out[3] = a[3] + b[3];
-  out[4] = a[4] + b[4];
-  out[5] = a[5] + b[5];
-  out[6] = a[6] + b[6];
-  out[7] = a[7] + b[7];
-  out[8] = a[8] + b[8];
-  return out;
-}
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-function subtract(out, a, b) {
-  out[0] = a[0] - b[0];
-  out[1] = a[1] - b[1];
-  out[2] = a[2] - b[2];
-  out[3] = a[3] - b[3];
-  out[4] = a[4] - b[4];
-  out[5] = a[5] - b[5];
-  out[6] = a[6] - b[6];
-  out[7] = a[7] - b[7];
-  out[8] = a[8] - b[8];
-  return out;
-}
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat3} out
- */
-function multiplyScalar(out, a, b) {
-  out[0] = a[0] * b;
-  out[1] = a[1] * b;
-  out[2] = a[2] * b;
-  out[3] = a[3] * b;
-  out[4] = a[4] * b;
-  out[5] = a[5] * b;
-  out[6] = a[6] * b;
-  out[7] = a[7] * b;
-  out[8] = a[8] * b;
-  return out;
-}
-
-/**
- * Adds two mat3's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat3} out the receiving vector
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat3} out
- */
-function multiplyScalarAndAdd(out, a, b, scale) {
-  out[0] = a[0] + b[0] * scale;
-  out[1] = a[1] + b[1] * scale;
-  out[2] = a[2] + b[2] * scale;
-  out[3] = a[3] + b[3] * scale;
-  out[4] = a[4] + b[4] * scale;
-  out[5] = a[5] + b[5] * scale;
-  out[6] = a[6] + b[6] * scale;
-  out[7] = a[7] + b[7] * scale;
-  out[8] = a[8] + b[8] * scale;
-  return out;
-}
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat3} a The first matrix.
- * @param {mat3} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-function exactEquals(a, b) {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6] && a[7] === b[7] && a[8] === b[8];
-}
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat3} a The first matrix.
- * @param {mat3} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-function equals(a, b) {
-  var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2],
-      a3 = a[3],
-      a4 = a[4],
-      a5 = a[5],
-      a6 = a[6],
-      a7 = a[7],
-      a8 = a[8];
-  var b0 = b[0],
-      b1 = b[1],
-      b2 = b[2],
-      b3 = b[3],
-      b4 = b[4],
-      b5 = b[5],
-      b6 = b[6],
-      b7 = b[7],
-      b8 = b[8];
-  return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) && Math.abs(a8 - b8) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8));
-}
-
-/**
- * Alias for {@link mat3.multiply}
- * @function
- */
-var mul = exports.mul = multiply;
-
-/**
- * Alias for {@link mat3.subtract}
- * @function
- */
-var sub = exports.sub = subtract;
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.forEach = exports.sqrLen = exports.len = exports.sqrDist = exports.dist = exports.div = exports.mul = exports.sub = undefined;
-exports.create = create;
-exports.clone = clone;
-exports.fromValues = fromValues;
-exports.copy = copy;
-exports.set = set;
-exports.add = add;
-exports.subtract = subtract;
-exports.multiply = multiply;
-exports.divide = divide;
-exports.ceil = ceil;
-exports.floor = floor;
-exports.min = min;
-exports.max = max;
-exports.round = round;
-exports.scale = scale;
-exports.scaleAndAdd = scaleAndAdd;
-exports.distance = distance;
-exports.squaredDistance = squaredDistance;
-exports.length = length;
-exports.squaredLength = squaredLength;
-exports.negate = negate;
-exports.inverse = inverse;
-exports.normalize = normalize;
-exports.dot = dot;
-exports.lerp = lerp;
-exports.random = random;
-exports.transformMat4 = transformMat4;
-exports.transformQuat = transformQuat;
-exports.str = str;
-exports.exactEquals = exactEquals;
-exports.equals = equals;
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * 4 Dimensional Vector
- * @module vec4
- */
-
-/**
- * Creates a new, empty vec4
- *
- * @returns {vec4} a new 4D vector
- */
-function create() {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  out[0] = 0;
-  out[1] = 0;
-  out[2] = 0;
-  out[3] = 0;
-  return out;
-}
-
-/**
- * Creates a new vec4 initialized with values from an existing vector
- *
- * @param {vec4} a vector to clone
- * @returns {vec4} a new 4D vector
- */
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-
-function clone(a) {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  return out;
-}
-
-/**
- * Creates a new vec4 initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {vec4} a new 4D vector
- */
-function fromValues(x, y, z, w) {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  out[3] = w;
-  return out;
-}
-
-/**
- * Copy the values from one vec4 to another
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the source vector
- * @returns {vec4} out
- */
-function copy(out, a) {
-  out[0] = a[0];
-  out[1] = a[1];
-  out[2] = a[2];
-  out[3] = a[3];
-  return out;
-}
-
-/**
- * Set the components of a vec4 to the given values
- *
- * @param {vec4} out the receiving vector
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {vec4} out
- */
-function set(out, x, y, z, w) {
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  out[3] = w;
-  return out;
-}
-
-/**
- * Adds two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function add(out, a, b) {
-  out[0] = a[0] + b[0];
-  out[1] = a[1] + b[1];
-  out[2] = a[2] + b[2];
-  out[3] = a[3] + b[3];
-  return out;
-}
-
-/**
- * Subtracts vector b from vector a
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function subtract(out, a, b) {
-  out[0] = a[0] - b[0];
-  out[1] = a[1] - b[1];
-  out[2] = a[2] - b[2];
-  out[3] = a[3] - b[3];
-  return out;
-}
-
-/**
- * Multiplies two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function multiply(out, a, b) {
-  out[0] = a[0] * b[0];
-  out[1] = a[1] * b[1];
-  out[2] = a[2] * b[2];
-  out[3] = a[3] * b[3];
-  return out;
-}
-
-/**
- * Divides two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function divide(out, a, b) {
-  out[0] = a[0] / b[0];
-  out[1] = a[1] / b[1];
-  out[2] = a[2] / b[2];
-  out[3] = a[3] / b[3];
-  return out;
-}
-
-/**
- * Math.ceil the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to ceil
- * @returns {vec4} out
- */
-function ceil(out, a) {
-  out[0] = Math.ceil(a[0]);
-  out[1] = Math.ceil(a[1]);
-  out[2] = Math.ceil(a[2]);
-  out[3] = Math.ceil(a[3]);
-  return out;
-}
-
-/**
- * Math.floor the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to floor
- * @returns {vec4} out
- */
-function floor(out, a) {
-  out[0] = Math.floor(a[0]);
-  out[1] = Math.floor(a[1]);
-  out[2] = Math.floor(a[2]);
-  out[3] = Math.floor(a[3]);
-  return out;
-}
-
-/**
- * Returns the minimum of two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function min(out, a, b) {
-  out[0] = Math.min(a[0], b[0]);
-  out[1] = Math.min(a[1], b[1]);
-  out[2] = Math.min(a[2], b[2]);
-  out[3] = Math.min(a[3], b[3]);
-  return out;
-}
-
-/**
- * Returns the maximum of two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-function max(out, a, b) {
-  out[0] = Math.max(a[0], b[0]);
-  out[1] = Math.max(a[1], b[1]);
-  out[2] = Math.max(a[2], b[2]);
-  out[3] = Math.max(a[3], b[3]);
-  return out;
-}
-
-/**
- * Math.round the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to round
- * @returns {vec4} out
- */
-function round(out, a) {
-  out[0] = Math.round(a[0]);
-  out[1] = Math.round(a[1]);
-  out[2] = Math.round(a[2]);
-  out[3] = Math.round(a[3]);
-  return out;
-}
-
-/**
- * Scales a vec4 by a scalar number
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {vec4} out
- */
-function scale(out, a, b) {
-  out[0] = a[0] * b;
-  out[1] = a[1] * b;
-  out[2] = a[2] * b;
-  out[3] = a[3] * b;
-  return out;
-}
-
-/**
- * Adds two vec4's after scaling the second operand by a scalar value
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @param {Number} scale the amount to scale b by before adding
- * @returns {vec4} out
- */
-function scaleAndAdd(out, a, b, scale) {
-  out[0] = a[0] + b[0] * scale;
-  out[1] = a[1] + b[1] * scale;
-  out[2] = a[2] + b[2] * scale;
-  out[3] = a[3] + b[3] * scale;
-  return out;
-}
-
-/**
- * Calculates the euclidian distance between two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} distance between a and b
- */
-function distance(a, b) {
-  var x = b[0] - a[0];
-  var y = b[1] - a[1];
-  var z = b[2] - a[2];
-  var w = b[3] - a[3];
-  return Math.sqrt(x * x + y * y + z * z + w * w);
-}
-
-/**
- * Calculates the squared euclidian distance between two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} squared distance between a and b
- */
-function squaredDistance(a, b) {
-  var x = b[0] - a[0];
-  var y = b[1] - a[1];
-  var z = b[2] - a[2];
-  var w = b[3] - a[3];
-  return x * x + y * y + z * z + w * w;
-}
-
-/**
- * Calculates the length of a vec4
- *
- * @param {vec4} a vector to calculate length of
- * @returns {Number} length of a
- */
-function length(a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  var w = a[3];
-  return Math.sqrt(x * x + y * y + z * z + w * w);
-}
-
-/**
- * Calculates the squared length of a vec4
- *
- * @param {vec4} a vector to calculate squared length of
- * @returns {Number} squared length of a
- */
-function squaredLength(a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  var w = a[3];
-  return x * x + y * y + z * z + w * w;
-}
-
-/**
- * Negates the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to negate
- * @returns {vec4} out
- */
-function negate(out, a) {
-  out[0] = -a[0];
-  out[1] = -a[1];
-  out[2] = -a[2];
-  out[3] = -a[3];
-  return out;
-}
-
-/**
- * Returns the inverse of the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to invert
- * @returns {vec4} out
- */
-function inverse(out, a) {
-  out[0] = 1.0 / a[0];
-  out[1] = 1.0 / a[1];
-  out[2] = 1.0 / a[2];
-  out[3] = 1.0 / a[3];
-  return out;
-}
-
-/**
- * Normalize a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to normalize
- * @returns {vec4} out
- */
-function normalize(out, a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  var w = a[3];
-  var len = x * x + y * y + z * z + w * w;
-  if (len > 0) {
-    len = 1 / Math.sqrt(len);
-    out[0] = x * len;
-    out[1] = y * len;
-    out[2] = z * len;
-    out[3] = w * len;
-  }
-  return out;
-}
-
-/**
- * Calculates the dot product of two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} dot product of a and b
- */
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
-}
-
-/**
- * Performs a linear interpolation between two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec4} out
- */
-function lerp(out, a, b, t) {
-  var ax = a[0];
-  var ay = a[1];
-  var az = a[2];
-  var aw = a[3];
-  out[0] = ax + t * (b[0] - ax);
-  out[1] = ay + t * (b[1] - ay);
-  out[2] = az + t * (b[2] - az);
-  out[3] = aw + t * (b[3] - aw);
-  return out;
-}
-
-/**
- * Generates a random vector with the given scale
- *
- * @param {vec4} out the receiving vector
- * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
- * @returns {vec4} out
- */
-function random(out, vectorScale) {
-  vectorScale = vectorScale || 1.0;
-
-  //TODO: This is a pretty awful way of doing this. Find something better.
-  out[0] = glMatrix.RANDOM();
-  out[1] = glMatrix.RANDOM();
-  out[2] = glMatrix.RANDOM();
-  out[3] = glMatrix.RANDOM();
-  normalize(out, out);
-  scale(out, out, vectorScale);
-  return out;
-}
-
-/**
- * Transforms the vec4 with a mat4.
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the vector to transform
- * @param {mat4} m matrix to transform with
- * @returns {vec4} out
- */
-function transformMat4(out, a, m) {
-  var x = a[0],
-      y = a[1],
-      z = a[2],
-      w = a[3];
-  out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
-  out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
-  out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
-  out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
-  return out;
-}
-
-/**
- * Transforms the vec4 with a quat
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the vector to transform
- * @param {quat} q quaternion to transform with
- * @returns {vec4} out
- */
-function transformQuat(out, a, q) {
-  var x = a[0],
-      y = a[1],
-      z = a[2];
-  var qx = q[0],
-      qy = q[1],
-      qz = q[2],
-      qw = q[3];
-
-  // calculate quat * vec
-  var ix = qw * x + qy * z - qz * y;
-  var iy = qw * y + qz * x - qx * z;
-  var iz = qw * z + qx * y - qy * x;
-  var iw = -qx * x - qy * y - qz * z;
-
-  // calculate result * inverse quat
-  out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-  out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-  out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-  out[3] = a[3];
-  return out;
-}
-
-/**
- * Returns a string representation of a vector
- *
- * @param {vec4} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-function str(a) {
-  return 'vec4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
-}
-
-/**
- * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
- *
- * @param {vec4} a The first vector.
- * @param {vec4} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-function exactEquals(a, b) {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
-}
-
-/**
- * Returns whether or not the vectors have approximately the same elements in the same position.
- *
- * @param {vec4} a The first vector.
- * @param {vec4} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-function equals(a, b) {
-  var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2],
-      a3 = a[3];
-  var b0 = b[0],
-      b1 = b[1],
-      b2 = b[2],
-      b3 = b[3];
-  return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3));
-}
-
-/**
- * Alias for {@link vec4.subtract}
- * @function
- */
-var sub = exports.sub = subtract;
-
-/**
- * Alias for {@link vec4.multiply}
- * @function
- */
-var mul = exports.mul = multiply;
-
-/**
- * Alias for {@link vec4.divide}
- * @function
- */
-var div = exports.div = divide;
-
-/**
- * Alias for {@link vec4.distance}
- * @function
- */
-var dist = exports.dist = distance;
-
-/**
- * Alias for {@link vec4.squaredDistance}
- * @function
- */
-var sqrDist = exports.sqrDist = squaredDistance;
-
-/**
- * Alias for {@link vec4.length}
- * @function
- */
-var len = exports.len = length;
-
-/**
- * Alias for {@link vec4.squaredLength}
- * @function
- */
-var sqrLen = exports.sqrLen = squaredLength;
-
-/**
- * Perform some operation over an array of vec4s.
- *
- * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each vec4. If 0 assumes tightly packed
- * @param {Number} offset Number of elements to skip at the beginning of the array
- * @param {Number} count Number of vec4s to iterate over. If 0 iterates over entire array
- * @param {Function} fn Function to call for each vector in the array
- * @param {Object} [arg] additional argument to pass to fn
- * @returns {Array} a
- * @function
- */
-var forEach = exports.forEach = function () {
-  var vec = create();
-
-  return function (a, stride, offset, count, fn, arg) {
-    var i = void 0,
-        l = void 0;
-    if (!stride) {
-      stride = 4;
-    }
-
-    if (!offset) {
-      offset = 0;
-    }
-
-    if (count) {
-      l = Math.min(count * stride + offset, a.length);
-    } else {
-      l = a.length;
-    }
-
-    for (i = offset; i < l; i += stride) {
-      vec[0] = a[i];vec[1] = a[i + 1];vec[2] = a[i + 2];vec[3] = a[i + 3];
-      fn(vec, vec, arg);
-      a[i] = vec[0];a[i + 1] = vec[1];a[i + 2] = vec[2];a[i + 3] = vec[3];
-    }
-
-    return a;
-  };
-}();
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-The XRSessionCreateParametersInit dictionary provides a session description, indicating the desired capabilities of a session to be returned from requestSession()
-*/
-var XRSessionCreateParameters = function () {
-	function XRSessionCreateParameters() {
-		_classCallCheck(this, XRSessionCreateParameters);
-	}
-
-	_createClass(XRSessionCreateParameters, [{
-		key: 'exclusive',
-		get: function get() {
-			//readonly attribute boolean exclusive;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'type',
-		get: function get() {
-			//readonly attribute XRSessionRealityType type;
-			throw 'Not implemented';
-		}
-	}]);
-
-	return XRSessionCreateParameters;
-}();
-
-exports.default = XRSessionCreateParameters;
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRPointCloud holds an array of float values where each four values represents [x, y, z, confidence in range 0-1] that describe a point in space detected by the device's sensors.
-*/
-var XRPointCloud = function () {
-	function XRPointCloud() {
-		_classCallCheck(this, XRPointCloud);
-	}
-
-	_createClass(XRPointCloud, [{
-		key: 'points',
-		get: function get() {
-			//readonly attribute Float32Array points
-			throw new Error('Not implemented');
-		}
-	}]);
-
-	return XRPointCloud;
-}();
-
-exports.default = XRPointCloud;
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-The XRStageBounds interface describes a space known as a "Stage".
-The stage is a bounded, floor-relative play space that the user can be expected to safely be able to move within.
-Other XR platforms sometimes refer to this concept as "room scale" or "standing XR".
-*/
-var XRStageBounds = function () {
-	function XRStageBounds() {
-		_classCallCheck(this, XRStageBounds);
-	}
-
-	_createClass(XRStageBounds, [{
-		key: 'center',
-		get: function get() {
-			//readonly attribute XRCoordinateSystem center;
-			throw new Error('Not implemented');
-		}
-	}, {
-		key: 'geometry',
-		get: function get() {
-			//readonly attribute FrozenArray<XRStageBoundsPoint>? geometry;
-			throw new Error('Not implemented');
-		}
-	}]);
-
-	return XRStageBounds;
-}();
-
-exports.default = XRStageBounds;
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRStageBoundPoints represent the offset in meters from the stage origin along the X and Z axes.
-*/
-var XRStageBoundsPoint = function () {
-	function XRStageBoundsPoint() {
-		_classCallCheck(this, XRStageBoundsPoint);
-	}
-
-	_createClass(XRStageBoundsPoint, [{
-		key: 'x',
-		get: function get() {
-			//readonly attribute double x;
-			throw new Error('Not implemented');
-		}
-	}, {
-		key: 'y',
-		get: function get() {
-			//readonly attribute double z;
-			throw new Error('Not implemented');
-		}
-	}]);
-
-	return XRStageBoundsPoint;
-}();
-
-exports.default = XRStageBoundsPoint;
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRAnchor = __webpack_require__(1);
-
-var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
-
-var _ARKitWrapper = __webpack_require__(5);
-
-var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRPresentationFrame provides all of the values needed to render a single frame of an XR scene to the XRDisplay.
-*/
-var XRPresentationFrame = function () {
-	function XRPresentationFrame(session, timestamp) {
-		_classCallCheck(this, XRPresentationFrame);
-
-		this._session = session;
-		this._timestamp = this._session.reality._getTimeStamp(timestamp);
-	}
-
-	_createClass(XRPresentationFrame, [{
-		key: 'addAnchor',
-
-
-		/*
-  Create an anchor at a specific position defined by XRAnchor.coordinates
-  */
-		value: function addAnchor(coordinateSystem) {
-			var position = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0];
-			var orientation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0, 1];
-			var uid = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
-			//DOMString? addAnchor(XRCoordinateSystem, position, orientation);
-			var poseMatrix = _MatrixMath2.default.mat4_fromRotationTranslation(new Float32Array(16), orientation, position);
-			_MatrixMath2.default.mat4_multiply(poseMatrix, coordinateSystem.getTransformTo(this._session._display._trackerCoordinateSystem), poseMatrix);
-			var anchorCoordinateSystem = new XRCoordinateSystem(this._session._display, XRCoordinateSystem.TRACKER);
-			anchorCoordinateSystem._relativeMatrix = poseMatrix;
-			return this._session.reality._addAnchor(new _XRAnchor2.default(anchorCoordinateSystem, uid), this._session.display);
-		}
-
-		// normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-
-	}, {
-		key: 'findAnchor',
-		value: function findAnchor(normalizedScreenX, normalizedScreenY) {
-			var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-			// Promise<XRAnchorOffset?> findAnchor(float32, float32); // cast a ray to find or create an anchor at the first intersection in the Reality
-			return this._session.reality._findAnchor(normalizedScreenX, normalizedScreenY, this._session.display, options);
-		}
-	}, {
-		key: 'hitTestNoAnchor',
-		value: function hitTestNoAnchor(normalizedScreenX, normalizedScreenY) {
-			// Array<VRHit> hitTestNoAnchor(float32, float32); // cast a ray to find all plane intersections in the Reality
-			return this._session.reality._hitTestNoAnchor(normalizedScreenX, normalizedScreenY, this._session.display);
-		}
-
-		/*
-  Find an XRAnchorOffset that is at floor level below the current head pose
-  uid will be the resulting anchor uid (if any), or if null one will be assigned
-  */
-
-	}, {
-		key: 'findFloorAnchor',
-		value: function findFloorAnchor() {
-			var uid = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			// Promise<XRAnchorOffset?> findFloorAnchor();
-			return this._session.reality._findFloorAnchor(this._session.display, uid);
-		}
-	}, {
-		key: 'removeAnchor',
-		value: function removeAnchor(uid) {
-			// void removeAnchor(DOMString uid);
-			return this._session.reality._removeAnchor(uid);
-		}
-
-		/*
-  Returns an existing XRAnchor or null if uid is unknown
-  */
-
-	}, {
-		key: 'getAnchor',
-		value: function getAnchor(uid) {
-			// XRAnchor? getAnchor(DOMString uid);
-			return this._session.reality._getAnchor(uid);
-		}
-	}, {
-		key: 'getCoordinateSystem',
-		value: function getCoordinateSystem() {
-			var _session;
-
-			// XRCoordinateSystem? getCoordinateSystem(...XRFrameOfReferenceType types); // Tries the types in order, returning the first match or null if none is found
-			return (_session = this._session)._getCoordinateSystem.apply(_session, arguments);
-		}
-	}, {
-		key: 'getDisplayPose',
-		value: function getDisplayPose(coordinateSystem) {
-			// XRViewPose? getDisplayPose(XRCoordinateSystem coordinateSystem);
-			switch (coordinateSystem._type) {
-				case XRCoordinateSystem.HEAD_MODEL:
-					return this._session._display._headPose;
-				case XRCoordinateSystem.EYE_LEVEL:
-					return this._session._display._eyeLevelPose;
-				default:
-					return null;
-			}
-		}
-	}, {
-		key: 'session',
-		get: function get() {
-			return this._session;
-		}
-	}, {
-		key: 'views',
-		get: function get() {
-			//readonly attribute FrozenArray<XRView> views;
-			return this._session._display._views;
-		}
-	}, {
-		key: 'hasPointCloud',
-		get: function get() {
-			//readonly attribute boolean hasPointCloud;
-			return false;
-		}
-	}, {
-		key: 'pointCloud',
-		get: function get() {
-			//readonly attribute XRPointCloud? pointCloud;
-			return null;
-		}
-	}, {
-		key: 'hasLightEstimate',
-		get: function get() {
-			//readonly attribute boolean hasLightEstimate;
-			return this._session.reality._getHasLightEstimate();
-		}
-	}, {
-		key: 'lightEstimate',
-		get: function get() {
-			//readonly attribute XRLightEstimate? lightEstimate;
-			return this._session.reality._getLightAmbientIntensity();
-		}
-	}, {
-		key: 'timestamp',
-		get: function get() {
-			return this._timestamp;
-		}
-		/*
-  Returns an array of known XRAnchor instances. May be empty.
-  */
-
-	}, {
-		key: 'anchors',
-		get: function get() {
-			//readonly attribute sequence<XRAnchor> anchors;
-			var results = [];
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = this._session.reality._anchors.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var value = _step.value;
-
-					results.push(value);
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return results;
-		}
-	}]);
-
-	return XRPresentationFrame;
-}();
-
-// hit test types
-
-
-exports.default = XRPresentationFrame;
-XRPresentationFrame.HIT_TEST_TYPE_FEATURE_POINT = _ARKitWrapper2.default.HIT_TEST_TYPE_FEATURE_POINT;
-XRPresentationFrame.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE = _ARKitWrapper2.default.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE;
-XRPresentationFrame.HIT_TEST_TYPE_ESTIMATED_VERTICAL_PLANE = _ARKitWrapper2.default.HIT_TEST_TYPE_ESTIMATED_VERTICAL_PLANE;
-XRPresentationFrame.HIT_TEST_TYPE_EXISTING_PLANE = _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE;
-XRPresentationFrame.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT = _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-XRPresentationFrame.HIT_TEST_TYPE_EXISTING_PLANE_USING_GEOMETRY = _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_GEOMETRY;
-
-XRPresentationFrame.HIT_TEST_TYPE_ALL = _ARKitWrapper2.default.HIT_TEST_TYPE_FEATURE_POINT | _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE | _ARKitWrapper2.default.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE | _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-
-XRPresentationFrame.HIT_TEST_TYPE_EXISTING_PLANES = _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE | _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRCoordinateSystem represents the origin of a 3D coordinate system positioned at a known frame of reference.
-The XRCoordinateSystem is a string from XRCoordinateSystem.TYPES:
-
-These types are used by the app code when requesting a coordinate system from the session:
-- XRCoordinateSystem.HEAD_MODEL: origin is aligned with the pose of the head, as sensed by HMD or handset trackers
-- XRCoordinateSystem.EYE_LEVEL: origin is at a fixed distance above the ground
-
-This is an internal type, specific to just this polyfill and not visible to the app code
-- XRCoordinateSystem.TRACKER: The origin of this coordinate system is at floor level at or below the origin of the HMD or handset provided tracking system
-
-*/
-var XRCoordinateSystem = function () {
-	function XRCoordinateSystem(display, type) {
-		_classCallCheck(this, XRCoordinateSystem);
-
-		this._display = display;
-		this._type = type;
-
-		this.__relativeMatrix = _MatrixMath2.default.mat4_generateIdentity();
-		this._workingMatrix = _MatrixMath2.default.mat4_generateIdentity();
-	}
-
-	_createClass(XRCoordinateSystem, [{
-		key: 'getTransformTo',
-		value: function getTransformTo(otherCoordinateSystem) {
-			// apply inverse of the poseModelMatrix to the identity matrix
-			var inverse = _MatrixMath2.default.mat4_invert(new Float32Array(16), otherCoordinateSystem._poseModelMatrix);
-			var out = _MatrixMath2.default.mat4_generateIdentity();
-			_MatrixMath2.default.mat4_multiply(out, inverse, out);
-
-			// apply the other system's poseModelMatrix
-			_MatrixMath2.default.mat4_multiply(out, this._poseModelMatrix, out);
-			return out;
-		}
-	}, {
-		key: '_relativeMatrix',
-		get: function get() {
-			return this.__relativeMatrix;
-		},
-		set: function set(value) {
-			for (var i = 0; i < 16; i++) {
-				this.__relativeMatrix[i] = value[i];
-			}
-		}
-	}, {
-		key: '_poseModelMatrix',
-		get: function get() {
-			switch (this._type) {
-				case XRCoordinateSystem.HEAD_MODEL:
-					return this._display._headPose.poseModelMatrix;
-				case XRCoordinateSystem.EYE_LEVEL:
-					return this._display._eyeLevelPose.poseModelMatrix;
-				case XRCoordinateSystem.TRACKER:
-					_MatrixMath2.default.mat4_multiply(this._workingMatrix, this.__relativeMatrix, this._display._trackerPoseModelMatrix);
-					return this._workingMatrix;
-				default:
-					throw new Error('Unknown coordinate system type: ' + this._type);
-			}
-		}
-	}]);
-
-	return XRCoordinateSystem;
-}();
-
-exports.default = XRCoordinateSystem;
-
-
-XRCoordinateSystem.HEAD_MODEL = 'headModel';
-XRCoordinateSystem.EYE_LEVEL = 'eyeLevel';
-XRCoordinateSystem.TRACKER = 'tracker';
-
-XRCoordinateSystem.TYPES = [XRCoordinateSystem.HEAD_MODEL, XRCoordinateSystem.EYE_LEVEL, XRCoordinateSystem.TRACKER];
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRLayer2 = __webpack_require__(23);
-
-var _XRLayer3 = _interopRequireDefault(_XRLayer2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-XRWebGLLayer defines the WebGL or WebGL 2 context that is rendering the visuals for this layer.
-*/
-var XRWebGLLayer = function (_XRLayer) {
-	_inherits(XRWebGLLayer, _XRLayer);
-
-	function XRWebGLLayer(session, context) {
-		_classCallCheck(this, XRWebGLLayer);
-
-		var _this = _possibleConstructorReturn(this, (XRWebGLLayer.__proto__ || Object.getPrototypeOf(XRWebGLLayer)).call(this));
-
-		_this._session = session;
-		_this._context = context;
-		_this._width = _this._context.canvas.width;
-		_this._height = _this._context.canvas.height;
-		_this._framebuffer = null; // TODO
-		return _this;
-	}
-
-	_createClass(XRWebGLLayer, [{
-		key: 'requestViewportScaling',
-		value: function requestViewportScaling(viewportScaleFactor) {
-			// void requestViewportScaling(double viewportScaleFactor);
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'context',
-		get: function get() {
-			return this._context;
-		}
-	}, {
-		key: 'antialias',
-		get: function get() {
-			// readonly attribute boolean antialias;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'depth',
-		get: function get() {
-			// readonly attribute boolean depth;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'stencil',
-		get: function get() {
-			// readonly attribute boolean stencil;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'alpha',
-		get: function get() {
-			// readonly attribute boolean alpha;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'multiview',
-		get: function get() {
-			// readonly attribute boolean multiview;
-			throw 'Not implemented';
-		}
-	}, {
-		key: 'framebuffer',
-		get: function get() {
-			return this._framebuffer;
-		}
-	}, {
-		key: 'framebufferWidth',
-		set: function set(w) {
-			this._width = w;
-			this._context.canvas.width = w;
-		},
-		get: function get() {
-			// not using this for now, on iOS it's not good.  
-			// var pr = window.devicePixelRatio || 1;
-			//return this._context.canvas.clientWidth;
-			return this._width;
-		}
-	}, {
-		key: 'framebufferHeight',
-		set: function set(h) {
-			this._height = h;
-			this._context.canvas.height = h;
-		},
-		get: function get() {
-			// not using this for now, on iOS it's not good.  
-			// var pr = window.devicePixelRatio || 1;
-			//return this._context.canvas.clientHeight;
-			return this._height;
-		}
-	}]);
-
-	return XRWebGLLayer;
-}(_XRLayer3.default);
-
-exports.default = XRWebGLLayer;
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _common = __webpack_require__(4);
-
-var glMatrix = _interopRequireWildcard(_common);
-
-var _mat = __webpack_require__(17);
-
-var mat4 = _interopRequireWildcard(_mat);
-
-var _quat = __webpack_require__(18);
-
-var quat = _interopRequireWildcard(_quat);
-
-var _vec = __webpack_require__(12);
-
-var vec3 = _interopRequireWildcard(_vec);
-
-var _base64Binary = __webpack_require__(19);
-
-var _base64Binary2 = _interopRequireDefault(_base64Binary);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRVideoFrame represents the a video frame from a camera.
-
-{
-  "frame": {
-    "buffers": [ // Array of base64 encoded string buffers
-      {
-        "size": {
-          "width": 320,
-          "height": 180,
-          "bytesPerRow": 320,
-          "bytesPerPixel": 1
-        },
-        "buffer": "e3x...d7d"   /// convert to Uint8 buffer in code below
-      },
-      {
-        "size": {
-          "width": 160,
-          "height": 90,
-          "bytesPerRow": 320,
-          "bytesPerPixel": 2
-        },
-        "buffer": "ZZF.../fIJ7"  /// convert to Uint8 buffer in code below
-      }
-    ],
-    "pixelFormat": "YUV420P",  /// Added in the code below, clients should ignore pixelFormatType
-    "timestamp": 337791
-  },
-  "camera": {
-    "cameraIntrinsics": [3x3 matrix],
-        fx 0   px
-        0  fy  py
-        0  0   1
-        fx and fy are the focal length in pixels.
-        px and py are the coordinates of the principal point in pixels.
-        The origin is at the center of the upper-left pixel.
-
-    "cameraImageResolution": {
-      "width": 1280,
-      "height": 720
-    },
-    "viewMatrix": [4x4 camera view matrix],
-    "arCamera": true;
-    "cameraOrientation": 0,  // orientation in degrees of image relative to display
-                            // normally 0, but on video mixed displays that keep the camera in a fixed 
-                            // orientation, but rotate the UI, like on some phones, this will change
-                            // as the display orientation changes
-    "projectionMatrix": [4x4 camera projection matrix]
-  }
-}
-
-frame.buffers.buffer[*] can be String (which will be lazily converted to ArrayBuffer) or ArrayBuffer.
-pixelFormat should be one of XRVideoFrame.IMAGEFORMAT
-
-*/
-
-// store unused ArrayBuffers
-// we'll push to it on release, pop from it when we need a new one.  In the common case, where the 
-// same camera setup is running and the same cv is running, we should get some speed up by not reallocating
-// because the same size and number of buffers will be pushed/popped in the same order
-var _ab = [];
-
-var XRVideoFrame = function () {
-    function XRVideoFrame(buffers, pixelFormat, timestamp, camera) {
-        _classCallCheck(this, XRVideoFrame);
-
-        this._buffers = buffers;
-        for (var i = 0; i < buffers.length; i++) {
-            buffers[i]._buffer = buffers[i].buffer;
-            buffers[i].buffer = null;
-
-            // if we didn't pass in an abCache, as might happen when we pass this
-            // to/from a worker, see if there is a saved ArrayBuffer of the right size
-            if (!buffers[i]._abCache && typeof buffers[i]._buffer == "string") {
-                var bytes = _base64Binary2.default.decodeLength(buffers[i]._buffer);
-                for (var j = 0; j < _ab.length; j++) {
-                    if (_ab[j].byteLength == bytes) {
-                        buffers[i]._abCache = _ab[j];
-                        _ab.splice(j, 1);
-                        break;
-                    }
-                }
-            } else if (!buffers[i]._abCache && buffers[i]._buffer instanceof ImageData) {
-                var data = buffers[i]._buffer.data;
-                var bytes = data.length;
-                for (var j = 0; j < _ab.length; j++) {
-                    if (_ab[j].byteLength == bytes) {
-                        buffers[i]._abCache = _ab[j];
-                        _ab.splice(j, 1);
-                        break;
-                    }
-                }
-
-                var ab = buffers[i]._abCache ? buffers[i]._abCache : new ArrayBuffer(bytes);
-                buffers[i]._abCache = null;
-
-                var buffData = new Uint8Array(ab);
-                for (var k = 0; k < bytes; k++) {
-                    buffData[k] = data[k];
-                }buffers[i]._buffer = ab;
-            }
-        }
-        this._pixelFormat = pixelFormat;
-        this._timestamp = timestamp;
-        this._camera = camera;
-    }
-
-    _createClass(XRVideoFrame, [{
-        key: "numBuffers",
-        value: function numBuffers() {
-            this._buffers.length;
-        }
-    }, {
-        key: "buffer",
-        value: function buffer(index) {
-            if (index >= 0 && index < this._buffers.length) {
-                var buff = this._buffers[index];
-                if (!buff.buffer) {
-                    if (typeof buff._buffer == "string") {
-                        // use the ArrayBuffer cache if there
-                        buff._buffer = _base64Binary2.default.decodeArrayBuffer(buff._buffer, buff._abCache);
-                        buff._abCache = null;
-                        buff.buffer = new Uint8Array(buff._buffer);
-                    } else if (buff._buffer instanceof ArrayBuffer) {
-                        buff.buffer = new Uint8Array(buff._buffer);
-                    } else if (buff._buffer instanceof ImageData) {
-                        buff.buffer = ImageData.data;
-                    }
-                }
-                return buff;
-            }
-            return null;
-        }
-    }, {
-        key: "release",
-        value: function release() {
-            // if buffers are passed in, check if they are ArrayBuffers, and if so, save
-            // them for possible use on the next frame.
-            //
-            // we do this because passing buffers down into Workers invalidates them, so we need to
-            // return them here when we get them back from the Worker, so they can be reused. 
-            var buffers = this._buffers;
-            for (var i = 0; i < buffers.length; i++) {
-                if (buffers[i]._buffer instanceof ArrayBuffer && buffers[i]._buffer.byteLength > 0) {
-                    _ab.push(buffers[i]._buffer);
-                }
-                if (buffers[i]._abCache instanceof ArrayBuffer && buffers[i]._abCache.byteLength > 0) {
-                    _ab.push(buffers[i]._abCache);
-                }
-            }
-        }
-    }, {
-        key: "postMessageToWorker",
-        value: function postMessageToWorker(worker, options) {
-            var msg = Object.assign({}, options || {});
-            msg.buffers = this._buffers;
-            msg.timestamp = this._timestamp;
-            msg.pixelFormat = this._pixelFormat;
-            msg.camera = this._camera;
-
-            var buffs = [];
-            for (var i = 0; i < msg.buffers.length; i++) {
-                msg.buffers[i].buffer = msg.buffers[i]._buffer;
-
-                if (msg.buffers[i]._buffer instanceof ArrayBuffer || msg.buffers[i]._buffer instanceof ImageData) {
-                    buffs.push(msg.buffers[i]._buffer);
-                }
-                msg.buffers[i]._buffer = null;
-
-                if (msg.buffers[i]._abCache instanceof ArrayBuffer) {
-                    buffs.push(msg.buffers[i]._abCache);
-                }
-            }
-            worker.postMessage(msg, buffs);
-        }
-    }, {
-        key: "postReplyMessage",
-        value: function postReplyMessage(options) {
-            var msg = Object.assign({}, options);
-            msg.buffers = this._buffers;
-            msg.timestamp = this._timestamp;
-            msg.pixelFormat = this._pixelFormat;
-            msg.camera = this._camera;
-
-            var buffs = [];
-            for (var i = 0; i < msg.buffers.length; i++) {
-                msg.buffers[i].buffer = null;
-                if (msg.buffers[i]._buffer instanceof ArrayBuffer || msg.buffers[i]._buffer instanceof ImageData) {
-                    // any array buffers should be marked for transfer
-                    buffs.push(msg.buffers[i]._buffer);
-                    msg.buffers[i].buffer = msg.buffers[i]._buffer;
-                }
-                msg.buffers[i]._buffer = null;
-
-                if (msg.buffers[i]._abCache instanceof ArrayBuffer) {
-                    buffs.push(msg.buffers[i]._abCache);
-                }
-            }
-            postMessage(msg, buffs);
-        }
-    }, {
-        key: "pixelFormat",
-        get: function get() {
-            return this._pixelFormat;
-        }
-    }, {
-        key: "timestamp",
-        get: function get() {
-            return this._timestamp;
-        }
-    }, {
-        key: "camera",
-        get: function get() {
-            return this._camera;
-        }
-    }], [{
-        key: "createFromMessage",
-        value: function createFromMessage(event) {
-            return new this(event.data.buffers, event.data.pixelFormat, event.data.timestamp, event.data.camera);
-        }
-    }]);
-
-    return XRVideoFrame;
-}();
-
-/*
-ImageFormat taken from
-https://w3c.github.io/mediacapture-worker/#imagebitmap-extensions
-
-enum ImageFormat {
-    "RGBA32",
-    "BGRA32",
-    "RGB24",
-    "BGR24",
-    "GRAY8",
-    "YUV444P",
-    "YUV422P",
-    "YUV420P",
-    "YUV420SP_NV12",
-    "YUV420SP_NV21",
-    "HSV",
-    "Lab",
-    "DEPTH",
-    // empty string 
-    ""
-};
-
-
-*/
-
-
-exports.default = XRVideoFrame;
-XRVideoFrame.IMAGEFORMAT_RGBA32 = "RGBA32";
-XRVideoFrame.IMAGEFORMAT_BGRA32 = "BGRA32";
-XRVideoFrame.IMAGEFORMAT_RGB24 = "RGB24";
-XRVideoFrame.IMAGEFORMAT_BGR24 = "BGR24";
-XRVideoFrame.IMAGEFORMAT_GRAY8 = "GRAY8";
-XRVideoFrame.IMAGEFORMAT_YUV444P = "YUV444P";
-XRVideoFrame.IMAGEFORMAT_YUV422P = "YUV422P";
-XRVideoFrame.IMAGEFORMAT_YUV420P = "YUV420P";
-XRVideoFrame.IMAGEFORMAT_YUV420SP_NV12 = "YUV420SP_NV12";
-XRVideoFrame.IMAGEFORMAT_YUV420SP_NV21 = "YUV420SP_NV21";
-XRVideoFrame.IMAGEFORMAT_HSV = "HSV";
-XRVideoFrame.IMAGEFORMAT_Lab = "Lab";
-XRVideoFrame.IMAGEFORMAT_DEPTH = "DEPTH";
-XRVideoFrame.IMAGEFORMAT_NULL = "";
-
-XRVideoFrame.IMAGEFORMAT = [XRVideoFrame.IMAGEFORMAT_RGBA32, XRVideoFrame.IMAGEFORMAT_BGRA32, XRVideoFrame.IMAGEFORMAT_RGB24, XRVideoFrame.IMAGEFORMAT_BGR24, XRVideoFrame.IMAGEFORMAT_GRAY8, XRVideoFrame.IMAGEFORMAT_YUV444P, XRVideoFrame.IMAGEFORMAT_YUV422P, XRVideoFrame.IMAGEFORMAT_YUV420P, XRVideoFrame.IMAGEFORMAT_YUV420SP_NV12, XRVideoFrame.IMAGEFORMAT_YUV420SP_NV21, XRVideoFrame.IMAGEFORMAT_HSV, XRVideoFrame.IMAGEFORMAT_Lab, XRVideoFrame.IMAGEFORMAT_DEPTH, XRVideoFrame.IMAGEFORMAT_NULL];
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _XRDisplay2 = __webpack_require__(6);
-
-var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
-
-var _XRView = __webpack_require__(13);
-
-var _XRView2 = _interopRequireDefault(_XRView);
-
-var _XRSession = __webpack_require__(11);
-
-var _XRSession2 = _interopRequireDefault(_XRSession);
-
-var _XRFieldOfView = __webpack_require__(16);
-
-var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _Vector = __webpack_require__(15);
-
-var _Vector2 = _interopRequireDefault(_Vector);
-
-var _DeviceOrientationTracker = __webpack_require__(24);
-
-var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
-
-var _ARKitWrapper = __webpack_require__(5);
-
-var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
-
-var _XRPlaneAnchor = __webpack_require__(10);
-
-var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
-
-var _XRFaceAnchor = __webpack_require__(8);
-
-var _XRFaceAnchor2 = _interopRequireDefault(_XRFaceAnchor);
-
-var _XRAnchor = __webpack_require__(1);
-
-var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
-
-var _XRImageAnchor = __webpack_require__(9);
-
-var _XRImageAnchor2 = _interopRequireDefault(_XRImageAnchor);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-FlatDisplay takes over a handset's full screen and presents a moving view into a Reality, as if it were a magic window.
-
-If ARKit is present, it uses the ARKit updates to set the headModel pose.
-If ARCore is available on the VRDisplays, use that to pose the headModel. (TODO)
-Otherwise, use orientation events.
-*/
-var FlatDisplay = function (_XRDisplay) {
-	_inherits(FlatDisplay, _XRDisplay);
-
-	function FlatDisplay(xr, reality) {
-		_classCallCheck(this, FlatDisplay);
-
-		var _this = _possibleConstructorReturn(this, (FlatDisplay.__proto__ || Object.getPrototypeOf(FlatDisplay)).call(this, xr, 'Flat', false, reality));
-
-		_this._started = false;
-		_this._initialized = false;
-
-		// This is used if we have ARKit support
-		_this._arKitWrapper = null;
-
-		// This is used if we have ARCore support
-		_this._vrFrameData = null;
-
-		// This is used if we are using orientation events
-		_this._deviceOrientationTracker = null;
-
-		// These are used if we have ARCore support or use window orientation events
-		_this._deviceOrientation = null; // Quaternion
-		_this._devicePosition = null; // Vector3
-		_this._deviceWorldMatrix = null; // Float32Array(16)
-
-		// Currently only support full screen views
-		_this._views.push(new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar));
-		return _this;
-	}
-
-	_createClass(FlatDisplay, [{
-		key: '_start',
-		value: function _start() {
-			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			if (this._reality._vrDisplay) {
-				// Use ARCore
-				if (this._vrFrameData === null) {
-					this._vrFrameData = new VRFrameData();
-					this._views[0]._depthNear = this._reality._vrDisplay.depthNear;
-					this._views[0]._depthFar = this._reality._vrDisplay.depthFar;
-					this._deviceOrientation = new _Quaternion2.default();
-					this._devicePosition = new _Vector2.default();
-					this._deviceWorldMatrix = new Float32Array(16);
-				}
-			} else if (_ARKitWrapper2.default.HasARKit()) {
-				// Use ARKit
-				if (this._initialized === false) {
-					this._initialized = true;
-					this._arKitWrapper = _ARKitWrapper2.default.GetOrCreate();
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.INIT_EVENT, this._handleARKitInit.bind(this));
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitUpdate.bind(this));
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WINDOW_RESIZE_EVENT, this._handleARKitWindowResize.bind(this));
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.ON_ERROR, this._handleOnError.bind(this));
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.AR_TRACKING_CHANGED, this._handleArTrackingChanged.bind(this));
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.COMPUTER_VISION_DATA, this._handleComputerVisionData.bind(this));
-					this._reality.addEventListener(Reality.NEW_WORLD_ANCHOR, this._handleNewWorldAnchor.bind(this));
-					this._reality.addEventListener(Reality.UPDATE_WORLD_ANCHOR, this._handleUpdateWorldAnchor.bind(this));
-					this._reality.addEventListener(Reality.REMOVE_WORLD_ANCHOR, this._handleRemoveWorldAnchor.bind(this));
-					this._arKitWrapper.waitForInit().then(function () {
-						// doing this in the reality
-						// this._arKitWrapper.watch()
-					});
-				} else {
-					// doing this in the reality
-					// this._arKitWrapper.watch()
-				}
-			} else {
-				// Use device orientation
-				if (this._initialized === false) {
-					this._initialized = true;
-					this._deviceOrientation = new _Quaternion2.default();
-					this._devicePosition = new _Vector2.default();
-					this._deviceWorldMatrix = new Float32Array(16);
-					this._deviceOrientationTracker = new _DeviceOrientationTracker2.default();
-					this._deviceOrientationTracker.addEventListener(_DeviceOrientationTracker2.default.ORIENTATION_UPDATE_EVENT, this._updateFromDeviceOrientationTracker.bind(this));
-					this._reality.addEventListener(Reality.COMPUTER_VISION_DATA, this._handleComputerVisionData.bind(this));
-					this._reality.addEventListener(Reality.WINDOW_RESIZE_EVENT, this._handleWindowResize.bind(this));
-				}
-			}
-			this.running = true;
-			this._reality._start(parameters);
-		}
-	}, {
-		key: '_stop',
-		value: function _stop() {
-			// TODO figure out how to stop ARKit and ARCore so that CameraReality can still work
-			if (this.running === false) return;
-			this.running = false;
-			this._reality._stop();
-		}
-	}, {
-		key: '_fixFov',
-		value: function _fixFov(width, height, focalLength) {
-			if (!this.baseLayer) {
-				return;
-			}
-			var ratio = width / this.baseLayer._context.canvas.clientWidth;
-			focalLength = focalLength / ratio;
-
-			var x = 0.5 * this.baseLayer._context.canvas.clientWidth / focalLength;
-			var fovx = 180 / Math.PI * 2 * Math.atan(x);
-			var y = 0.5 * this.baseLayer._context.canvas.clientHeight / focalLength;
-			var fovy = 180 / Math.PI * 2 * Math.atan(y);
-
-			// var x = (Math.tan(0.5 * fov) / this.baseLayer.framebufferHeight) * this.baseLayer.framebufferWidth
-			// var fovx = (Math.atan(x) * 2) / (Math.PI/180);
-			this._fov = new _XRFieldOfView2.default(fovy / 2, fovy / 2, fovx / 2, fovx / 2);
-
-			this._views[0].fov = this._fov;
-		}
-	}, {
-		key: '_handleWindowResize',
-		value: function _handleWindowResize(ev) {
-			this._fixFov(ev.detail.width, ev.detail.height, ev.detail.focalLength);
-		}
-	}, {
-		key: '_handleNewWorldAnchor',
-		value: function _handleNewWorldAnchor(event) {
-			var anchorObject = event.detail;
-			var coordinateSystem = new XRCoordinateSystem(this, XRCoordinateSystem.TRACKER);
-			coordinateSystem._relativeMatrix = anchorObject.transform;
-
-			var anchor = void 0;
-			switch (anchorObject.type) {
-				case _ARKitWrapper2.default.ANCHOR_TYPE_PLANE:
-					anchor = new _XRPlaneAnchor2.default(coordinateSystem, anchorObject.uuid, anchorObject.plane_center, [anchorObject.plane_extent.x, anchorObject.plane_extent.z], anchorObject.plane_alignment, anchorObject.geometry);
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_FACE:
-					anchor = new _XRFaceAnchor2.default(coordinateSystem, anchorObject.uuid, anchorObject.geometry, anchorObject.blendShapes);
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_ANCHOR:
-					anchor = new _XRAnchor2.default(coordinateSystem, anchorObject.uuid);
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_IMAGE:
-					anchor = new _XRImageAnchor2.default(coordinateSystem, anchorObject.uuid);
-					break;
-			}
-
-			this._reality._anchors.set(anchorObject.uuid, anchor);
-			//console.log(`New world anchor: ${JSON.stringify(ev)}`)
-
-			try {
-				this.dispatchEvent(new CustomEvent(_XRDisplay3.default.NEW_WORLD_ANCHOR, {
-					source: this,
-					detail: anchor
-				}));
-			} catch (e) {
-				console.error('NEW_WORLD_ANCHOR event error', e);
-			}
-		}
-	}, {
-		key: '_handleUpdateWorldAnchor',
-		value: function _handleUpdateWorldAnchor(event) {
-			var anchorUUID = event.detail;
-			var anchor = this._reality._anchors.get(anchorUUID);
-			if (anchor !== null) {
-				try {
-					this.dispatchEvent(new CustomEvent(_XRDisplay3.default.UPDATE_WORLD_ANCHOR, {
-						source: this,
-						detail: anchor
-					}));
-				} catch (e) {
-					console.error('UPDATE_WORLD_ANCHOR event error', e);
-				}
-			}
-		}
-	}, {
-		key: '_handleRemoveWorldAnchor',
-		value: function _handleRemoveWorldAnchor(event) {
-			var anchorUUID = event.detail;
-			var anchor = this._reality._anchors.get(anchorUUID);
-			if (anchor !== null) {
-				try {
-					this.dispatchEvent(new CustomEvent(_XRDisplay3.default.REMOVE_WORLD_ANCHOR, {
-						source: this,
-						detail: anchor
-					}));
-				} catch (e) {
-					console.error('REMOVE_WORLD_ANCHOR event error', e);
-				}
-			}
-		}
-
-		/*
-  Called by a session to indicate that its baseLayer attribute has been set.
-  FlatDisplay just adds the layer's canvas to DOM elements created by the XR polyfill
-  */
-
-	}, {
-		key: '_handleNewBaseLayer',
-		value: function _handleNewBaseLayer(baseLayer) {
-			this.baseLayer = baseLayer;
-			baseLayer._context.canvas.style.width = "100%";
-			baseLayer._context.canvas.style.height = "100%";
-			baseLayer.framebufferWidth = this._xr._sessionEls.clientWidth;
-			baseLayer.framebufferHeight = this._xr._sessionEls.clientHeight;
-
-			if (this._arKitWrapper === null) {
-				// TODO:  Need to remove this listener if a new base layer is set
-				window.addEventListener('resize', function () {
-					baseLayer.framebufferWidth = baseLayer._context.canvas.clientWidth;
-					baseLayer.framebufferHeight = baseLayer._context.canvas.clientHeight;
-				}, false);
-			}
-			//this._fixFov(baseLayer.framebufferWidth, baseLayer.framebufferHeight, this._reality._focalLength)
-
-			this._xr._sessionEls.appendChild(baseLayer._context.canvas);
-		}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame(frame) {
-			if (this._vrFrameData !== null) {
-				this._updateFromVRDevice();
-			}
-		}
-	}, {
-		key: '_updateFromVRDevice',
-		value: function _updateFromVRDevice() {
-			var _deviceOrientation, _devicePosition;
-
-			this._reality._vrDisplay.getFrameData(this._vrFrameData);
-			this._views[0].setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
-			(_deviceOrientation = this._deviceOrientation).set.apply(_deviceOrientation, _toConsumableArray(this._vrFrameData.pose.orientation));
-			(_devicePosition = this._devicePosition).set.apply(_devicePosition, _toConsumableArray(this._vrFrameData.pose.position));
-			this._devicePosition.add(0, XRViewPose.SITTING_EYE_HEIGHT, 0);
-			_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
-			this._views[0].setViewMatrix(this._deviceWorldMatrix);
-			this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
-			this._eyeLevelPose._position = this._devicePosition.toArray();
-		}
-	}, {
-		key: '_updateFromDeviceOrientationTracker',
-		value: function _updateFromDeviceOrientationTracker() {
-			// TODO set XRView's FOV
-			this._deviceOrientationTracker.getOrientation(this._deviceOrientation);
-			this._devicePosition.set(this._headPose.poseModelMatrix[12], this._headPose.poseModelMatrix[13], this._headPose.poseModelMatrix[14]);
-			this._devicePosition.add(0, XRViewPose.SITTING_EYE_HEIGHT, 0);
-			_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
-			this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
-			this._views[0].setViewMatrix(this._deviceWorldMatrix);
-			this._eyeLevelPose._position = this._devicePosition.toArray();
-		}
-	}, {
-		key: '_handleARKitUpdate',
-		value: function _handleARKitUpdate() {
-			var cameraTransformMatrix = this._arKitWrapper.getData('camera_transform');
-			if (cameraTransformMatrix) {
-				this._headPose._setPoseModelMatrix(cameraTransformMatrix);
-				this._views[0].setViewMatrix(cameraTransformMatrix);
-				this._headPose._poseModelMatrix[13] += XRViewPose.SITTING_EYE_HEIGHT;
-				this._eyeLevelPose._position = this._headPose._position;
-			} else {
-				console.log('no camera transform', this._arKitWrapper.rawARData);
-			}
-
-			var cameraProjectionMatrix = this._arKitWrapper.getData('projection_camera');
-			if (cameraProjectionMatrix) {
-				this._views[0].setProjectionMatrix(cameraProjectionMatrix);
-			} else {
-				console.log('no projection camera', this._arKitWrapper.rawARData);
-			}
-		}
-	}, {
-		key: '_handleARKitInit',
-		value: function _handleARKitInit(ev) {
-			// doing this in the reality
-			// 	setTimeout(() => {
-			// 		this._arKitWrapper.watch({
-			// 			location: true,
-			// 			camera: true,
-			// 			objects: true,
-			// 			light_intensity: true,
-			//             computer_vision_data: true
-			// 		})
-			// 	}, 1000)
-		}
-	}, {
-		key: '_handleARKitWindowResize',
-		value: function _handleARKitWindowResize(ev) {
-			this.baseLayer.framebufferWidth = ev.detail.width;
-			this.baseLayer.framebufferHeight = ev.detail.height;
-		}
-	}, {
-		key: '_handleOnError',
-		value: function _handleOnError(ev) {
-			//"domain": "error domain",
-			//"code": 1234,
-			//"message": "error message"
-			// Ex: > {code: 3, message: "error.localizedDescription", domain: "error.domain"}
-		}
-	}, {
-		key: '_handleArTrackingChanged',
-		value: function _handleArTrackingChanged(ev) {
-			// ev.detail values
-			// #define WEB_AR_TRACKING_STATE_NORMAL               @"ar_tracking_normal"
-			// #define WEB_AR_TRACKING_STATE_LIMITED              @"ar_tracking_limited"
-			// #define WEB_AR_TRACKING_STATE_LIMITED_INITIALIZING @"ar_tracking_limited_initializing"
-			// #define WEB_AR_TRACKING_STATE_LIMITED_MOTION       @"ar_tracking_limited_excessive_motion"
-			// #define WEB_AR_TRACKING_STATE_LIMITED_FEATURES     @"ar_tracking_limited_insufficient_features"
-			// #define WEB_AR_TRACKING_STATE_NOT_AVAILABLE        @"ar_tracking_not_available"
-			// #define WEB_AR_TRACKING_STATE_RELOCALIZING 	 	  @"ar_tracking_relocalizing"
-			try {
-				this.dispatchEvent(new CustomEvent(_XRDisplay3.default.TRACKING_CHANGED, {
-					source: this,
-					detail: ev.detail
-				}));
-			} catch (e) {
-				console.error('trackingChanged callback error', e);
-			}
-		}
-	}, {
-		key: '_handleComputerVisionData',
-		value: function _handleComputerVisionData(ev) {
-			// Do whatever is needed with the image buffers here
-			try {
-				this.dispatchEvent(new CustomEvent(_XRDisplay3.default.VIDEO_FRAME, {
-					source: this,
-					detail: ev.detail
-				}));
-			} catch (e) {
-				console.error('computer vision callback error', e);
-			}
-		}
-	}, {
-		key: '_requestVideoFrame',
-		value: function _requestVideoFrame() {
-			if (this._arKitWrapper) {
-				// Use ARKit
-				// call this._arKitWrapper.requestComputerVisionData(buffers) to request a new one
-				this._arKitWrapper._requestComputerVisionData();
-			} else {
-				//  might have webrtc video in the reality
-				this._reality._requestVideoFrame();
-			}
-		}
-	}, {
-		key: '_stopVideoFrames',
-		value: function _stopVideoFrames() {
-			if (this._arKitWrapper) {
-				// Use ARKit
-				// call this._arKitWrapper.requestComputerVisionData(buffers) to request a new one
-				this._arKitWrapper._stopSendingComputerVisionData();
-			} else {
-				//  might have webrtc video in the reality
-				this._reality._stopVideoFrames();
-			}
-		}
-	}, {
-		key: '_startVideoFrames',
-		value: function _startVideoFrames() {
-			if (this._arKitWrapper) {
-				// Use ARKit
-				// call this._arKitWrapper.requestComputerVisionData(buffers) to request a new one
-				this._arKitWrapper._startSendingComputerVisionData();
-			} else {
-				//  might have webrtc video in the reality
-				this._reality._startVideoFrames();
-			}
-		}
-	}, {
-		key: '_createSession',
-		value: function _createSession() {
-			var _this2 = this;
-
-			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			this._start(parameters);
-
-			if (_ARKitWrapper2.default.HasARKit()) {
-				// Use ARKit
-				return this._arKitWrapper.waitForInit().then(function () {
-					return _get(FlatDisplay.prototype.__proto__ || Object.getPrototypeOf(FlatDisplay.prototype), '_createSession', _this2).call(_this2, parameters);
-				});
-			} else {
-				return _get(FlatDisplay.prototype.__proto__ || Object.getPrototypeOf(FlatDisplay.prototype), '_createSession', this).call(this, parameters);
-			}
-		}
-	}, {
-		key: '_supportedCreationParameters',
-		value: function _supportedCreationParameters(parameters) {
-			return parameters.type === _XRSession2.default.AUGMENTATION && parameters.exclusive === false;
-		}
-
-		//attribute EventHandler ondeactivate; // FlatDisplay never deactivates
-
-	}]);
-
-	return FlatDisplay;
-}(_XRDisplay3.default);
-
-exports.default = FlatDisplay;
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Euler = function () {
-	function Euler(x, y, z) {
-		var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Euler.DefaultOrder;
-
-		_classCallCheck(this, Euler);
-
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.order = order;
-	}
-
-	_createClass(Euler, [{
-		key: 'set',
-		value: function set(x, y, z) {
-			var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Euler.DefaultOrder;
-
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			this.order = order;
-		}
-	}, {
-		key: 'toArray',
-		value: function toArray() {
-			return [this.x, this.y, this.z];
-		}
-	}]);
-
-	return Euler;
-}();
-
-exports.default = Euler;
-
-
-Euler.RotationOrders = ['XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX'];
-Euler.DefaultOrder = 'XYZ';
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _XRDisplay2 = __webpack_require__(6);
-
-var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
-
-var _XRView = __webpack_require__(13);
-
-var _XRView2 = _interopRequireDefault(_XRView);
-
-var _XRSession = __webpack_require__(11);
-
-var _XRSession2 = _interopRequireDefault(_XRSession);
-
-var _XRViewPose = __webpack_require__(14);
-
-var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _Vector = __webpack_require__(15);
-
-var _Vector2 = _interopRequireDefault(_Vector);
-
-var _DeviceOrientationTracker = __webpack_require__(24);
-
-var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
-
-var _ARKitWrapper = __webpack_require__(5);
-
-var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-HeadMountedDisplay wraps a WebVR 1.1 display, like a Vive, Rift, or Daydream.
-*/
-var HeadMountedDisplay = function (_XRDisplay) {
-	_inherits(HeadMountedDisplay, _XRDisplay);
-
-	function HeadMountedDisplay(xr, reality, vrDisplay) {
-		_classCallCheck(this, HeadMountedDisplay);
-
-		var _this = _possibleConstructorReturn(this, (HeadMountedDisplay.__proto__ || Object.getPrototypeOf(HeadMountedDisplay)).call(this, xr, vrDisplay.displayName, vrDisplay.capabilities.hasExternalDisplay, reality));
-
-		_this._vrDisplay = vrDisplay;
-		_this._vrFrameData = new VRFrameData();
-
-		// The view projection matrices will be reset using VRFrameData during this._handleNewFrame
-		_this._leftView = new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar, _XRView2.default.LEFT);
-		_this._rightView = new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar, _XRView2.default.RIGHT);
-		_this._views = [_this._leftView, _this._rightView];
-
-		// These will be used to set the head and eye level poses during this._handleNewFrame
-		_this._deviceOrientation = new _Quaternion2.default();
-		_this._devicePosition = new _Vector2.default();
-		_this._deviceWorldMatrix = new Float32Array(16);
-		return _this;
-	}
-
-	/*
- Called via the XRSession.requestAnimationFrame
- */
-
-
-	_createClass(HeadMountedDisplay, [{
-		key: '_requestAnimationFrame',
-		value: function _requestAnimationFrame(callback) {
-			if (this._vrDisplay.isPresenting) {
-				this._vrDisplay.requestAnimationFrame(callback);
-			} else {
-				window.requestAnimationFrame(callback);
-			}
-		}
-
-		/*
-  Called by a session to indicate that its baseLayer attribute has been set.
-  This is where the VRDisplay is used to create a session 
-  */
-
-	}, {
-		key: '_handleNewBaseLayer',
-		value: function _handleNewBaseLayer(baseLayer) {
-			var _this2 = this;
-
-			this._vrDisplay.requestPresent([{
-				source: baseLayer._context.canvas
-			}]).then(function () {
-				var leftEye = _this2._vrDisplay.getEyeParameters('left');
-				var rightEye = _this2._vrDisplay.getEyeParameters('right');
-				baseLayer.framebufferWidth = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-				baseLayer.framebufferHeight = Math.max(leftEye.renderHeight, rightEye.renderHeight);
-				baseLayer._context.canvas.style.position = 'absolute';
-				baseLayer._context.canvas.style.bottom = '1px';
-				baseLayer._context.canvas.style.right = '1px';
-				baseLayer._context.canvas.style.width = "100%";
-				baseLayer._context.canvas.style.height = "100%";
-				document.body.appendChild(baseLayer._context.canvas);
-			}).catch(function (e) {
-				console.error('Unable to init WebVR 1.1 display', e);
-			});
-		}
-	}, {
-		key: '_stop',
-		value: function _stop() {
-			// TODO figure out how to stop ARKit and ARCore so that CameraReality can still work
-			if (this.running === false) return;
-			this.running = false;
-			this._reality._stop();
-		}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame(frame) {
-			if (this._vrDisplay.isPresenting) {
-				this._updateFromVRFrameData();
-			}
-		}
-	}, {
-		key: '_handleAfterFrame',
-		value: function _handleAfterFrame(frame) {
-			if (this._vrDisplay.isPresenting) {
-				this._vrDisplay.submitFrame();
-			}
-		}
-	}, {
-		key: '_supportedCreationParameters',
-		value: function _supportedCreationParameters(parameters) {
-			return parameters.type === _XRSession2.default.REALITY && parameters.exclusive === true;
-		}
-	}, {
-		key: '_updateFromVRFrameData',
-		value: function _updateFromVRFrameData() {
-			this._vrDisplay.getFrameData(this._vrFrameData);
-			this._leftView.setViewMatrix(this._vrFrameData.leftViewMatrix);
-			this._rightView.setViewMatrix(this._vrFrameData.rightViewMatrix);
-			this._leftView.setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
-			this._rightView.setProjectionMatrix(this._vrFrameData.rightProjectionMatrix);
-			if (this._vrFrameData.pose) {
-				if (this._vrFrameData.pose.orientation) {
-					var _deviceOrientation;
-
-					(_deviceOrientation = this._deviceOrientation).set.apply(_deviceOrientation, _toConsumableArray(this._vrFrameData.pose.orientation));
-				}
-				if (this._vrFrameData.pose.position) {
-					var _devicePosition;
-
-					(_devicePosition = this._devicePosition).set.apply(_devicePosition, _toConsumableArray(this._vrFrameData.pose.position));
-				}
-				_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
-				if (this._vrDisplay.stageParameters && this._vrDisplay.stageParameters.sittingToStandingTransform) {
-					_MatrixMath2.default.mat4_multiply(this._deviceWorldMatrix, this._vrDisplay.stageParameters.sittingToStandingTransform, this._deviceWorldMatrix);
-				}
-				this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
-				this._eyeLevelPose.position = this._devicePosition.toArray();
-			}
-		}
-	}]);
-
-	return HeadMountedDisplay;
-}(_XRDisplay3.default);
-
-exports.default = HeadMountedDisplay;
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Reality2 = __webpack_require__(7);
-
-var _Reality3 = _interopRequireDefault(_Reality2);
-
-var _XRAnchor = __webpack_require__(1);
-
-var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
-
-var _XRViewPose = __webpack_require__(14);
-
-var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
-
-var _XRAnchorOffset = __webpack_require__(21);
-
-var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
-
-var _XRLightEstimate = __webpack_require__(20);
-
-var _XRLightEstimate2 = _interopRequireDefault(_XRLightEstimate);
-
-var _MatrixMath = __webpack_require__(0);
-
-var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-var _Quaternion = __webpack_require__(2);
-
-var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-var _ARKitWrapper = __webpack_require__(5);
-
-var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
-
-var _ARCoreCameraRenderer = __webpack_require__(41);
-
-var _ARCoreCameraRenderer2 = _interopRequireDefault(_ARCoreCameraRenderer);
-
-var _XRImageAnchor = __webpack_require__(9);
-
-var _XRImageAnchor2 = _interopRequireDefault(_XRImageAnchor);
-
-var _XRPlaneAnchor = __webpack_require__(10);
-
-var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
-
-var _XRFaceAnchor = __webpack_require__(8);
-
-var _XRFaceAnchor2 = _interopRequireDefault(_XRFaceAnchor);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/*
-CameraReality displays the forward facing camera.
-
-If this is running in the iOS ARKit wrapper app, the camera data will be displayed in a Metal layer below the WKWebKit layer.
-If this is running in the Google ARCore Chrome application, it will create a canvas element and use the ARCore provided camera data.
-If there is no ARKit or ARCore available, it will use WebRTC's MediaStream to render camera data into a canvas.
-*/
-var CameraReality = function (_Reality) {
-	_inherits(CameraReality, _Reality);
-
-	function CameraReality(xr) {
-		_classCallCheck(this, CameraReality);
-
-		var _this = _possibleConstructorReturn(this, (CameraReality.__proto__ || Object.getPrototypeOf(CameraReality)).call(this, xr, 'Camera', true, true));
-
-		_this._initialized = false;
-		_this._running = false;
-
-		// camera fovy: start with 70 degrees on the long axis of at 320x240
-		_this._cameraFov = 70 * Math.PI / 180;
-		_this._focalLength = 160 / Math.tan(_this._cameraFov / 2);
-		_this._cameraIntrinsics = [_this._focalLength, 0, 0, 0, _this._focalLength, 0, 160, 120, 1];
-
-		// These are used if we have access to ARKit
-		_this._arKitWrapper = null;
-
-		// These are used if we do not have access to ARKit
-		_this._mediaStream = null;
-		_this._videoEl = null;
-
-		// These are used if we're using the Google ARCore web app
-		_this._arCoreCameraRenderer = null;
-		_this._arCoreCanvas = null;
-		_this._elContext = null;
-		_this._vrDisplay = null;
-		_this._vrFrameData = null;
-
-		// dealing with video frames from webrtc
-		_this._sendingVideo = false;
-		_this._videoFramesPaused = false;
-		_this._sendVideoFrame = false;
-		_this._videoProjectionMatrix = _MatrixMath2.default.mat4_generateIdentity();
-		_this._videoViewMatrix = _MatrixMath2.default.mat4_generateIdentity();
-
-		_this._lightEstimate = new _XRLightEstimate2.default();
-
-		// Try to find a WebVR 1.1 display that supports Google's ARCore extensions
-		if (typeof navigator.getVRDisplays === 'function') {
-			navigator.getVRDisplays().then(function (displays) {
-				var _iteratorNormalCompletion = true;
-				var _didIteratorError = false;
-				var _iteratorError = undefined;
-
-				try {
-					for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var display = _step.value;
-
-						if (display === null) continue;
-						if (display.capabilities.hasPassThroughCamera) {
-							// This is the ARCore extension to WebVR 1.1
-							_this._vrDisplay = display;
-							_this._vrFrameData = new VRFrameData();
-							if (!window.WebARonARKitSetData) {
-								_this._arCoreCanvas = document.createElement('canvas');
-								_this._xr._realityEls.appendChild(_this._arCoreCanvas);
-								_this._arCoreCanvas.width = window.innerWidth;
-								_this._arCoreCanvas.height = window.innerHeight;
-								_this._elContext = _this._arCoreCanvas.getContext('webgl');
-								if (_this._elContext === null) {
-									throw 'Could not create CameraReality GL context';
-								}
-							}
-							break;
-						}
-					}
-				} catch (err) {
-					_didIteratorError = true;
-					_iteratorError = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion && _iterator.return) {
-							_iterator.return();
-						}
-					} finally {
-						if (_didIteratorError) {
-							throw _iteratorError;
-						}
-					}
-				}
-			});
-		}
-
-		window.addEventListener('resize', function () {
-			if (_this._arCoreCanvas) {
-				_this._arCoreCanvas.width = window.innerWidth;
-				_this._arCoreCanvas.height = window.innerHeight;
-			}
-			if (_this._videoEl) {
-				setTimeout(function () {
-					_this._adjustVideoSize();
-				}, 10);
-			}
-		}, false);
-		return _this;
-	}
-
-	_createClass(CameraReality, [{
-		key: '_setFovy',
-		value: function _setFovy(fovy) {
-			this._cameraFov = fovy * Math.PI / 180;
-			if (!this._videoEl) {
-				this._focalLength = 0;
-				return;
-			}
-
-			if (this._videoRenderWidth > this._videoRenderHeight) {
-				this._focalLength = this._videoRenderWidth / 2 / Math.tan(this._cameraFov / 2);
-			} else {
-				this._focalLength = this._videoRenderHeight / 2 / Math.tan(this._cameraFov / 2);
-			}
-			this._cameraIntrinsics = [this._focalLength, 0, 0, 0, this._focalLength, 0, this._videoRenderWidth / 2, this._videoRenderHeight / 2, 1];
-		}
-	}, {
-		key: '_adjustVideoSize',
-		value: function _adjustVideoSize() {
-
-			var canvasWidth = this._videoRenderWidth;
-			var canvasHeight = this._videoRenderHeight;
-			var cameraAspect = canvasWidth / canvasHeight;
-
-			var width = this._videoEl.videoWidth;
-			var height = this._videoEl.videoHeight;
-			var videoSourceAspect = width / height;
-			if (videoSourceAspect != cameraAspect) {
-				// let's pick a size such that the video is below 512 in size in both dimensions
-				while (width > 512 || height > 512) {
-					width = width / 2;
-					height = height / 2;
-				}
-
-				canvasWidth = this._videoRenderWidth = width;
-				canvasHeight = this._videoRenderHeight = height;
-				var cameraAspect = canvasWidth / canvasHeight;
-
-				this._videoFrameCanvas.width = width;
-				this._videoFrameCanvas.height = height;
-			}
-
-			this._setFovy(this._cameraFov / (Math.PI / 180));
-
-			var windowWidth = this._xr._realityEls.clientWidth;
-			var windowHeight = this._xr._realityEls.clientHeight;
-			var windowAspect = windowWidth / windowHeight;
-
-			var translateX = 0;
-			var translateY = 0;
-			if (cameraAspect > windowAspect) {
-				canvasWidth = canvasHeight * windowAspect;
-				windowWidth = windowHeight * cameraAspect;
-				translateX = -(windowWidth - this._xr._realityEls.clientWidth) / 2;
-			} else {
-				canvasHeight = canvasWidth / windowAspect;
-				windowHeight = windowWidth / cameraAspect;
-				translateY = -(windowHeight - this._xr._realityEls.clientHeight) / 2;
-			}
-
-			this._videoEl.style.width = windowWidth.toFixed(2) + 'px';
-			this._videoEl.style.height = windowHeight.toFixed(2) + 'px';
-			this._videoEl.style.transform = "translate(" + translateX.toFixed(2) + "px, " + translateY.toFixed(2) + "px)";
-
-			try {
-				this.dispatchEvent(new CustomEvent(_Reality3.default.WINDOW_RESIZE_EVENT, {
-					source: this,
-					detail: {
-						width: canvasWidth,
-						height: canvasHeight,
-						focalLength: this._focalLength
-					}
-				}));
-			} catch (e) {
-				console.error('WINDOW_RESIZE_EVENT error', e);
-			}
-		}
-
-		/*
-  Called by a session before it hands a new XRPresentationFrame to the app
-  */
-
-	}, {
-		key: '_handleNewFrame',
-		value: function _handleNewFrame(frame) {
-			if (this._vrDisplay) {
-				if (this._arCoreCameraRenderer) {
-					this._arCoreCameraRenderer.render();
-				}
-				this._vrDisplay.getFrameData(this._vrFrameData);
-			}
-
-			// WebRTC video
-			if (this._videoEl && this._sendVideoFrame && !this._videoFramesPaused) {
-				this._sendVideoFrame = false;
-
-				var canvasWidth = this._videoRenderWidth;
-				var canvasHeight = this._videoRenderHeight;
-				this._videoCtx.drawImage(this._videoEl, 0, 0, canvasWidth, canvasHeight);
-				var imageData = this._videoCtx.getImageData(0, 0, canvasWidth, canvasHeight);
-
-				var data = imageData.data;
-				var len = imageData.data.length;
-				// imageData = new ArrayBuffer(len)
-				// var buffData = new Uint8Array(imageData);
-				// for (var i = 0; i < len; i++) buffData[i] = data[i] 
-
-				var buffers = [{
-					size: {
-						width: canvasWidth,
-						height: canvasHeight,
-						bytesPerRow: canvasWidth * 4,
-						bytesPerPixel: 4
-					},
-					buffer: imageData
-				}];
-
-				var pixelFormat = XRVideoFrame.IMAGEFORMAT_RGBA32;
-
-				var timestamp = frame.timestamp;
-
-				// set from frame
-				var view = frame.views[0];
-
-				//this._videoViewMatrix.set(view.viewMatrix);
-				_MatrixMath2.default.mat4_invert(this._videoViewMatrix, view.viewMatrix);
-
-				this._videoProjectionMatrix.set(view.projectionMatrix);
-
-				var camera = {
-					arCamera: false,
-					cameraOrientation: 0,
-					cameraIntrinsics: this._cameraIntrinsics.slice(0),
-					// cameraIntrinsics: [(this._videoEl.videoWidth/2) / Math.tan(view._fov.leftDegrees * Math.PI/180), 0, (this._videoEl.videoWidth/2), 
-					// 					0, (this._videoEl.videoHeight/2) / Math.tan(view._fov.upDegrees * Math.PI/180), (this._videoEl.videoHeight/2), 
-					// 					0, 0, 1],
-					cameraImageResolution: {
-						width: this._videoEl.videoWidth,
-						height: this._videoEl.videoHeight
-					},
-					viewMatrix: this._videoViewMatrix,
-					projectionMatrix: this._videoProjectionMatrix
-				};
-
-				var xrVideoFrame = new XRVideoFrame(buffers, pixelFormat, timestamp, camera);
-
-				try {
-					this.dispatchEvent(new CustomEvent(_Reality3.default.COMPUTER_VISION_DATA, {
-						source: this,
-						detail: xrVideoFrame
-					}));
-				} catch (e) {
-					console.error('COMPUTER_VISION_DATA event error', e);
-				}
-			}
-			// TODO update the anchor positions using ARCore or ARKit
-		}
-	}, {
-		key: '_start',
-		value: function _start() {
-			var _this2 = this;
-
-			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-			if (this._running) return;
-			this._running = true;
-
-			if (this._vrDisplay !== null) {
-				// Using WebAR
-				if (window.WebARonARKitSetData) {
-					// WebARonARKit renders camera separately
-				} else {
-					this._arCoreCameraRenderer = new _ARCoreCameraRenderer2.default(this._vrDisplay, this._elContext);
-				}
-				this._initialized = true;
-			} else if (_ARKitWrapper2.default.HasARKit()) {
-				// Using ARKit
-				if (this._initialized === false) {
-					this._initialized = true;
-					this._arKitWrapper = _ARKitWrapper2.default.GetOrCreate();
-					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitWatch.bind(this));
-					this._arKitWrapper.waitForInit().then(function () {
-						_this2._arKitWrapper.watch(parameters);
-					});
-				} else {
-					this._arKitWrapper.watch(parameters);
-				}
-			} else {
-				// Using WebRTC
-				if (this._initialized === false) {
-					this._initialized = true;
-					navigator.mediaDevices.getUserMedia({
-						audio: false,
-						video: { facingMode: "environment" }
-					}).then(function (stream) {
-						_this2._videoEl = document.createElement('video');
-						_this2._xr._realityEls.appendChild(_this2._videoEl);
-						_this2._videoEl.setAttribute('class', 'camera-reality-video');
-						_this2._videoEl.setAttribute('playsinline', true);
-						_this2._videoEl.style.width = '100%';
-						_this2._videoEl.style.height = '100%';
-						_this2._videoEl.srcObject = stream;
-						_this2._videoEl.play();
-						_this2._setupWebRTC(parameters);
-					}).catch(function (err) {
-						console.error('Could not set up video stream', err);
-						_this2._initialized = false;
-						_this2._running = false;
-					});
-				} else {
-					if (this._videoEl) {
-						this._xr._realityEls.appendChild(this._videoEl);
-						this._videoEl.play();
-						this._setupWebRTC(parameters);
-					}
-				}
-			}
-		}
-	}, {
-		key: '_setupWebRTC',
-		value: function _setupWebRTC(parameters) {
-			var _this3 = this;
-
-			if (parameters.videoFrames) {
-				this._sendingVideo = true;
-
-				this._videoEl.addEventListener('loadedmetadata', function () {
-					var width = _this3._videoEl.videoWidth;
-					var height = _this3._videoEl.videoHeight;
-
-					// let's pick a size such that the video is below 512 in size in both dimensions
-					while (width > 256 || height > 256) {
-						width = width / 2;
-						height = height / 2;
-					}
-
-					_this3._videoRenderWidth = width;
-					_this3._videoRenderHeight = height;
-					_this3._videoFrameCanvas = document.createElement('canvas');
-					_this3._videoFrameCanvas.width = width;
-					_this3._videoFrameCanvas.height = height;
-					_this3._videoCtx = _this3._videoFrameCanvas.getContext('2d');
-
-					_this3._adjustVideoSize();
-
-					_this3._sendVideoFrame = true;
-				});
-			}
-		}
-	}, {
-		key: '_requestVideoFrame',
-		value: function _requestVideoFrame() {
-			this._sendVideoFrame = true;
-		}
-	}, {
-		key: '_stopVideoFrames',
-		value: function _stopVideoFrames() {
-			this._videoFramesPaused = true;
-		}
-	}, {
-		key: '_startVideoFrames',
-		value: function _startVideoFrames() {
-			this._videoFramesPaused = false;
-		}
-	}, {
-		key: '_stop',
-		value: function _stop() {
-			if (this._running === false) return;
-			this._running = false;
-			if (_ARKitWrapper2.default.HasARKit()) {
-				if (this._arKitWrapper === null) {
-					return;
-				}
-				this._arKitWrapper.stop();
-			} else if (this._arCoreCanvas) {
-				this._xr._realityEls.removeChild(this._arCoreCanvas);
-				this._arCoreCanvas = null;
-			} else if (this._videoEl !== null) {
-				this._videoEl.pause();
-				this._xr._realityEls.removeChild(this._videoEl);
-			}
-		}
-	}, {
-		key: '_handleARKitWatch',
-		value: function _handleARKitWatch(ev) {
-			if (ev.detail && ev.detail.objects) {
-				var _iteratorNormalCompletion2 = true;
-				var _didIteratorError2 = false;
-				var _iteratorError2 = undefined;
-
-				try {
-					for (var _iterator2 = ev.detail.objects[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-						var anchorInfo = _step2.value;
-
-						this._updateAnchorFromARKitUpdate(anchorInfo.uuid, anchorInfo);
-						try {
-							this.dispatchEvent(new CustomEvent(_Reality3.default.UPDATE_WORLD_ANCHOR, {
-								source: this,
-								detail: anchorInfo.uuid
-							}));
-						} catch (e) {
-							console.error('UPDATE_WORLD_ANCHOR event error', e);
-						}
-					}
-				} catch (err) {
-					_didIteratorError2 = true;
-					_iteratorError2 = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion2 && _iterator2.return) {
-							_iterator2.return();
-						}
-					} finally {
-						if (_didIteratorError2) {
-							throw _iteratorError2;
-						}
-					}
-				}
-			}
-
-			if (ev.detail && ev.detail.removedObjects) {
-				var _iteratorNormalCompletion3 = true;
-				var _didIteratorError3 = false;
-				var _iteratorError3 = undefined;
-
-				try {
-					for (var _iterator3 = ev.detail.removedObjects[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-						var removedAnchor = _step3.value;
-
-						try {
-							this.dispatchEvent(new CustomEvent(_Reality3.default.REMOVE_WORLD_ANCHOR, {
-								source: this,
-								detail: removedAnchor
-							}));
-						} catch (e) {
-							console.error('REMOVE_WORLD_ANCHOR event error', e);
-						}
-						this._deleteAnchorFromARKitUpdate(removedAnchor);
-					}
-				} catch (err) {
-					_didIteratorError3 = true;
-					_iteratorError3 = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion3 && _iterator3.return) {
-							_iterator3.return();
-						}
-					} finally {
-						if (_didIteratorError3) {
-							throw _iteratorError3;
-						}
-					}
-				}
-			}
-
-			if (ev.detail && ev.detail.newObjects) {
-				var _iteratorNormalCompletion4 = true;
-				var _didIteratorError4 = false;
-				var _iteratorError4 = undefined;
-
-				try {
-					for (var _iterator4 = ev.detail.newObjects[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-						var addedAnchor = _step4.value;
-
-						try {
-							this.dispatchEvent(new CustomEvent(_Reality3.default.NEW_WORLD_ANCHOR, {
-								source: this,
-								detail: addedAnchor
-							}));
-						} catch (e) {
-							console.error('NEW_WORLD_ANCHOR event error', e);
-						}
-					}
-				} catch (err) {
-					_didIteratorError4 = true;
-					_iteratorError4 = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion4 && _iterator4.return) {
-							_iterator4.return();
-						}
-					} finally {
-						if (_didIteratorError4) {
-							throw _iteratorError4;
-						}
-					}
-				}
-			}
-		}
-	}, {
-		key: '_deleteAnchorFromARKitUpdate',
-		value: function _deleteAnchorFromARKitUpdate(anchorUUID) {
-			this._anchors.delete(anchorUUID);
-		}
-	}, {
-		key: '_handleARKitAddObject',
-		value: function _handleARKitAddObject(anchorInfo) {
-			this._updateAnchorFromARKitUpdate(anchorInfo.uuid, anchorInfo);
-		}
-	}, {
-		key: '_updateAnchorFromARKitUpdate',
-		value: function _updateAnchorFromARKitUpdate(uid, anchorInfo) {
-			var anchor = this._anchors.get(uid) || null;
-			if (anchor === null) {
-				// console.log('unknown anchor', anchor)
-				return;
-			}
-			// This assumes that the anchor's coordinates are in the tracker coordinate system
-			anchor.coordinateSystem._relativeMatrix = anchorInfo.transform;
-
-			// update internal data if any
-			switch (anchorInfo.type) {
-				case _ARKitWrapper2.default.ANCHOR_TYPE_PLANE:
-					anchor.center = anchorInfo.plane_center;
-					anchor.extent = [anchorInfo.plane_extent.x, anchorInfo.plane_extent.z];
-					anchor.alignment = anchorInfo.plane_alignment;
-					anchor.geometry = anchorInfo.geometry;
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_FACE:
-					if (anchorInfo.geometry) {
-						anchor.geometry.vertices = anchorInfo.geometry.vertices;
-					}
-					if (anchorInfo.blendShapes) {
-						anchor.updateBlendShapes(anchorInfo.blendShapes);
-					}
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_ANCHOR:
-					break;
-				case _ARKitWrapper2.default.ANCHOR_TYPE_IMAGE:
-					break;
-			}
-		}
-	}, {
-		key: '_addAnchor',
-		value: function _addAnchor(anchor, display) {
-			var _this4 = this;
-
-			// Convert coordinates to the tracker coordinate system so that updating from ARKit transforms is simple
-			if (this._arKitWrapper !== null) {
-				this._arKitWrapper.addAnchor(anchor.uid, anchor.coordinateSystem._poseModelMatrix).then(function (detail) {
-					return _this4._handleARKitAddObject(detail);
-				});
-			}
-			// ARCore as implemented in the browser does not offer anchors except on a surface, so we just use untracked anchors
-			// We also use untracked anchors for in-browser display, with WebRTC
-			this._anchors.set(anchor.uid, anchor);
-			return anchor.uid;
-		}
-
-		/*
-  Creates an anchor offset relative to a surface, as found by a ray
-  normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-  returns a Promise that resolves either to an AnchorOffset with the first hit result or null if the hit test failed
-  */
-
-	}, {
-		key: '_findAnchor',
-		value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
-			var _this5 = this;
-
-			var testOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
-			return new Promise(function (resolve, reject) {
-				if (_this5._arKitWrapper !== null) {
-					// Perform a hit test using the ARKit integration
-					_this5._arKitWrapper.hitTest(normalizedScreenX, normalizedScreenY, testOptions || _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANES).then(function (hits) {
-						if (hits.length === 0) {
-							resolve(null);
-							// console.log('miss')
-							return;
-						}
-						var hit = _this5._pickARKitHit(hits);
-
-						// if it's a plane
-						if (hit.anchor_transform) {
-							hit.anchor_transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-							hit.world_transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-
-							// Use the first hit to create an XRAnchorOffset, creating the XRAnchor as necessary
-
-							// TODO use XRPlaneAnchor for anchors with extents;  hopefully the plane will have been created, tho
-							var anchor = _this5._getAnchor(hit.uuid);
-							if (anchor === null) {
-								var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-								coordinateSystem._relativeMatrix = hit.anchor_transform;
-								anchor = new _XRAnchor2.default(coordinateSystem, hit.uuid);
-								_this5._anchors.set(anchor.uid, anchor);
-							}
-
-							var offsetPosition = [hit.world_transform[12] - hit.anchor_transform[12], hit.world_transform[13] - hit.anchor_transform[13], hit.world_transform[14] - hit.anchor_transform[14]];
-							var worldRotation = new _Quaternion2.default().setFromRotationMatrix(hit.world_transform);
-							var inverseAnchorRotation = new _Quaternion2.default().setFromRotationMatrix(hit.anchor_transform).inverse();
-							var offsetRotation = new _Quaternion2.default().multiplyQuaternions(worldRotation, inverseAnchorRotation);
-							var anchorOffset = new _XRAnchorOffset2.default(anchor.uid);
-							anchorOffset.poseMatrix = _MatrixMath2.default.mat4_fromRotationTranslation(new Float32Array(16), offsetRotation.toArray(), offsetPosition);
-							resolve(anchorOffset);
-						} else {
-							var _coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-							_coordinateSystem._relativeMatrix = hit.world_transform;
-							var _anchor = new _XRAnchor2.default(_coordinateSystem, hit.uuid);
-							_this5._anchors.set(_anchor.uid, _anchor);
-
-							var _anchorOffset = new _XRAnchorOffset2.default(_anchor.uid);
-							resolve(_anchorOffset);
-						}
-					});
-				} else if (_this5._vrDisplay !== null) {
-					// Perform a hit test using the ARCore data
-					var hits = _this5._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
-					if (hits.length == 0) {
-						resolve(null);
-						return;
-					}
-					hits.sort(function (a, b) {
-						return a.distance - b.distance;
-					});
-					var anchor = _this5._getAnchor(hits[0].uuid);
-					if (anchor === null) {
-						var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-						coordinateSystem._relativeMatrix = hits[0].modelMatrix;
-						coordinateSystem._relativeMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-						anchor = new _XRAnchor2.default(coordinateSystem);
-						_this5._anchors.set(anchor.uid, anchor);
-					}
-					resolve(new _XRAnchorOffset2.default(anchor.uid));
-				} else {
-					resolve(null); // No platform support for finding anchors
-				}
-			});
-		}
-
-		/**
-  * Creates an ARReferenceImage in the ARKit native side
-   * @param uid the ID of the image to create
-   * @param buffer the base64 encoded image
-   * @param width
-   * @param height
-   * @param physicalWidthInMeters
-   * @returns a promise when the image has been created, error otherwise
-   * @private
-   */
-
-	}, {
-		key: '_createImageAnchor',
-		value: function _createImageAnchor(uid, buffer, width, height, physicalWidthInMeters) {
-			if (this._arKitWrapper) {
-				return this._arKitWrapper.createImageAnchor(uid, buffer, width, height, physicalWidthInMeters);
-			} else {
-				return null;
-			}
-		}
-
-		/**
-  * _activateDetectionImage Uses the ARKit wrapper to add a new reference image to the set of detection images in the ARKit configuration object
-  * and runs the session again. The promise is resolved when the image is detected by ARKit
-   * @param uid The name (id) if the image to activate. It has to be previously created calling the "createImageAnchor" method
-   * @param display The current display
-   * @returns {Promise<any>} A promise resolved with the image transform in case of success, rejected with error otherwise
-   */
-
-	}, {
-		key: '_activateDetectionImage',
-		value: function _activateDetectionImage(uid, display) {
-			var _this6 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (_this6._arKitWrapper) {
-					_this6._arKitWrapper.activateDetectionImage(uid).then(function (aRKitImageAnchor) {
-						if (aRKitImageAnchor.activated === true) {
-							var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-							coordinateSystem._relativeMatrix = aRKitImageAnchor.imageAnchor.transform;
-							var anchor = new _XRImageAnchor2.default(coordinateSystem, aRKitImageAnchor.imageAnchor.uuid);
-							_this6._anchors.set(aRKitImageAnchor.imageAnchor.uuid, anchor);
-							resolve(aRKitImageAnchor.imageAnchor.transform);
-						} else if (aRKitImageAnchor.error !== null) {
-							reject(aRKitImageAnchor.error);
-						} else {
-							reject(null);
-						}
-					});
-				} else {
-					reject('ARKit not supported');
-				}
-			});
-		}
-	}, {
-		key: '_removeAnchor',
-		value: function _removeAnchor(uid) {
-			if (this._arKitWrapper) {
-				this._arKitWrapper.removeAnchor(uid);
-			} else if (this._getAnchor(uid)) {
-				this._anchors.delete(uid);
-			}
-		}
-	}, {
-		key: '_pickARKitHit',
-		value: function _pickARKitHit(data) {
-			if (data.length === 0) return null;
-			var info = null;
-
-			var planeResults = data.filter(function (hitTestResult) {
-				return hitTestResult.type != _ARKitWrapper2.default.HIT_TEST_TYPE_FEATURE_POINT;
-			});
-			var planeExistingUsingExtentResults = planeResults.filter(function (hitTestResult) {
-				return hitTestResult.type == _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
-			});
-			var planeExistingResults = planeResults.filter(function (hitTestResult) {
-				return hitTestResult.type == _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE;
-			});
-
-			if (planeExistingUsingExtentResults.length) {
-				// existing planes using extent first
-				planeExistingUsingExtentResults = planeExistingUsingExtentResults.sort(function (a, b) {
-					return a.distance - b.distance;
-				});
-				info = planeExistingUsingExtentResults[0];
-			} else if (planeExistingResults.length) {
-				// then other existing planes
-				planeExistingResults = planeExistingResults.sort(function (a, b) {
-					return a.distance - b.distance;
-				});
-				info = planeExistingResults[0];
-			} else if (planeResults.length) {
-				// other types except feature points
-				planeResults = planeResults.sort(function (a, b) {
-					return a.distance - b.distance;
-				});
-				info = planeResults[0];
-			} else {
-				// feature points if any
-				info = data[0];
-			}
-			return info;
-		}
-
-		/*
-  Found intersections with anchors and planes by a ray normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
-  returns an Array of VRHit
-  */
-
-	}, {
-		key: '_hitTestNoAnchor',
-		value: function _hitTestNoAnchor(normalizedScreenX, normalizedScreenY, display) {
-			if (this._arKitWrapper !== null) {
-				// Perform a hit test using the ARKit integration
-				var hits = this._arKitWrapper.hitTestNoAnchor(normalizedScreenX, normalizedScreenY);
-				for (var i = 0; i < hits.length; i++) {
-					hits[i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-				}
-				if (hits.length == 0) {
-					return null;
-				}
-				return hits;
-			} else if (this._vrDisplay !== null) {
-				// Perform a hit test using the ARCore data
-				var _hits = this._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
-				for (var _i = 0; _i < _hits.length; _i++) {
-					_hits[_i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-				}
-				if (_hits.length == 0) {
-					return null;
-				}
-				return _hits;
-			} else {
-				// No platform support for finding anchors
-				return null;
-			}
-		}
-	}, {
-		key: '_getHasLightEstimate',
-		value: function _getHasLightEstimate() {
-			if (this._arKitWrapper !== null) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}, {
-		key: '_getLightAmbientIntensity',
-		value: function _getLightAmbientIntensity() {
-			if (this._arKitWrapper !== null) {
-				this._lightEstimate.ambientIntensity = this._arKitWrapper.lightIntensity;
-				return this._lightEstimate.ambientIntensity;
-			} else {
-				// No platform support for ligth estimation
-				return null;
-			}
-		}
-	}, {
-		key: '_getWorldMappingStatus',
-		value: function _getWorldMappingStatus() {
-			if (this._arKitWrapper !== null) {
-				return this._arKitWrapper.worldMappingStatus;
-			} else {
-				// No platform support for ligth estimation
-				return null;
-			}
-		}
-
-		/**
-  * retrieves a worldMap from the platform, if possible
-     * @returns a promise when the worldMap has been retrieved
-     * @private
-     */
-
-	}, {
-		key: '_getWorldMap',
-		value: function _getWorldMap() {
-			var _this7 = this;
-
-			return new Promise(function (resolve, reject) {
-				if (_this7._arKitWrapper) {
-					_this7._arKitWrapper.getWorldMap().then(function (ARKitWorldMap) {
-						if (ARKitWorldMap.saved === true) {
-							resolve(ARKitWorldMap.worldMap);
-						} else if (ARKitWorldMap.error !== null) {
-							reject(ARKitWorldMap.error);
-						} else {
-							reject(null);
-						}
-					});
-				} else {
-					reject('ARKit not supported');
-				}
-			});
-		}
-
-		/**
-   * sets a worldMap for the platform, if possible
-   * @param worldMap a platform specific worldmap
-      * @returns a promise when the worldMap has been set
-      * @private
-      */
-
-	}, {
-		key: '_setWorldMap',
-		value: function _setWorldMap(worldMap) {
-			if (this._arKitWrapper) {
-				return this._arKitWrapper.setWorldMap(worldMap);
-			} else {
-				return new Promise(function (resolve, reject) {
-					reject(new Error('setWorldMap not supported'));
-				});
-			}
-		}
-	}, {
-		key: '_getTimeStamp',
-		value: function _getTimeStamp(timestamp) {
-			if (this._arKitWrapper !== null) {
-				return this._arKitWrapper.timestamp;
-			} else {
-				// use performance.now()
-				//return 	( performance || Date ).now();
-				return timestamp;
-			}
-		}
-		/*
-  No floor in AR
-  */
-
-	}, {
-		key: '_findFloorAnchor',
-		value: function _findFloorAnchor(display) {
-			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			return new Promise(function (resolve, reject) {
-				resolve(null);
-			});
-		}
-	}]);
-
-	return CameraReality;
-}(_Reality3.default);
-
-exports.default = CameraReality;
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
- * Copyright 2017 Google Inc. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the 'License')
+ * @license
+ * webxr-polyfill
+ * Copyright (c) 2017 Google
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-var fragmentSource = '#extension GL_OES_EGL_image_external : require\n\nprecision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform samplerExternalOES uSampler;\n\nvoid main(void) {\n  gl_FragColor = texture2D(uSampler, vTextureCoord);\n}';
-
-var vertexSource = 'attribute vec3 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  gl_Position = vec4(aVertexPosition, 1.0);\n  vTextureCoord = aTextureCoord;\n}';
-
 /**
- * Creates and load a shader from a string, type specifies either 'vertex' or 'fragment'
+ * @license
+ * cardboard-vr-display
+ * Copyright (c) 2015-2017 Google
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * @param {WebGLRenderingContext} gl
- * @param {string} str
- * @param {string} type
- * @return {!WebGLShader}
- */
-function getShader(gl, str, type) {
-	if (type == 'fragment') {
-		var shader = gl.createShader(gl.FRAGMENT_SHADER);
-	} else if (type == 'vertex') {
-		var shader = gl.createShader(gl.VERTEX_SHADER);
-	} else {
-		return null;
-	}
-
-	gl.shaderSource(shader, str);
-	gl.compileShader(shader);
-
-	var result = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-	if (!result) {
-		console.error(gl.getShaderInfoLog(shader));
-		return null;
-	}
-
-	return shader;
-}
-
-/**
- * Creates a shader program from vertex and fragment shader sources
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * @param {WebGLRenderingContext} gl
- * @param {string} vs
- * @param {string} fs
- * @return {!WebGLProgram}
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-function getProgram(gl, vs, fs) {
-	var vertexShader = getShader(gl, vs, 'vertex');
-	var fragmentShader = getShader(gl, fs, 'fragment');
-	if (!fragmentShader) {
-		return null;
-	}
-
-	var shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-
-	var result = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
-	if (!result) {
-		console.error('Could not initialise arview shaders');
-	}
-
-	return shaderProgram;
-}
 
 /**
- * Calculate the correct orientation depending on the device and the camera
- * orientations.
+ * @license
+ * webvr-polyfill-dpdb
+ * Copyright (c) 2017 Google
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * @param {number} screenOrientation
- * @param {number} seeThroughCameraOrientation
- * @return {number}
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-function combineOrientations(screenOrientation, seeThroughCameraOrientation) {
-	var seeThroughCameraOrientationIndex = 0;
-	switch (seeThroughCameraOrientation) {
-		case 90:
-			seeThroughCameraOrientationIndex = 1;
-			break;
-		case 180:
-			seeThroughCameraOrientationIndex = 2;
-			break;
-		case 270:
-			seeThroughCameraOrientationIndex = 3;
-			break;
-		default:
-			seeThroughCameraOrientationIndex = 0;
-			break;
-	}
-	var screenOrientationIndex = 0;
-	switch (screenOrientation) {
-		case 90:
-			screenOrientationIndex = 1;
-			break;
-		case 180:
-			screenOrientationIndex = 2;
-			break;
-		case 270:
-			screenOrientationIndex = 3;
-			break;
-		default:
-			screenOrientationIndex = 0;
-			break;
-	}
-	var ret = screenOrientationIndex - seeThroughCameraOrientationIndex;
-	if (ret < 0) {
-		ret += 4;
-	}
-	return ret % 4;
-}
 
 /**
- * Renders the ar camera's video texture
+ * @license
+ * wglu-preserve-state
+ * Copyright (c) 2016, Brandon Jones.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
-var ARVideoRenderer = function () {
-	/**
-  * @param {VRDisplay} vrDisplay
-  * @param {WebGLRenderingContext} gl
-  */
-	function ARVideoRenderer(vrDisplay, gl) {
-		_classCallCheck(this, ARVideoRenderer);
-
-		this.vrDisplay = vrDisplay;
-		this.gl = gl;
-		this.passThroughCamera = vrDisplay.getPassThroughCamera();
-		this.program = getProgram(gl, vertexSource, fragmentSource);
-
-		gl.useProgram(this.program);
-
-		// Setup a quad
-		this.vertexPositionAttribute = gl.getAttribLocation(this.program, 'aVertexPosition');
-		this.textureCoordAttribute = gl.getAttribLocation(this.program, 'aTextureCoord');
-
-		this.samplerUniform = gl.getUniformLocation(this.program, 'uSampler');
-
-		this.vertexPositionBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-		var vertices = [-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0];
-		var f32Vertices = new Float32Array(vertices);
-		gl.bufferData(gl.ARRAY_BUFFER, f32Vertices, gl.STATIC_DRAW);
-		this.vertexPositionBuffer.itemSize = 3;
-		this.vertexPositionBuffer.numItems = 12;
-
-		this.textureCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
-		// Precalculate different texture UV coordinates depending on the possible
-		// orientations of the device depending if there is a VRDisplay or not
-		var textureCoords = null;
-		if (this.vrDisplay) {
-			var u = this.passThroughCamera.width / this.passThroughCamera.textureWidth;
-			var v = this.passThroughCamera.height / this.passThroughCamera.textureHeight;
-			textureCoords = [[0.0, 0.0, 0.0, v, u, 0.0, u, v], [u, 0.0, 0.0, 0.0, u, v, 0.0, v], [u, v, u, 0.0, 0.0, v, 0.0, 0.0], [0.0, v, u, v, 0.0, 0.0, u, 0.0]];
-		} else {
-			textureCoords = [[0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0], [1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0], [1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0], [0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0]];
-		}
-
-		this.f32TextureCoords = [];
-		for (var i = 0; i < textureCoords.length; i++) {
-			this.f32TextureCoords.push(new Float32Array(textureCoords[i]));
-		}
-		// Store the current combined orientation to check if it has changed
-		// during the update calls and use the correct texture coordinates.
-		this.combinedOrientation = combineOrientations(screen.orientation.angle, this.passThroughCamera.orientation);
-
-		gl.bufferData(gl.ARRAY_BUFFER, this.f32TextureCoords[this.combinedOrientation], gl.STATIC_DRAW);
-		this.textureCoordBuffer.itemSize = 2;
-		this.textureCoordBuffer.numItems = 8;
-		gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-		this.indexBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-		var indices = [0, 1, 2, 2, 1, 3];
-		var ui16Indices = new Uint16Array(indices);
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ui16Indices, gl.STATIC_DRAW);
-		this.indexBuffer.itemSize = 1;
-		this.indexBuffer.numItems = 6;
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-		this.texture = gl.createTexture();
-		gl.useProgram(null);
-
-		// The projection matrix will be based on an identify orthographic camera
-		this.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-		this.mvMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-		return this;
-	}
-
-	/**
-  * Renders the quad
-  */
-
-
-	_createClass(ARVideoRenderer, [{
-		key: 'render',
-		value: function render() {
-			var gl = this.gl;
-			gl.useProgram(this.program);
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-			gl.enableVertexAttribArray(this.vertexPositionAttribute);
-			gl.vertexAttribPointer(this.vertexPositionAttribute, this.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
-
-			// Check the current orientation of the device combined with the
-			// orientation of the VRSeeThroughCamera to determine the correct UV
-			// coordinates to be used.
-			var combinedOrientation = combineOrientations(screen.orientation.angle, this.passThroughCamera.orientation);
-			if (combinedOrientation !== this.combinedOrientation) {
-				this.combinedOrientation = combinedOrientation;
-				gl.bufferData(gl.ARRAY_BUFFER, this.f32TextureCoords[this.combinedOrientation], gl.STATIC_DRAW);
-			}
-			gl.enableVertexAttribArray(this.textureCoordAttribute);
-			gl.vertexAttribPointer(this.textureCoordAttribute, this.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_EXTERNAL_OES, this.texture);
-			// Update the content of the texture in every frame.
-			gl.texImage2D(gl.TEXTURE_EXTERNAL_OES, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.passThroughCamera);
-			gl.uniform1i(this.samplerUniform, 0);
-
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-
-			gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-
-			// Disable enabled states to allow other render calls to correctly work
-			gl.bindTexture(gl.TEXTURE_EXTERNAL_OES, null);
-			gl.disableVertexAttribArray(this.vertexPositionAttribute);
-			gl.disableVertexAttribArray(this.textureCoordAttribute);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-			gl.useProgram(null);
-		}
-	}]);
-
-	return ARVideoRenderer;
-}();
 
 /**
- * A helper class that takes a VRDisplay with AR capabilities
- * and renders the see through camera to the passed in WebGL context.
+ * @license
+ * nosleep.js
+ * Copyright (c) 2017, Rich Tibbett
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+        typeof define === 'function' && define.amd ? define(factory) :
+            (global.WebXRPolyfill = factory());
+}(this, (function () {
+    'use strict';
 
-var ARCoreCameraRenderer = function () {
-	function ARCoreCameraRenderer(vrDisplay, gl) {
-		_classCallCheck(this, ARCoreCameraRenderer);
+    var _global = typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : typeof window !== 'undefined' ? window : {};
 
-		this.vrDisplay = vrDisplay;
-		this.gl = gl;
+    var classCallCheck = function (instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    };
 
-		this.videoRenderer = new ARVideoRenderer(vrDisplay, this.gl);
+    var createClass = function () {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
 
-		// Cache the width/height so we're not potentially forcing
-		// a reflow if there's been a style invalidation
-		this.width = window.innerWidth;
-		this.height = window.innerHeight;
-		window.addEventListener('resize', this.onWindowResize.bind(this), false);
-	}
-
-	/**
-  * Updates the stored width/height of window on resize.
-  */
+        return function (Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
 
 
-	_createClass(ARCoreCameraRenderer, [{
-		key: 'onWindowResize',
-		value: function onWindowResize() {
-			this.width = window.innerWidth;
-			this.height = window.innerHeight;
-		}
+    var inherits = function (subClass, superClass) {
+        if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        }
 
-		/**
-   * Renders the see through camera to the passed in gl context
-   */
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
+        });
+        if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+    };
 
-	}, {
-		key: 'render',
-		value: function render() {
-			var gl = this.gl;
-			var dpr = 1;
-			var width = this.width * dpr;
-			var height = this.height * dpr;
 
-			if (gl.viewportWidth !== width) {
-				gl.viewportWidth = width;
-			}
+    var possibleConstructorReturn = function (self, call) {
+        if (!self) {
+            throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        }
 
-			if (gl.viewportHeight !== height) {
-				gl.viewportHeight = height;
-			}
+        return call && (typeof call === "object" || typeof call === "function") ? call : self;
+    };
 
-			this.gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-			this.videoRenderer.render();
-		}
-	}]);
+    var PRIVATE = Symbol('@@webxr-polyfill/EventTarget');
+    var EventTarget = function () {
+        function EventTarget() {
+            classCallCheck(this, EventTarget);
+            this[PRIVATE] = {
+                listeners: new Map()
+            };
+        }
 
-	return ARCoreCameraRenderer;
-}();
+        createClass(EventTarget, [{
+            key: 'addEventListener',
+            value: function addEventListener(type, listener) {
+                if (typeof type !== 'string') {
+                    throw new Error('`type` must be a string');
+                }
+                if (typeof listener !== 'function') {
+                    throw new Error('`listener` must be a function');
+                }
+                var typedListeners = this[PRIVATE].listeners.get(type) || [];
+                typedListeners.push(listener);
+                this[PRIVATE].listeners.set(type, typedListeners);
+            }
+        }, {
+            key: 'removeEventListener',
+            value: function removeEventListener(type, listener) {
+                if (typeof type !== 'string') {
+                    throw new Error('`type` must be a string');
+                }
+                if (typeof listener !== 'function') {
+                    throw new Error('`listener` must be a function');
+                }
+                var typedListeners = this[PRIVATE].listeners.get(type) || [];
+                for (var i = typedListeners.length; i >= 0; i--) {
+                    if (typedListeners[i] === listener) {
+                        typedListeners.pop();
+                    }
+                }
+            }
+        }, {
+            key: 'dispatchEvent',
+            value: function dispatchEvent(type, event) {
+                var typedListeners = this[PRIVATE].listeners.get(type) || [];
+                var queue = [];
+                for (var i = 0; i < typedListeners.length; i++) {
+                    queue[i] = typedListeners[i];
+                }
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+                try {
+                    for (var _iterator = queue[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var listener = _step.value;
+                        listener(event);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+                if (typeof this['on' + type] === 'function') {
+                    this['on' + type](event);
+                }
+            }
+        }]);
+        return EventTarget;
+    }();
 
-exports.default = ARCoreCameraRenderer;
+    var PRIVATE$1 = Symbol('@@webxr-polyfill/XR');
+    var XR = function (_EventTarget) {
+        inherits(XR, _EventTarget);
 
-/***/ })
-/******/ ]);
-XRDisplay = window.XRDisplay
-XRSession = window.XRSession
-XRSessionCreateParameters = window.XRSessionCreateParameters
-Reality = window.Reality
-XRPointCloud = window.XRPointCloud
-XRLightEstimate = window.XRLightEstimate
-XRAnchor = window.XRAnchor;
-XRPlaneAnchor = window.XRPlaneAnchor;
-XRFaceAnchor = window.XRFaceAnchor;
-XRImageAnchor = window.XRImageAnchor;
-XRAnchorOffset = window.XRAnchorOffset;
-XRStageBounds = window.XRStageBounds;
-XRStageBoundsPoint = window.XRStageBoundsPoint;
-XRPresentationFrame = window.XRPresentationFrame;
-XRView = window.XRView;
-XRViewport = window.XRViewport;
-XRCoordinateSystem = window.XRCoordinateSystem;
-XRViewPose = window.XRViewPose;
-XRLayer = window.XRLayer;
-XRWebGLLayer = window.XRWebGLLayer; 
-XRVideoFrame = window.XRVideoFrame;
+        function XR(device) {
+            classCallCheck(this, XR);
+            var _this = possibleConstructorReturn(this, (XR.__proto__ || Object.getPrototypeOf(XR)).call(this));
+            _this[PRIVATE$1] = {
+                device: device
+            };
+            return _this;
+        }
+
+        createClass(XR, [{
+            key: 'requestDevice',
+            value: function requestDevice() {
+                return new Promise(function ($return, $error) {
+                    var device;
+                    return Promise.resolve(this[PRIVATE$1].device).then(function ($await_1) {
+                        try {
+                            device = $await_1;
+                            if (device) {
+                                return $return(device);
+                            }
+                            return $error(new Error('NotFoundError'));
+                        } catch ($boundEx) {
+                            return $error($boundEx);
+                        }
+                    }.bind(this), $error);
+                }.bind(this));
+            }
+        }]);
+        return XR;
+    }(EventTarget);
+
+    var now = void 0;
+    if ('performance' in _global === false) {
+        var startTime = Date.now();
+        now = function now() {
+            return Date.now() - startTime;
+        };
+    } else {
+        now = function now() {
+            return performance.now();
+        };
+    }
+    var now$1 = now;
+
+    var PRIVATE$2 = Symbol('@@webxr-polyfill/XRPresentationContext');
+    var XRPresentationContext = function () {
+        function XRPresentationContext(canvas, ctx, glAttribs) {
+            classCallCheck(this, XRPresentationContext);
+            this[PRIVATE$2] = {canvas: canvas, ctx: ctx, glAttribs: glAttribs};
+            Object.assign(this, ctx);
+        }
+
+        createClass(XRPresentationContext, [{
+            key: 'canvas',
+            get: function get$$1() {
+                return this[PRIVATE$2].canvas;
+            }
+        }]);
+        return XRPresentationContext;
+    }();
+
+    var ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
+
+
+    var degree = Math.PI / 180;
+
+    function create() {
+        var out = new ARRAY_TYPE(16);
+        out[0] = 1;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = 1;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 0;
+        out[9] = 0;
+        out[10] = 1;
+        out[11] = 0;
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 0;
+        out[15] = 1;
+        return out;
+    }
+
+    function copy(out, a) {
+        out[0] = a[0];
+        out[1] = a[1];
+        out[2] = a[2];
+        out[3] = a[3];
+        out[4] = a[4];
+        out[5] = a[5];
+        out[6] = a[6];
+        out[7] = a[7];
+        out[8] = a[8];
+        out[9] = a[9];
+        out[10] = a[10];
+        out[11] = a[11];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+        return out;
+    }
+
+
+    function identity(out) {
+        out[0] = 1;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = 1;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 0;
+        out[9] = 0;
+        out[10] = 1;
+        out[11] = 0;
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 0;
+        out[15] = 1;
+        return out;
+    }
+
+    function invert(out, a) {
+        var a00 = a[0],
+            a01 = a[1],
+            a02 = a[2],
+            a03 = a[3];
+        var a10 = a[4],
+            a11 = a[5],
+            a12 = a[6],
+            a13 = a[7];
+        var a20 = a[8],
+            a21 = a[9],
+            a22 = a[10],
+            a23 = a[11];
+        var a30 = a[12],
+            a31 = a[13],
+            a32 = a[14],
+            a33 = a[15];
+        var b00 = a00 * a11 - a01 * a10;
+        var b01 = a00 * a12 - a02 * a10;
+        var b02 = a00 * a13 - a03 * a10;
+        var b03 = a01 * a12 - a02 * a11;
+        var b04 = a01 * a13 - a03 * a11;
+        var b05 = a02 * a13 - a03 * a12;
+        var b06 = a20 * a31 - a21 * a30;
+        var b07 = a20 * a32 - a22 * a30;
+        var b08 = a20 * a33 - a23 * a30;
+        var b09 = a21 * a32 - a22 * a31;
+        var b10 = a21 * a33 - a23 * a31;
+        var b11 = a22 * a33 - a23 * a32;
+        var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        if (!det) {
+            return null;
+        }
+        det = 1.0 / det;
+        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+        out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+        out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+        out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+        out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+        out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+        out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+        out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+        out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+        out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+        out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+        out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+        out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+        out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+        return out;
+    }
+
+
+    function multiply(out, a, b) {
+        var a00 = a[0],
+            a01 = a[1],
+            a02 = a[2],
+            a03 = a[3];
+        var a10 = a[4],
+            a11 = a[5],
+            a12 = a[6],
+            a13 = a[7];
+        var a20 = a[8],
+            a21 = a[9],
+            a22 = a[10],
+            a23 = a[11];
+        var a30 = a[12],
+            a31 = a[13],
+            a32 = a[14],
+            a33 = a[15];
+        var b0 = b[0],
+            b1 = b[1],
+            b2 = b[2],
+            b3 = b[3];
+        out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+        b0 = b[4];
+        b1 = b[5];
+        b2 = b[6];
+        b3 = b[7];
+        out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+        b0 = b[8];
+        b1 = b[9];
+        b2 = b[10];
+        b3 = b[11];
+        out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+        b0 = b[12];
+        b1 = b[13];
+        b2 = b[14];
+        b3 = b[15];
+        out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+        out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+        out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+        out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+        return out;
+    }
+
+
+    function fromRotationTranslation(out, q, v) {
+        var x = q[0],
+            y = q[1],
+            z = q[2],
+            w = q[3];
+        var x2 = x + x;
+        var y2 = y + y;
+        var z2 = z + z;
+        var xx = x * x2;
+        var xy = x * y2;
+        var xz = x * z2;
+        var yy = y * y2;
+        var yz = y * z2;
+        var zz = z * z2;
+        var wx = w * x2;
+        var wy = w * y2;
+        var wz = w * z2;
+        out[0] = 1 - (yy + zz);
+        out[1] = xy + wz;
+        out[2] = xz - wy;
+        out[3] = 0;
+        out[4] = xy - wz;
+        out[5] = 1 - (xx + zz);
+        out[6] = yz + wx;
+        out[7] = 0;
+        out[8] = xz + wy;
+        out[9] = yz - wx;
+        out[10] = 1 - (xx + yy);
+        out[11] = 0;
+        out[12] = v[0];
+        out[13] = v[1];
+        out[14] = v[2];
+        out[15] = 1;
+        return out;
+    }
+
+    function getTranslation(out, mat) {
+        out[0] = mat[12];
+        out[1] = mat[13];
+        out[2] = mat[14];
+        return out;
+    }
+
+    function getRotation(out, mat) {
+        var trace = mat[0] + mat[5] + mat[10];
+        var S = 0;
+        if (trace > 0) {
+            S = Math.sqrt(trace + 1.0) * 2;
+            out[3] = 0.25 * S;
+            out[0] = (mat[6] - mat[9]) / S;
+            out[1] = (mat[8] - mat[2]) / S;
+            out[2] = (mat[1] - mat[4]) / S;
+        } else if (mat[0] > mat[5] && mat[0] > mat[10]) {
+            S = Math.sqrt(1.0 + mat[0] - mat[5] - mat[10]) * 2;
+            out[3] = (mat[6] - mat[9]) / S;
+            out[0] = 0.25 * S;
+            out[1] = (mat[1] + mat[4]) / S;
+            out[2] = (mat[8] + mat[2]) / S;
+        } else if (mat[5] > mat[10]) {
+            S = Math.sqrt(1.0 + mat[5] - mat[0] - mat[10]) * 2;
+            out[3] = (mat[8] - mat[2]) / S;
+            out[0] = (mat[1] + mat[4]) / S;
+            out[1] = 0.25 * S;
+            out[2] = (mat[6] + mat[9]) / S;
+        } else {
+            S = Math.sqrt(1.0 + mat[10] - mat[0] - mat[5]) * 2;
+            out[3] = (mat[1] - mat[4]) / S;
+            out[0] = (mat[8] + mat[2]) / S;
+            out[1] = (mat[6] + mat[9]) / S;
+            out[2] = 0.25 * S;
+        }
+        return out;
+    }
+
+
+    function perspective(out, fovy, aspect, near, far) {
+        var f = 1.0 / Math.tan(fovy / 2);
+        var nf = 1 / (near - far);
+        out[0] = f / aspect;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = f;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 0;
+        out[9] = 0;
+        out[10] = (far + near) * nf;
+        out[11] = -1;
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 2 * far * near * nf;
+        out[15] = 0;
+        return out;
+    }
+
+    var PRIVATE$3 = Symbol('@@webxr-polyfill/XRDevicePose');
+    var XRDevicePose = function () {
+        function XRDevicePose(polyfill) {
+            classCallCheck(this, XRDevicePose);
+            this[PRIVATE$3] = {
+                polyfill: polyfill,
+                leftViewMatrix: identity(new Float32Array(16)),
+                rightViewMatrix: identity(new Float32Array(16)),
+                poseModelMatrix: identity(new Float32Array(16))
+            };
+        }
+
+        createClass(XRDevicePose, [{
+            key: 'getViewMatrix',
+            value: function getViewMatrix(view) {
+                switch (view.eye) {
+                    case 'left':
+                        return this[PRIVATE$3].leftViewMatrix;
+                    case 'right':
+                        return this[PRIVATE$3].rightViewMatrix;
+                }
+                throw new Error('view is not a valid XREye');
+            }
+        }, {
+            key: 'updateFromFrameOfReference',
+            value: function updateFromFrameOfReference(frameOfRef) {
+                var pose = this[PRIVATE$3].polyfill.getBasePoseMatrix();
+                var leftViewMatrix = this[PRIVATE$3].polyfill.getBaseViewMatrix('left');
+                var rightViewMatrix = this[PRIVATE$3].polyfill.getBaseViewMatrix('right');
+                if (pose) {
+                    frameOfRef.transformBasePoseMatrix(this[PRIVATE$3].poseModelMatrix, pose);
+                }
+                if (leftViewMatrix && rightViewMatrix) {
+                    frameOfRef.transformBaseViewMatrix(this[PRIVATE$3].leftViewMatrix, leftViewMatrix, this[PRIVATE$3].poseModelMatrix);
+                    frameOfRef.transformBaseViewMatrix(this[PRIVATE$3].rightViewMatrix, rightViewMatrix, this[PRIVATE$3].poseModelMatrix);
+                }
+            }
+        }, {
+            key: 'poseModelMatrix',
+            get: function get$$1() {
+                return this[PRIVATE$3].poseModelMatrix;
+            }
+        }]);
+        return XRDevicePose;
+    }();
+
+    var PRIVATE$4 = Symbol('@@webxr-polyfill/XRViewport');
+    var XRViewport = function () {
+        function XRViewport(target) {
+            classCallCheck(this, XRViewport);
+            this[PRIVATE$4] = {target: target};
+        }
+
+        createClass(XRViewport, [{
+            key: 'x',
+            get: function get$$1() {
+                return this[PRIVATE$4].target.x;
+            }
+        }, {
+            key: 'y',
+            get: function get$$1() {
+                return this[PRIVATE$4].target.y;
+            }
+        }, {
+            key: 'width',
+            get: function get$$1() {
+                return this[PRIVATE$4].target.width;
+            }
+        }, {
+            key: 'height',
+            get: function get$$1() {
+                return this[PRIVATE$4].target.height;
+            }
+        }]);
+        return XRViewport;
+    }();
+
+    var XREyes = ['left', 'right'];
+    var PRIVATE$5 = Symbol('@@webxr-polyfill/XRView');
+    var XRView = function () {
+        function XRView(polyfill, eye, sessionId) {
+            classCallCheck(this, XRView);
+            if (!XREyes.includes(eye)) {
+                throw new Error('XREye must be one of: ' + XREyes);
+            }
+            var temp = Object.create(null);
+            var viewport = new XRViewport(temp);
+            this[PRIVATE$5] = {
+                polyfill: polyfill,
+                eye: eye,
+                viewport: viewport,
+                temp: temp,
+                sessionId: sessionId
+            };
+        }
+
+        createClass(XRView, [{
+            key: '_getViewport',
+            value: function _getViewport(layer) {
+                var viewport = this[PRIVATE$5].viewport;
+                if (this[PRIVATE$5].polyfill.getViewport(this[PRIVATE$5].sessionId, this.eye, layer, this[PRIVATE$5].temp)) {
+                    return this[PRIVATE$5].viewport;
+                }
+                return undefined;
+            }
+        }, {
+            key: 'eye',
+            get: function get$$1() {
+                return this[PRIVATE$5].eye;
+            }
+        }, {
+            key: 'projectionMatrix',
+            get: function get$$1() {
+                return this[PRIVATE$5].polyfill.getProjectionMatrix(this.eye);
+            }
+        }]);
+        return XRView;
+    }();
+
+    var PRIVATE$6 = Symbol('@@webxr-polyfill/XRFrame');
+    var XRFrame = function () {
+        function XRFrame(polyfill, session, sessionId) {
+            classCallCheck(this, XRFrame);
+            var devicePose = new XRDevicePose(polyfill);
+            var views = [new XRView(polyfill, 'left', sessionId)];
+            if (session.immersive) {
+                views.push(new XRView(polyfill, 'right', sessionId));
+            }
+            this[PRIVATE$6] = {
+                polyfill: polyfill,
+                devicePose: devicePose,
+                views: views,
+                session: session
+            };
+        }
+
+        createClass(XRFrame, [{
+            key: 'getDevicePose',
+            value: function getDevicePose(coordinateSystem) {
+                this[PRIVATE$6].devicePose.updateFromFrameOfReference(coordinateSystem);
+                return this[PRIVATE$6].devicePose;
+            }
+        }, {
+            key: 'getInputPose',
+            value: function getInputPose(inputSource, coordinateSystem) {
+                return this[PRIVATE$6].polyfill.getInputPose(inputSource, coordinateSystem);
+            }
+        }, {
+            key: 'session',
+            get: function get$$1() {
+                return this[PRIVATE$6].session;
+            }
+        }, {
+            key: 'views',
+            get: function get$$1() {
+                return this[PRIVATE$6].views;
+            }
+        }]);
+        return XRFrame;
+    }();
+
+    var PRIVATE$7 = Symbol('@@webxr-polyfill/XRStageBoundsPoint');
+    var XRStageBoundsPoint = function () {
+        function XRStageBoundsPoint(x, z) {
+            classCallCheck(this, XRStageBoundsPoint);
+            this[PRIVATE$7] = {x: x, z: z};
+        }
+
+        createClass(XRStageBoundsPoint, [{
+            key: 'x',
+            get: function get$$1() {
+                return this[PRIVATE$7].x;
+            }
+        }, {
+            key: 'z',
+            get: function get$$1() {
+                return this[PRIVATE$7].z;
+            }
+        }]);
+        return XRStageBoundsPoint;
+    }();
+
+    var PRIVATE$8 = Symbol('@@webxr-polyfill/XRStageBounds');
+    var XRStageBounds = function () {
+        function XRStageBounds(boundsData) {
+            classCallCheck(this, XRStageBounds);
+            var geometry = [];
+            for (var i = 0; i < boundsData.length; i += 2) {
+                geometry.push(new XRStageBoundsPoint(boundsData[i], boundsData[i + 1]));
+            }
+            this[PRIVATE$8] = {geometry: geometry};
+        }
+
+        createClass(XRStageBounds, [{
+            key: 'geometry',
+            get: function get$$1() {
+                return this[PRIVATE$8].geometry;
+            }
+        }]);
+        return XRStageBounds;
+    }();
+
+    var XRCoordinateSystem = function () {
+        function XRCoordinateSystem() {
+            classCallCheck(this, XRCoordinateSystem);
+        }
+
+        createClass(XRCoordinateSystem, [{
+            key: 'getTransformTo',
+            value: function getTransformTo(other) {
+                throw new Error('Not yet supported');
+            }
+        }]);
+        return XRCoordinateSystem;
+    }();
+
+    var DEFAULT_EMULATION_HEIGHT = 1.6;
+    var PRIVATE$9 = Symbol('@@webxr-polyfill/XRFrameOfReference');
+    var XRFrameOfReferenceTypes = ['head-model', 'eye-level', 'stage'];
+    var XRFrameOfReferenceOptions = Object.freeze({
+        disableStageEmulation: false,
+        stageEmulationHeight: 0
+    });
+    var XRFrameOfReference = function (_XRCoordinateSystem) {
+        inherits(XRFrameOfReference, _XRCoordinateSystem);
+
+        function XRFrameOfReference(polyfill, type, options, transform, bounds) {
+            classCallCheck(this, XRFrameOfReference);
+            options = Object.assign({}, XRFrameOfReferenceOptions, options);
+            if (!XRFrameOfReferenceTypes.includes(type)) {
+                throw new Error('XRFrameOfReferenceType must be one of ' + XRFrameOfReferenceTypes);
+            }
+            var _this = possibleConstructorReturn(this, (XRFrameOfReference.__proto__ || Object.getPrototypeOf(XRFrameOfReference)).call(this));
+            if (type === 'stage' && options.disableStageEmulation && !transform) {
+                throw new Error('XRFrameOfReference cannot use \'stage\' type, if disabling emulation and platform does not provide');
+            }
+            var _options = options,
+                disableStageEmulation = _options.disableStageEmulation,
+                stageEmulationHeight = _options.stageEmulationHeight;
+            var emulatedHeight = 0;
+            if (type === 'stage' && !transform) {
+                emulatedHeight = stageEmulationHeight !== 0 ? stageEmulationHeight : DEFAULT_EMULATION_HEIGHT;
+            }
+            if (type === 'stage' && !transform) {
+                transform = identity(new Float32Array(16));
+                transform[13] = emulatedHeight;
+            }
+            _this[PRIVATE$9] = {
+                disableStageEmulation: disableStageEmulation,
+                stageEmulationHeight: stageEmulationHeight,
+                emulatedHeight: emulatedHeight,
+                type: type,
+                transform: transform,
+                polyfill: polyfill,
+                bounds: bounds
+            };
+            _this.onboundschange = undefined;
+            return _this;
+        }
+
+        createClass(XRFrameOfReference, [{
+            key: 'transformBasePoseMatrix',
+            value: function transformBasePoseMatrix(out, pose) {
+                if (this[PRIVATE$9].transform) {
+                    multiply(out, this[PRIVATE$9].transform, pose);
+                    return;
+                }
+                switch (this.type) {
+                    case 'head-model':
+                        if (out !== pose) {
+                            copy(out, pose);
+                        }
+                        out[12] = out[13] = out[14] = 0;
+                        return;
+                    case 'eye-level':
+                        if (out !== pose) {
+                            copy(out, pose);
+                        }
+                        return;
+                }
+            }
+        }, {
+            key: 'transformBaseViewMatrix',
+            value: function transformBaseViewMatrix(out, view) {
+                var frameOfRef = this[PRIVATE$9].transform;
+                if (frameOfRef) {
+                    invert(out, frameOfRef);
+                    multiply(out, view, out);
+                }
+                else if (this.type === 'head-model') {
+                    invert(out, view);
+                    out[12] = 0;
+                    out[13] = 0;
+                    out[14] = 0;
+                    invert(out, out);
+                    return out;
+                }
+                else {
+                    copy(out, view);
+                }
+                return out;
+            }
+        }, {
+            key: 'bounds',
+            get: function get$$1() {
+                return this[PRIVATE$9].bounds;
+            }
+        }, {
+            key: 'emulatedHeight',
+            get: function get$$1() {
+                return this[PRIVATE$9].emulatedHeight;
+            }
+        }, {
+            key: 'type',
+            get: function get$$1() {
+                return this[PRIVATE$9].type;
+            }
+        }]);
+        return XRFrameOfReference;
+    }(XRCoordinateSystem);
+
+    var PRIVATE$10 = Symbol('@@webxr-polyfill/XRSession');
+    var XRSessionCreationOptions = Object.freeze({
+        immersive: false,
+        outputContext: undefined
+    });
+    var validateSessionOptions = function validateSessionOptions(options) {
+        var immersive = options.immersive,
+            outputContext = options.outputContext;
+        if (!immersive && !outputContext) {
+            return false;
+        }
+        if (outputContext !== undefined && !(outputContext instanceof XRPresentationContext)) {
+            return false;
+        }
+        return true;
+    };
+    var XRSession = function (_EventTarget) {
+        inherits(XRSession, _EventTarget);
+
+        function XRSession(polyfill, device, sessionOptions, id) {
+            classCallCheck(this, XRSession);
+            sessionOptions = Object.assign({}, XRSessionCreationOptions, sessionOptions);
+            var _this = possibleConstructorReturn(this, (XRSession.__proto__ || Object.getPrototypeOf(XRSession)).call(this));
+            var _sessionOptions = sessionOptions,
+                immersive = _sessionOptions.immersive,
+                outputContext = _sessionOptions.outputContext;
+            _this[PRIVATE$10] = {
+                polyfill: polyfill,
+                device: device,
+                immersive: immersive,
+                outputContext: outputContext,
+                ended: false,
+                suspended: false,
+                suspendedCallback: null,
+                id: id
+            };
+            var frame = new XRFrame(polyfill, _this, _this[PRIVATE$10].id);
+            _this[PRIVATE$10].frame = frame;
+            _this[PRIVATE$10].onPresentationEnd = function (sessionId) {
+                if (sessionId !== _this[PRIVATE$10].id) {
+                    _this[PRIVATE$10].suspended = false;
+                    _this.dispatchEvent('focus', {session: _this});
+                    var suspendedCallback = _this[PRIVATE$10].suspendedCallback;
+                    _this[PRIVATE$10].suspendedCallback = null;
+                    if (suspendedCallback) {
+                        _this.requestAnimationFrame(suspendedCallback);
+                    }
+                    return;
+                }
+                _this[PRIVATE$10].ended = true;
+                polyfill.removeEventListener('@webvr-polyfill/vr-present-end', _this[PRIVATE$10].onPresentationEnd);
+                polyfill.removeEventListener('@webvr-polyfill/vr-present-start', _this[PRIVATE$10].onPresentationStart);
+                polyfill.removeEventListener('@@webvr-polyfill/input-select-start', _this[PRIVATE$10].onSelectStart);
+                polyfill.removeEventListener('@@webvr-polyfill/input-select-end', _this[PRIVATE$10].onSelectEnd);
+                _this.dispatchEvent('end', {session: _this});
+            };
+            polyfill.addEventListener('@@webxr-polyfill/vr-present-end', _this[PRIVATE$10].onPresentationEnd);
+            _this[PRIVATE$10].onPresentationStart = function (sessionId) {
+                if (sessionId === _this[PRIVATE$10].id) {
+                    return;
+                }
+                _this[PRIVATE$10].suspended = true;
+                _this.dispatchEvent('blur', {session: _this});
+            };
+            polyfill.addEventListener('@@webxr-polyfill/vr-present-start', _this[PRIVATE$10].onPresentationStart);
+            _this[PRIVATE$10].onSelectStart = function (evt) {
+                if (evt.sessionId !== _this[PRIVATE$10].id) {
+                    return;
+                }
+                _this.dispatchEvent('selectstart', {
+                    frame: _this[PRIVATE$10].frame,
+                    inputSource: evt.inputSource
+                });
+            };
+            polyfill.addEventListener('@@webxr-polyfill/input-select-start', _this[PRIVATE$10].onSelectStart);
+            _this[PRIVATE$10].onSelectEnd = function (evt) {
+                if (evt.sessionId !== _this[PRIVATE$10].id) {
+                    return;
+                }
+                _this.dispatchEvent('selectend', {
+                    frame: _this[PRIVATE$10].frame,
+                    inputSource: evt.inputSource
+                });
+                _this.dispatchEvent('select', {
+                    frame: _this[PRIVATE$10].frame,
+                    inputSource: evt.inputSource
+                });
+            };
+            polyfill.addEventListener('@@webxr-polyfill/input-select-end', _this[PRIVATE$10].onSelectEnd);
+            _this.onblur = undefined;
+            _this.onfocus = undefined;
+            _this.onresetpose = undefined;
+            _this.onend = undefined;
+            _this.onselect = undefined;
+            _this.onselectstart = undefined;
+            _this.onselectend = undefined;
+            return _this;
+        }
+
+        createClass(XRSession, [{
+            key: 'requestFrameOfReference',
+            value: function requestFrameOfReference(type) {
+                var $args = arguments;
+                return new Promise(function ($return, $error) {
+                    var options, transform, bounds;
+                    options = $args.length > 1 && $args[1] !== undefined ? $args[1] : {};
+                    if (this[PRIVATE$10].ended) {
+                        return $return();
+                    }
+                    options = Object.assign({}, XRFrameOfReferenceOptions, options);
+                    if (!XRFrameOfReferenceTypes.includes(type)) {
+                        return $error(new TypeError('XRFrameOfReferenceType must be one of ' + XRFrameOfReferenceTypes));
+                    }
+                    transform = null;
+                    bounds = null;
+                    var $Try_1_Post = function () {
+                        try {
+                            if (type === 'stage' && transform) {
+                                bounds = this[PRIVATE$10].polyfill.requestStageBounds();
+                                if (bounds) {
+                                    bounds = new XRStageBounds(bounds);
+                                }
+                            }
+                            return $return(new XRFrameOfReference(this[PRIVATE$10].polyfill, type, options, transform, bounds));
+                        } catch ($boundEx) {
+                            return $error($boundEx);
+                        }
+                    }.bind(this);
+                    var $Try_1_Catch = function (e) {
+                        try {
+                            if (type !== 'stage' || options.disableStageEmulation) {
+                                throw e;
+                            }
+                            return $Try_1_Post();
+                        } catch ($boundEx) {
+                            return $error($boundEx);
+                        }
+                    }.bind(this);
+                    try {
+                        return Promise.resolve(this[PRIVATE$10].polyfill.requestFrameOfReferenceTransform(type, options)).then(function ($await_2) {
+                            try {
+                                transform = $await_2;
+                                return $Try_1_Post();
+                            } catch ($boundEx) {
+                                return $Try_1_Catch($boundEx);
+                            }
+                        }.bind(this), $Try_1_Catch);
+                    } catch (e) {
+                        $Try_1_Catch(e);
+                    }
+                }.bind(this));
+            }
+        }, {
+            key: 'requestAnimationFrame',
+            value: function requestAnimationFrame(callback) {
+                var _this2 = this;
+                if (this[PRIVATE$10].ended) {
+                    return;
+                }
+                if (this[PRIVATE$10].suspended && this[PRIVATE$10].suspendedCallback) {
+                    return;
+                }
+                if (this[PRIVATE$10].suspended && !this[PRIVATE$10].suspendedCallback) {
+                    this[PRIVATE$10].suspendedCallback = callback;
+                }
+                return this[PRIVATE$10].polyfill.requestAnimationFrame(function () {
+                    _this2[PRIVATE$10].polyfill.onFrameStart(_this2[PRIVATE$10].id);
+                    callback(now$1(), _this2[PRIVATE$10].frame);
+                    _this2[PRIVATE$10].polyfill.onFrameEnd(_this2[PRIVATE$10].id);
+                });
+            }
+        }, {
+            key: 'cancelAnimationFrame',
+            value: function cancelAnimationFrame(handle) {
+                if (this[PRIVATE$10].ended) {
+                    return;
+                }
+                this[PRIVATE$10].polyfill.cancelAnimationFrame(handle);
+            }
+        }, {
+            key: 'getInputSources',
+            value: function getInputSources() {
+                return this[PRIVATE$10].polyfill.getInputSources();
+            }
+        }, {
+            key: 'end',
+            value: function end() {
+                return new Promise(function ($return, $error) {
+                    if (this[PRIVATE$10].ended) {
+                        return $return();
+                    }
+                    if (!this.immersive) {
+                        this[PRIVATE$10].ended = true;
+                        this[PRIVATE$10].polyfill.removeEventListener('@@webvr-polyfill/vr-present-start', this[PRIVATE$10].onPresentationStart);
+                        this[PRIVATE$10].polyfill.removeEventListener('@@webvr-polyfill/vr-present-end', this[PRIVATE$10].onPresentationEnd);
+                        this[PRIVATE$10].polyfill.removeEventListener('@@webvr-polyfill/input-select-start', this[PRIVATE$10].onSelectStart);
+                        this[PRIVATE$10].polyfill.removeEventListener('@@webvr-polyfill/input-select-end', this[PRIVATE$10].onSelectEnd);
+                        this.dispatchEvent('end', {session: this});
+                    }
+                    return $return(this[PRIVATE$10].polyfill.endSession(this[PRIVATE$10].id));
+                }.bind(this));
+            }
+        }, {
+            key: 'device',
+            get: function get$$1() {
+                return this[PRIVATE$10].device;
+            }
+        }, {
+            key: 'immersive',
+            get: function get$$1() {
+                return this[PRIVATE$10].immersive;
+            }
+        }, {
+            key: 'outputContext',
+            get: function get$$1() {
+                return this[PRIVATE$10].outputContext;
+            }
+        }, {
+            key: 'depthNear',
+            get: function get$$1() {
+                return this[PRIVATE$10].polyfill.depthNear;
+            }
+            ,
+            set: function set$$1(value) {
+                this[PRIVATE$10].polyfill.depthNear = value;
+            }
+        }, {
+            key: 'depthFar',
+            get: function get$$1() {
+                return this[PRIVATE$10].polyfill.depthFar;
+            }
+            ,
+            set: function set$$1(value) {
+                this[PRIVATE$10].polyfill.depthFar = value;
+            }
+        }, {
+            key: 'environmentBlendMode',
+            get: function get$$1() {
+                return this[PRIVATE$10].polyfill.environmentBlendMode || 'opaque';
+            }
+        }, {
+            key: 'baseLayer',
+            get: function get$$1() {
+                return this[PRIVATE$10].baseLayer;
+            }
+            ,
+            set: function set$$1(value) {
+                if (this[PRIVATE$10].ended) {
+                    return;
+                }
+                this[PRIVATE$10].baseLayer = value;
+                this[PRIVATE$10].polyfill.onBaseLayerSet(this[PRIVATE$10].id, value);
+            }
+        }]);
+        return XRSession;
+    }(EventTarget);
+
+    var PRIVATE$11 = Symbol('@@webxr-polyfill/XRDevice');
+    var XRDevice = function (_EventTarget) {
+        inherits(XRDevice, _EventTarget);
+
+        function XRDevice(polyfill) {
+            classCallCheck(this, XRDevice);
+            if (!polyfill) {
+                throw new Error('XRDevice must receive a PolyfilledXRDevice.');
+            }
+            var _this = possibleConstructorReturn(this, (XRDevice.__proto__ || Object.getPrototypeOf(XRDevice)).call(this));
+            _this[PRIVATE$11] = {
+                polyfill: polyfill,
+                immersiveSession: null,
+                nonImmersiveSessions: new Set()
+            };
+            _this.ondeactive = undefined;
+            return _this;
+        }
+
+        createClass(XRDevice, [{
+            key: 'supportsSession',
+            value: function supportsSession() {
+                var $args = arguments;
+                return new Promise(function ($return, $error) {
+                    var sessionOptions = $args.length > 0 && $args[0] !== undefined ? $args[0] : {};
+                    sessionOptions = Object.assign({}, XRSessionCreationOptions, sessionOptions);
+                    if (!validateSessionOptions(sessionOptions)) {
+                        return $return(Promise.reject(null));
+                    }
+                    if (!this[PRIVATE$11].polyfill.supportsSession(sessionOptions)) {
+                        return $return(Promise.reject(null));
+                    }
+                    return $return(null);
+                }.bind(this));
+            }
+        }, {
+            key: 'requestSession',
+            value: function requestSession(sessionOptions) {
+                return new Promise(function ($return, $error) {
+                    var _this2, sessionId, session, onSessionEnd;
+                    _this2 = this;
+                    sessionOptions = Object.assign({}, XRSessionCreationOptions, sessionOptions);
+                    if (!validateSessionOptions(sessionOptions)) {
+                        return $error(new Error('NotSupportedError'));
+                    }
+                    if (this[PRIVATE$11].immersiveSession && sessionOptions.immersive) {
+                        return $error(new Error('InvalidStateError'));
+                    }
+                    return Promise.resolve(this[PRIVATE$11].polyfill.requestSession(sessionOptions)).then(function ($await_1) {
+                        try {
+                            sessionId = $await_1;
+                            session = new XRSession(this[PRIVATE$11].polyfill, this, sessionOptions, sessionId);
+                            if (sessionOptions.immersive) {
+                                this[PRIVATE$11].immersiveSession = session;
+                            } else {
+                                this[PRIVATE$11].nonImmersiveSessions.add(session);
+                            }
+                            onSessionEnd = function onSessionEnd() {
+                                if (session.immersive) {
+                                    _this2[PRIVATE$11].immersiveSession = null;
+                                } else {
+                                    _this2[PRIVATE$11].nonImmersiveSessions.delete(session);
+                                }
+                                session.removeEventListener('end', onSessionEnd);
+                            };
+                            session.addEventListener('end', onSessionEnd);
+                            return $return(session);
+                        } catch ($boundEx) {
+                            return $error($boundEx);
+                        }
+                    }.bind(this), $error);
+                }.bind(this));
+            }
+        }]);
+        return XRDevice;
+    }(EventTarget);
+
+    var domPointROExport = 'DOMPointReadOnly' in _global ? DOMPointReadOnly : null;
+    if (!domPointROExport) {
+        var PRIVATE$12 = Symbol('@@webxr-polyfill/DOMPointReadOnly');
+        domPointROExport = function () {
+            function DOMPointReadOnly(x, y, z, w) {
+                classCallCheck(this, DOMPointReadOnly);
+                if (arguments.length === 1) {
+                    this[PRIVATE$12] = {
+                        x: x.x,
+                        y: x.y,
+                        z: x.z,
+                        w: x.w
+                    };
+                } else if (arguments.length === 4) {
+                    this[PRIVATE$12] = {
+                        x: x,
+                        y: y,
+                        z: z,
+                        w: w
+                    };
+                } else {
+                    throw new TypeError('Must supply either 1 or 4 arguments');
+                }
+            }
+
+            createClass(DOMPointReadOnly, [{
+                key: 'x',
+                get: function get$$1() {
+                    return this[PRIVATE$12].x;
+                }
+            }, {
+                key: 'y',
+                get: function get$$1() {
+                    return this[PRIVATE$12].y;
+                }
+            }, {
+                key: 'z',
+                get: function get$$1() {
+                    return this[PRIVATE$12].z;
+                }
+            }, {
+                key: 'w',
+                get: function get$$1() {
+                    return this[PRIVATE$12].w;
+                }
+            }]);
+            return DOMPointReadOnly;
+        }();
+    }
+    var DOMPointReadOnly$1 = domPointROExport;
+
+    var XRRay = function XRRay() {
+            var origin = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new DOMPointReadOnly$1(0, 0, 0, 1);
+            var direction = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : new DOMPointReadOnly$1(0, 0, -1, 0);
+            var transformMatrix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new Float32Array(16);
+            classCallCheck(this, XRRay);
+            if (!(origin instanceof DOMPointReadOnly$1)) {
+                throw new Error('origin must be a DOMPointReadOnly');
+            }
+            if (!(direction instanceof DOMPointReadOnly$1)) {
+                throw new Error('direction must be a DOMPointReadOnly');
+            }
+            if (!(transformMatrix instanceof Float32Array)) {
+                throw new Error('transformMatrix must be a Float32Array');
+            }
+            Object.defineProperties(this, {
+                origin: {
+                    value: origin,
+                    writable: false
+                },
+                direction: {
+                    value: direction,
+                    writable: false
+                },
+                transformMatrix: {
+                    value: transformMatrix,
+                    writable: false
+                }
+            });
+        };
+
+    var PRIVATE$13 = Symbol('@@webxr-polyfill/XRInputPose');
+    var XRInputPose = function () {
+        function XRInputPose(inputSourceImpl, hasGripMatrix) {
+            classCallCheck(this, XRInputPose);
+            this[PRIVATE$13] = {
+                inputSourceImpl: inputSourceImpl,
+                targetRay: new XRRay(),
+                gripMatrix: hasGripMatrix ? create() : null
+            };
+        }
+
+        createClass(XRInputPose, [{
+            key: 'targetRay',
+            get: function get$$1() {
+                return this[PRIVATE$13].targetRay;
+            }
+            ,
+            set: function set$$1(value) {
+                this[PRIVATE$13].targetRay = value;
+            }
+        }, {
+            key: 'emulatedPosition',
+            get: function get$$1() {
+                return this[PRIVATE$13].inputSourceImpl.emulatedPosition;
+            }
+        }, {
+            key: 'gripMatrix',
+            get: function get$$1() {
+                return this[PRIVATE$13].gripMatrix;
+            }
+        }]);
+        return XRInputPose;
+    }();
+
+    var PRIVATE$14 = Symbol('@@webxr-polyfill/XRInputSource');
+    var XRInputSource = function () {
+        function XRInputSource(impl) {
+            classCallCheck(this, XRInputSource);
+            this[PRIVATE$14] = {
+                impl: impl
+            };
+        }
+
+        createClass(XRInputSource, [{
+            key: 'handedness',
+            get: function get$$1() {
+                return this[PRIVATE$14].impl.handedness;
+            }
+        }, {
+            key: 'targetRayMode',
+            get: function get$$1() {
+                return this[PRIVATE$14].impl.targetRayMode;
+            }
+        }]);
+        return XRInputSource;
+    }();
+
+    var XRLayer = function () {
+        function XRLayer() {
+            classCallCheck(this, XRLayer);
+        }
+
+        createClass(XRLayer, [{
+            key: "getViewport",
+            value: function getViewport(view) {
+                return view._getViewport(this);
+            }
+        }]);
+        return XRLayer;
+    }();
+
+    var POLYFILLED_COMPATIBLE_XR_DEVICE = Symbol('@@webxr-polyfill/polyfilled-compatible-xr-device');
+    var COMPATIBLE_XR_DEVICE = Symbol('@@webxr-polyfill/compatible-xr-device');
+
+    var PRIVATE$15 = Symbol('@@webxr-polyfill/XRWebGLLayer');
+    var XRWebGLLayerInit = Object.freeze({
+        antialias: true,
+        depth: false,
+        stencil: false,
+        alpha: true,
+        multiview: false,
+        framebufferScaleFactor: 0
+    });
+    var XRWebGLLayer = function (_XRLayer) {
+        inherits(XRWebGLLayer, _XRLayer);
+
+        function XRWebGLLayer(session, context) {
+            var layerInit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            classCallCheck(this, XRWebGLLayer);
+            var config = Object.assign({}, XRWebGLLayerInit, layerInit);
+            if (!(session instanceof XRSession)) {
+                throw new Error('session must be a XRSession');
+            }
+            if (session.ended) {
+                throw new Error('InvalidStateError');
+            }
+            if (context[POLYFILLED_COMPATIBLE_XR_DEVICE]) {
+                if (context[COMPATIBLE_XR_DEVICE] !== session.device) {
+                    throw new Error('InvalidStateError');
+                }
+            }
+            var framebuffer = context.getParameter(context.FRAMEBUFFER_BINDING);
+            var _this = possibleConstructorReturn(this, (XRWebGLLayer.__proto__ || Object.getPrototypeOf(XRWebGLLayer)).call(this));
+            _this[PRIVATE$15] = {
+                context: context,
+                config: config,
+                framebuffer: framebuffer
+            };
+            return _this;
+        }
+
+        createClass(XRWebGLLayer, [{
+            key: 'requestViewportScaling',
+            value: function requestViewportScaling(viewportScaleFactor) {
+                console.warn('requestViewportScaling is not yet implemented');
+            }
+        }, {
+            key: 'context',
+            get: function get$$1() {
+                return this[PRIVATE$15].context;
+            }
+        }, {
+            key: 'antialias',
+            get: function get$$1() {
+                return this[PRIVATE$15].config.antialias;
+            }
+        }, {
+            key: 'depth',
+            get: function get$$1() {
+                return this[PRIVATE$15].config.depth;
+            }
+        }, {
+            key: 'stencil',
+            get: function get$$1() {
+                return this[PRIVATE$15].config.stencil;
+            }
+        }, {
+            key: 'alpha',
+            get: function get$$1() {
+                return this[PRIVATE$15].config.alpha;
+            }
+        }, {
+            key: 'multiview',
+            get: function get$$1() {
+                return false;
+            }
+        }, {
+            key: 'framebuffer',
+            get: function get$$1() {
+                return this[PRIVATE$15].framebuffer;
+            }
+        }, {
+            key: 'framebufferWidth',
+            get: function get$$1() {
+                return this[PRIVATE$15].context.drawingBufferWidth;
+            }
+        }, {
+            key: 'framebufferHeight',
+            get: function get$$1() {
+                return this[PRIVATE$15].context.drawingBufferHeight;
+            }
+        }]);
+        return XRWebGLLayer;
+    }(XRLayer);
+
+    var API = {
+        XR: XR,
+        XRDevice: XRDevice,
+        XRSession: XRSession,
+        XRFrame: XRFrame,
+        XRView: XRView,
+        XRViewport: XRViewport,
+        XRDevicePose: XRDevicePose,
+        XRLayer: XRLayer,
+        XRWebGLLayer: XRWebGLLayer,
+        XRPresentationContext: XRPresentationContext,
+        XRCoordinateSystem: XRCoordinateSystem,
+        XRFrameOfReference: XRFrameOfReference,
+        XRStageBounds: XRStageBounds,
+        XRStageBoundsPoint: XRStageBoundsPoint,
+        XRInputPose: XRInputPose,
+        XRInputSource: XRInputSource,
+        XRRay: XRRay
+    };
+
+    var extendContextCompatibleXRDevice = function extendContextCompatibleXRDevice(Context) {
+        if (typeof Context.prototype.setCompatibleXRDevice === 'function') {
+            return false;
+        }
+        Context.prototype.setCompatibleXRDevice = function (xrDevice) {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                if (xrDevice && typeof xrDevice.requestSession === 'function') {
+                    resolve();
+                } else {
+                    reject();
+                }
+            }).then(function () {
+                return _this[COMPATIBLE_XR_DEVICE] = xrDevice;
+            });
+        };
+        return true;
+    };
+    var extendGetContext = function extendGetContext(Canvas) {
+        var getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (contextType, glAttribs) {
+            if (contextType === 'xrpresent') {
+                var _ctx = getContext.call(this, '2d', glAttribs);
+                return new XRPresentationContext(this, _ctx, glAttribs);
+            }
+            var ctx = getContext.call(this, contextType, glAttribs);
+            ctx[POLYFILLED_COMPATIBLE_XR_DEVICE] = true;
+            if (glAttribs && 'compatibleXRDevice' in glAttribs) {
+                ctx[COMPATIBLE_XR_DEVICE] = glAttribs.compatibleXRDevice;
+            }
+            return ctx;
+        };
+    };
+
+    function create$1() {
+        var out = new ARRAY_TYPE(3);
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = 0;
+        return out;
+    }
+
+    function clone$1(a) {
+        var out = new ARRAY_TYPE(3);
+        out[0] = a[0];
+        out[1] = a[1];
+        out[2] = a[2];
+        return out;
+    }
+
+    function length(a) {
+        var x = a[0];
+        var y = a[1];
+        var z = a[2];
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    function fromValues$1(x, y, z) {
+        var out = new ARRAY_TYPE(3);
+        out[0] = x;
+        out[1] = y;
+        out[2] = z;
+        return out;
+    }
+
+    function copy$1(out, a) {
+        out[0] = a[0];
+        out[1] = a[1];
+        out[2] = a[2];
+        return out;
+    }
+
+    function set$2(out, x, y, z) {
+        out[0] = x;
+        out[1] = y;
+        out[2] = z;
+        return out;
+    }
+
+    function add$1(out, a, b) {
+        out[0] = a[0] + b[0];
+        out[1] = a[1] + b[1];
+        out[2] = a[2] + b[2];
+        return out;
+    }
+
+    function subtract$1(out, a, b) {
+        out[0] = a[0] - b[0];
+        out[1] = a[1] - b[1];
+        out[2] = a[2] - b[2];
+        return out;
+    }
+
+
+    function scale$1(out, a, b) {
+        out[0] = a[0] * b;
+        out[1] = a[1] * b;
+        out[2] = a[2] * b;
+        return out;
+    }
+
+
+    function normalize(out, a) {
+        var x = a[0];
+        var y = a[1];
+        var z = a[2];
+        var len = x * x + y * y + z * z;
+        if (len > 0) {
+            len = 1 / Math.sqrt(len);
+            out[0] = a[0] * len;
+            out[1] = a[1] * len;
+            out[2] = a[2] * len;
+        }
+        return out;
+    }
+
+    function dot(a, b) {
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    }
+
+    function cross(out, a, b) {
+        var ax = a[0],
+            ay = a[1],
+            az = a[2];
+        var bx = b[0],
+            by = b[1],
+            bz = b[2];
+        out[0] = ay * bz - az * by;
+        out[1] = az * bx - ax * bz;
+        out[2] = ax * by - ay * bx;
+        return out;
+    }
+
+
+    function transformMat4(out, a, m) {
+        var x = a[0],
+            y = a[1],
+            z = a[2];
+        var w = m[3] * x + m[7] * y + m[11] * z + m[15];
+        w = w || 1.0;
+        out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+        out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+        out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+        return out;
+    }
+
+    function transformQuat(out, a, q) {
+        var qx = q[0],
+            qy = q[1],
+            qz = q[2],
+            qw = q[3];
+        var x = a[0],
+            y = a[1],
+            z = a[2];
+        var uvx = qy * z - qz * y,
+            uvy = qz * x - qx * z,
+            uvz = qx * y - qy * x;
+        var uuvx = qy * uvz - qz * uvy,
+            uuvy = qz * uvx - qx * uvz,
+            uuvz = qx * uvy - qy * uvx;
+        var w2 = qw * 2;
+        uvx *= w2;
+        uvy *= w2;
+        uvz *= w2;
+        uuvx *= 2;
+        uuvy *= 2;
+        uuvz *= 2;
+        out[0] = x + uvx + uuvx;
+        out[1] = y + uvy + uuvy;
+        out[2] = z + uvz + uuvz;
+        return out;
+    }
+
+
+    function angle(a, b) {
+        var tempA = fromValues$1(a[0], a[1], a[2]);
+        var tempB = fromValues$1(b[0], b[1], b[2]);
+        normalize(tempA, tempA);
+        normalize(tempB, tempB);
+        var cosine = dot(tempA, tempB);
+        if (cosine > 1.0) {
+            return 0;
+        } else if (cosine < -1.0) {
+            return Math.PI;
+        } else {
+            return Math.acos(cosine);
+        }
+    }
+
+
+    var sub$1 = subtract$1;
+
+
+    var len = length;
+
+    var forEach = function () {
+        var vec = create$1();
+        return function (a, stride, offset, count, fn, arg) {
+            var i = void 0,
+                l = void 0;
+            if (!stride) {
+                stride = 3;
+            }
+            if (!offset) {
+                offset = 0;
+            }
+            if (count) {
+                l = Math.min(count * stride + offset, a.length);
+            } else {
+                l = a.length;
+            }
+            for (i = offset; i < l; i += stride) {
+                vec[0] = a[i];
+                vec[1] = a[i + 1];
+                vec[2] = a[i + 2];
+                fn(vec, vec, arg);
+                a[i] = vec[0];
+                a[i + 1] = vec[1];
+                a[i + 2] = vec[2];
+            }
+            return a;
+        };
+    }();
+
+    var poseMatrixToXRRay = function poseMatrixToXRRay(poseMatrix) {
+        var rayOrigin = [];
+        var rayDirection = [];
+        set$2(rayOrigin, 0, 0, 0);
+        transformMat4(rayOrigin, rayOrigin, poseMatrix);
+        set$2(rayDirection, 0, 0, -1);
+        transformMat4(rayDirection, rayDirection, poseMatrix);
+        sub$1(rayDirection, rayDirection, rayOrigin);
+        normalize(rayDirection, rayDirection);
+        return new XRRay(new DOMPointReadOnly$1(rayOrigin[0], rayOrigin[1], rayOrigin[2], 1.0), new DOMPointReadOnly$1(rayDirection[0], rayDirection[1], rayDirection[2], 0.0), poseMatrix);
+    };
+    var isMobile = function isMobile(global) {
+        var check = false;
+        (function (a) {
+            if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true;
+        })(global.navigator.userAgent || global.navigator.vendor || global.opera);
+        return check;
+    };
+    var applyCanvasStylesForMinimalRendering = function applyCanvasStylesForMinimalRendering(canvas) {
+        canvas.style.display = 'block';
+        canvas.style.position = 'absolute';
+        canvas.style.width = canvas.style.height = '1px';
+        canvas.style.top = canvas.style.left = '0px';
+    };
+
+    var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+    function unwrapExports(x) {
+        return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+    }
+
+    function createCommonjsModule(fn, module) {
+        return module = {exports: {}}, fn(module, module.exports), module.exports;
+    }
+
+    var cardboardVrDisplay = createCommonjsModule(function (module, exports) {
+        (function (global, factory) {
+            module.exports = factory();
+        }(commonjsGlobal, (function () {
+            var classCallCheck = function (instance, Constructor) {
+                if (!(instance instanceof Constructor)) {
+                    throw new TypeError("Cannot call a class as a function");
+                }
+            };
+            var createClass = function () {
+                function defineProperties(target, props) {
+                    for (var i = 0; i < props.length; i++) {
+                        var descriptor = props[i];
+                        descriptor.enumerable = descriptor.enumerable || false;
+                        descriptor.configurable = true;
+                        if ("value" in descriptor) descriptor.writable = true;
+                        Object.defineProperty(target, descriptor.key, descriptor);
+                    }
+                }
+
+                return function (Constructor, protoProps, staticProps) {
+                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+                    if (staticProps) defineProperties(Constructor, staticProps);
+                    return Constructor;
+                };
+            }();
+            var slicedToArray = function () {
+                function sliceIterator(arr, i) {
+                    var _arr = [];
+                    var _n = true;
+                    var _d = false;
+                    var _e = undefined;
+                    try {
+                        for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+                            _arr.push(_s.value);
+                            if (i && _arr.length === i) break;
+                        }
+                    } catch (err) {
+                        _d = true;
+                        _e = err;
+                    } finally {
+                        try {
+                            if (!_n && _i["return"]) _i["return"]();
+                        } finally {
+                            if (_d) throw _e;
+                        }
+                    }
+                    return _arr;
+                }
+
+                return function (arr, i) {
+                    if (Array.isArray(arr)) {
+                        return arr;
+                    } else if (Symbol.iterator in Object(arr)) {
+                        return sliceIterator(arr, i);
+                    } else {
+                        throw new TypeError("Invalid attempt to destructure non-iterable instance");
+                    }
+                };
+            }();
+            var MIN_TIMESTEP = 0.001;
+            var MAX_TIMESTEP = 1;
+            var base64 = function base64(mimeType, _base) {
+                return 'data:' + mimeType + ';base64,' + _base;
+            };
+            var lerp = function lerp(a, b, t) {
+                return a + (b - a) * t;
+            };
+            var isIOS = function () {
+                var isIOS = /iPad|iPhone|iPod/.test(navigator.platform);
+                return function () {
+                    return isIOS;
+                };
+            }();
+            var isWebViewAndroid = function () {
+                var isWebViewAndroid = navigator.userAgent.indexOf('Version') !== -1 && navigator.userAgent.indexOf('Android') !== -1 && navigator.userAgent.indexOf('Chrome') !== -1;
+                return function () {
+                    return isWebViewAndroid;
+                };
+            }();
+            var isSafari = function () {
+                var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                return function () {
+                    return isSafari;
+                };
+            }();
+            var isFirefoxAndroid = function () {
+                var isFirefoxAndroid = navigator.userAgent.indexOf('Firefox') !== -1 && navigator.userAgent.indexOf('Android') !== -1;
+                return function () {
+                    return isFirefoxAndroid;
+                };
+            }();
+            var getChromeVersion = function () {
+                var match = navigator.userAgent.match(/.*Chrome\/([0-9]+)/);
+                var value = match ? parseInt(match[1], 10) : null;
+                return function () {
+                    return value;
+                };
+            }();
+            var isChromeWithoutDeviceMotion = function () {
+                var value = false;
+                if (getChromeVersion() === 65) {
+                    var match = navigator.userAgent.match(/.*Chrome\/([0-9\.]*)/);
+                    if (match) {
+                        var _match$1$split = match[1].split('.'),
+                            _match$1$split2 = slicedToArray(_match$1$split, 4),
+                            major = _match$1$split2[0],
+                            minor = _match$1$split2[1],
+                            branch = _match$1$split2[2],
+                            build = _match$1$split2[3];
+                        value = parseInt(branch, 10) === 3325 && parseInt(build, 10) < 148;
+                    }
+                }
+                return function () {
+                    return value;
+                };
+            }();
+            var isR7 = function () {
+                var isR7 = navigator.userAgent.indexOf('R7 Build') !== -1;
+                return function () {
+                    return isR7;
+                };
+            }();
+            var isLandscapeMode = function isLandscapeMode() {
+                var rtn = window.orientation == 90 || window.orientation == -90;
+                return isR7() ? !rtn : rtn;
+            };
+            var isTimestampDeltaValid = function isTimestampDeltaValid(timestampDeltaS) {
+                if (isNaN(timestampDeltaS)) {
+                    return false;
+                }
+                if (timestampDeltaS <= MIN_TIMESTEP) {
+                    return false;
+                }
+                if (timestampDeltaS > MAX_TIMESTEP) {
+                    return false;
+                }
+                return true;
+            };
+            var getScreenWidth = function getScreenWidth() {
+                return Math.max(window.screen.width, window.screen.height) * window.devicePixelRatio;
+            };
+            var getScreenHeight = function getScreenHeight() {
+                return Math.min(window.screen.width, window.screen.height) * window.devicePixelRatio;
+            };
+            var requestFullscreen = function requestFullscreen(element) {
+                if (isWebViewAndroid()) {
+                    return false;
+                }
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullScreen) {
+                    element.mozRequestFullScreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                } else {
+                    return false;
+                }
+                return true;
+            };
+            var exitFullscreen = function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else {
+                    return false;
+                }
+                return true;
+            };
+            var getFullscreenElement = function getFullscreenElement() {
+                return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            };
+            var linkProgram = function linkProgram(gl, vertexSource, fragmentSource, attribLocationMap) {
+                var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertexShader, vertexSource);
+                gl.compileShader(vertexShader);
+                var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragmentShader, fragmentSource);
+                gl.compileShader(fragmentShader);
+                var program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                for (var attribName in attribLocationMap) {
+                    gl.bindAttribLocation(program, attribLocationMap[attribName], attribName);
+                }
+                gl.linkProgram(program);
+                gl.deleteShader(vertexShader);
+                gl.deleteShader(fragmentShader);
+                return program;
+            };
+            var getProgramUniforms = function getProgramUniforms(gl, program) {
+                var uniforms = {};
+                var uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+                var uniformName = '';
+                for (var i = 0; i < uniformCount; i++) {
+                    var uniformInfo = gl.getActiveUniform(program, i);
+                    uniformName = uniformInfo.name.replace('[0]', '');
+                    uniforms[uniformName] = gl.getUniformLocation(program, uniformName);
+                }
+                return uniforms;
+            };
+            var orthoMatrix = function orthoMatrix(out, left, right, bottom, top, near, far) {
+                var lr = 1 / (left - right),
+                    bt = 1 / (bottom - top),
+                    nf = 1 / (near - far);
+                out[0] = -2 * lr;
+                out[1] = 0;
+                out[2] = 0;
+                out[3] = 0;
+                out[4] = 0;
+                out[5] = -2 * bt;
+                out[6] = 0;
+                out[7] = 0;
+                out[8] = 0;
+                out[9] = 0;
+                out[10] = 2 * nf;
+                out[11] = 0;
+                out[12] = (left + right) * lr;
+                out[13] = (top + bottom) * bt;
+                out[14] = (far + near) * nf;
+                out[15] = 1;
+                return out;
+            };
+            var isMobile = function isMobile() {
+                var check = false;
+                (function (a) {
+                    if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true;
+                })(navigator.userAgent || navigator.vendor || window.opera);
+                return check;
+            };
+            var extend = function extend(dest, src) {
+                for (var key in src) {
+                    if (src.hasOwnProperty(key)) {
+                        dest[key] = src[key];
+                    }
+                }
+                return dest;
+            };
+            var safariCssSizeWorkaround = function safariCssSizeWorkaround(canvas) {
+                if (isIOS()) {
+                    var width = canvas.style.width;
+                    var height = canvas.style.height;
+                    canvas.style.width = parseInt(width) + 1 + 'px';
+                    canvas.style.height = parseInt(height) + 'px';
+                    setTimeout(function () {
+                        canvas.style.width = width;
+                        canvas.style.height = height;
+                    }, 100);
+                }
+                window.canvas = canvas;
+            };
+            var frameDataFromPose = function () {
+                var piOver180 = Math.PI / 180.0;
+                var rad45 = Math.PI * 0.25;
+
+                function mat4_perspectiveFromFieldOfView(out, fov, near, far) {
+                    var upTan = Math.tan(fov ? fov.upDegrees * piOver180 : rad45),
+                        downTan = Math.tan(fov ? fov.downDegrees * piOver180 : rad45),
+                        leftTan = Math.tan(fov ? fov.leftDegrees * piOver180 : rad45),
+                        rightTan = Math.tan(fov ? fov.rightDegrees * piOver180 : rad45),
+                        xScale = 2.0 / (leftTan + rightTan),
+                        yScale = 2.0 / (upTan + downTan);
+                    out[0] = xScale;
+                    out[1] = 0.0;
+                    out[2] = 0.0;
+                    out[3] = 0.0;
+                    out[4] = 0.0;
+                    out[5] = yScale;
+                    out[6] = 0.0;
+                    out[7] = 0.0;
+                    out[8] = -((leftTan - rightTan) * xScale * 0.5);
+                    out[9] = (upTan - downTan) * yScale * 0.5;
+                    out[10] = far / (near - far);
+                    out[11] = -1.0;
+                    out[12] = 0.0;
+                    out[13] = 0.0;
+                    out[14] = far * near / (near - far);
+                    out[15] = 0.0;
+                    return out;
+                }
+
+                function mat4_fromRotationTranslation(out, q, v) {
+                    var x = q[0],
+                        y = q[1],
+                        z = q[2],
+                        w = q[3],
+                        x2 = x + x,
+                        y2 = y + y,
+                        z2 = z + z,
+                        xx = x * x2,
+                        xy = x * y2,
+                        xz = x * z2,
+                        yy = y * y2,
+                        yz = y * z2,
+                        zz = z * z2,
+                        wx = w * x2,
+                        wy = w * y2,
+                        wz = w * z2;
+                    out[0] = 1 - (yy + zz);
+                    out[1] = xy + wz;
+                    out[2] = xz - wy;
+                    out[3] = 0;
+                    out[4] = xy - wz;
+                    out[5] = 1 - (xx + zz);
+                    out[6] = yz + wx;
+                    out[7] = 0;
+                    out[8] = xz + wy;
+                    out[9] = yz - wx;
+                    out[10] = 1 - (xx + yy);
+                    out[11] = 0;
+                    out[12] = v[0];
+                    out[13] = v[1];
+                    out[14] = v[2];
+                    out[15] = 1;
+                    return out;
+                }
+
+                function mat4_translate(out, a, v) {
+                    var x = v[0],
+                        y = v[1],
+                        z = v[2],
+                        a00,
+                        a01,
+                        a02,
+                        a03,
+                        a10,
+                        a11,
+                        a12,
+                        a13,
+                        a20,
+                        a21,
+                        a22,
+                        a23;
+                    if (a === out) {
+                        out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+                        out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+                        out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+                        out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+                    } else {
+                        a00 = a[0];
+                        a01 = a[1];
+                        a02 = a[2];
+                        a03 = a[3];
+                        a10 = a[4];
+                        a11 = a[5];
+                        a12 = a[6];
+                        a13 = a[7];
+                        a20 = a[8];
+                        a21 = a[9];
+                        a22 = a[10];
+                        a23 = a[11];
+                        out[0] = a00;
+                        out[1] = a01;
+                        out[2] = a02;
+                        out[3] = a03;
+                        out[4] = a10;
+                        out[5] = a11;
+                        out[6] = a12;
+                        out[7] = a13;
+                        out[8] = a20;
+                        out[9] = a21;
+                        out[10] = a22;
+                        out[11] = a23;
+                        out[12] = a00 * x + a10 * y + a20 * z + a[12];
+                        out[13] = a01 * x + a11 * y + a21 * z + a[13];
+                        out[14] = a02 * x + a12 * y + a22 * z + a[14];
+                        out[15] = a03 * x + a13 * y + a23 * z + a[15];
+                    }
+                    return out;
+                }
+
+                function mat4_invert(out, a) {
+                    var a00 = a[0],
+                        a01 = a[1],
+                        a02 = a[2],
+                        a03 = a[3],
+                        a10 = a[4],
+                        a11 = a[5],
+                        a12 = a[6],
+                        a13 = a[7],
+                        a20 = a[8],
+                        a21 = a[9],
+                        a22 = a[10],
+                        a23 = a[11],
+                        a30 = a[12],
+                        a31 = a[13],
+                        a32 = a[14],
+                        a33 = a[15],
+                        b00 = a00 * a11 - a01 * a10,
+                        b01 = a00 * a12 - a02 * a10,
+                        b02 = a00 * a13 - a03 * a10,
+                        b03 = a01 * a12 - a02 * a11,
+                        b04 = a01 * a13 - a03 * a11,
+                        b05 = a02 * a13 - a03 * a12,
+                        b06 = a20 * a31 - a21 * a30,
+                        b07 = a20 * a32 - a22 * a30,
+                        b08 = a20 * a33 - a23 * a30,
+                        b09 = a21 * a32 - a22 * a31,
+                        b10 = a21 * a33 - a23 * a31,
+                        b11 = a22 * a33 - a23 * a32,
+                        det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+                    if (!det) {
+                        return null;
+                    }
+                    det = 1.0 / det;
+                    out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+                    out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+                    out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+                    out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+                    out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+                    out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+                    out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+                    out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+                    out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+                    out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+                    out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+                    out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+                    out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+                    out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+                    out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+                    out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+                    return out;
+                }
+
+                var defaultOrientation = new Float32Array([0, 0, 0, 1]);
+                var defaultPosition = new Float32Array([0, 0, 0]);
+
+                function updateEyeMatrices(projection, view, pose, fov, offset, vrDisplay) {
+                    mat4_perspectiveFromFieldOfView(projection, fov || null, vrDisplay.depthNear, vrDisplay.depthFar);
+                    var orientation = pose.orientation || defaultOrientation;
+                    var position = pose.position || defaultPosition;
+                    mat4_fromRotationTranslation(view, orientation, position);
+                    if (offset) mat4_translate(view, view, offset);
+                    mat4_invert(view, view);
+                }
+
+                return function (frameData, pose, vrDisplay) {
+                    if (!frameData || !pose) return false;
+                    frameData.pose = pose;
+                    frameData.timestamp = pose.timestamp;
+                    updateEyeMatrices(frameData.leftProjectionMatrix, frameData.leftViewMatrix, pose, vrDisplay._getFieldOfView("left"), vrDisplay._getEyeOffset("left"), vrDisplay);
+                    updateEyeMatrices(frameData.rightProjectionMatrix, frameData.rightViewMatrix, pose, vrDisplay._getFieldOfView("right"), vrDisplay._getEyeOffset("right"), vrDisplay);
+                    return true;
+                };
+            }();
+            var isInsideCrossOriginIFrame = function isInsideCrossOriginIFrame() {
+                var isFramed = window.self !== window.top;
+                var refOrigin = getOriginFromUrl(document.referrer);
+                var thisOrigin = getOriginFromUrl(window.location.href);
+                return isFramed && refOrigin !== thisOrigin;
+            };
+            var getOriginFromUrl = function getOriginFromUrl(url) {
+                var domainIdx;
+                var protoSepIdx = url.indexOf("://");
+                if (protoSepIdx !== -1) {
+                    domainIdx = protoSepIdx + 3;
+                } else {
+                    domainIdx = 0;
+                }
+                var domainEndIdx = url.indexOf('/', domainIdx);
+                if (domainEndIdx === -1) {
+                    domainEndIdx = url.length;
+                }
+                return url.substring(0, domainEndIdx);
+            };
+            var getQuaternionAngle = function getQuaternionAngle(quat) {
+                if (quat.w > 1) {
+                    console.warn('getQuaternionAngle: w > 1');
+                    return 0;
+                }
+                var angle = 2 * Math.acos(quat.w);
+                return angle;
+            };
+            var warnOnce = function () {
+                var observedWarnings = {};
+                return function (key, message) {
+                    if (observedWarnings[key] === undefined) {
+                        console.warn('webvr-polyfill: ' + message);
+                        observedWarnings[key] = true;
+                    }
+                };
+            }();
+            var deprecateWarning = function deprecateWarning(deprecated, suggested) {
+                var alternative = suggested ? 'Please use ' + suggested + ' instead.' : '';
+                warnOnce(deprecated, deprecated + ' has been deprecated. ' + 'This may not work on native WebVR displays. ' + alternative);
+            };
+
+            function WGLUPreserveGLState(gl, bindings, callback) {
+                if (!bindings) {
+                    callback(gl);
+                    return;
+                }
+                var boundValues = [];
+                var activeTexture = null;
+                for (var i = 0; i < bindings.length; ++i) {
+                    var binding = bindings[i];
+                    switch (binding) {
+                        case gl.TEXTURE_BINDING_2D:
+                        case gl.TEXTURE_BINDING_CUBE_MAP:
+                            var textureUnit = bindings[++i];
+                            if (textureUnit < gl.TEXTURE0 || textureUnit > gl.TEXTURE31) {
+                                console.error("TEXTURE_BINDING_2D or TEXTURE_BINDING_CUBE_MAP must be followed by a valid texture unit");
+                                boundValues.push(null, null);
+                                break;
+                            }
+                            if (!activeTexture) {
+                                activeTexture = gl.getParameter(gl.ACTIVE_TEXTURE);
+                            }
+                            gl.activeTexture(textureUnit);
+                            boundValues.push(gl.getParameter(binding), null);
+                            break;
+                        case gl.ACTIVE_TEXTURE:
+                            activeTexture = gl.getParameter(gl.ACTIVE_TEXTURE);
+                            boundValues.push(null);
+                            break;
+                        default:
+                            boundValues.push(gl.getParameter(binding));
+                            break;
+                    }
+                }
+                callback(gl);
+                for (var i = 0; i < bindings.length; ++i) {
+                    var binding = bindings[i];
+                    var boundValue = boundValues[i];
+                    switch (binding) {
+                        case gl.ACTIVE_TEXTURE:
+                            break;
+                        case gl.ARRAY_BUFFER_BINDING:
+                            gl.bindBuffer(gl.ARRAY_BUFFER, boundValue);
+                            break;
+                        case gl.COLOR_CLEAR_VALUE:
+                            gl.clearColor(boundValue[0], boundValue[1], boundValue[2], boundValue[3]);
+                            break;
+                        case gl.COLOR_WRITEMASK:
+                            gl.colorMask(boundValue[0], boundValue[1], boundValue[2], boundValue[3]);
+                            break;
+                        case gl.CURRENT_PROGRAM:
+                            gl.useProgram(boundValue);
+                            break;
+                        case gl.ELEMENT_ARRAY_BUFFER_BINDING:
+                            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boundValue);
+                            break;
+                        case gl.FRAMEBUFFER_BINDING:
+                            gl.bindFramebuffer(gl.FRAMEBUFFER, boundValue);
+                            break;
+                        case gl.RENDERBUFFER_BINDING:
+                            gl.bindRenderbuffer(gl.RENDERBUFFER, boundValue);
+                            break;
+                        case gl.TEXTURE_BINDING_2D:
+                            var textureUnit = bindings[++i];
+                            if (textureUnit < gl.TEXTURE0 || textureUnit > gl.TEXTURE31)
+                                break;
+                            gl.activeTexture(textureUnit);
+                            gl.bindTexture(gl.TEXTURE_2D, boundValue);
+                            break;
+                        case gl.TEXTURE_BINDING_CUBE_MAP:
+                            var textureUnit = bindings[++i];
+                            if (textureUnit < gl.TEXTURE0 || textureUnit > gl.TEXTURE31)
+                                break;
+                            gl.activeTexture(textureUnit);
+                            gl.bindTexture(gl.TEXTURE_CUBE_MAP, boundValue);
+                            break;
+                        case gl.VIEWPORT:
+                            gl.viewport(boundValue[0], boundValue[1], boundValue[2], boundValue[3]);
+                            break;
+                        case gl.BLEND:
+                        case gl.CULL_FACE:
+                        case gl.DEPTH_TEST:
+                        case gl.SCISSOR_TEST:
+                        case gl.STENCIL_TEST:
+                            if (boundValue) {
+                                gl.enable(binding);
+                            } else {
+                                gl.disable(binding);
+                            }
+                            break;
+                        default:
+                            console.log("No GL restore behavior for 0x" + binding.toString(16));
+                            break;
+                    }
+                    if (activeTexture) {
+                        gl.activeTexture(activeTexture);
+                    }
+                }
+            }
+
+            var glPreserveState = WGLUPreserveGLState;
+            var distortionVS = ['attribute vec2 position;', 'attribute vec3 texCoord;', 'varying vec2 vTexCoord;', 'uniform vec4 viewportOffsetScale[2];', 'void main() {', '  vec4 viewport = viewportOffsetScale[int(texCoord.z)];', '  vTexCoord = (texCoord.xy * viewport.zw) + viewport.xy;', '  gl_Position = vec4( position, 1.0, 1.0 );', '}'].join('\n');
+            var distortionFS = ['precision mediump float;', 'uniform sampler2D diffuse;', 'varying vec2 vTexCoord;', 'void main() {', '  gl_FragColor = texture2D(diffuse, vTexCoord);', '}'].join('\n');
+
+            function CardboardDistorter(gl, cardboardUI, bufferScale, dirtySubmitFrameBindings) {
+                this.gl = gl;
+                this.cardboardUI = cardboardUI;
+                this.bufferScale = bufferScale;
+                this.dirtySubmitFrameBindings = dirtySubmitFrameBindings;
+                this.ctxAttribs = gl.getContextAttributes();
+                this.meshWidth = 20;
+                this.meshHeight = 20;
+                this.bufferWidth = gl.drawingBufferWidth;
+                this.bufferHeight = gl.drawingBufferHeight;
+                this.realBindFramebuffer = gl.bindFramebuffer;
+                this.realEnable = gl.enable;
+                this.realDisable = gl.disable;
+                this.realColorMask = gl.colorMask;
+                this.realClearColor = gl.clearColor;
+                this.realViewport = gl.viewport;
+                if (!isIOS()) {
+                    this.realCanvasWidth = Object.getOwnPropertyDescriptor(gl.canvas.__proto__, 'width');
+                    this.realCanvasHeight = Object.getOwnPropertyDescriptor(gl.canvas.__proto__, 'height');
+                }
+                this.isPatched = false;
+                this.lastBoundFramebuffer = null;
+                this.cullFace = false;
+                this.depthTest = false;
+                this.blend = false;
+                this.scissorTest = false;
+                this.stencilTest = false;
+                this.viewport = [0, 0, 0, 0];
+                this.colorMask = [true, true, true, true];
+                this.clearColor = [0, 0, 0, 0];
+                this.attribs = {
+                    position: 0,
+                    texCoord: 1
+                };
+                this.program = linkProgram(gl, distortionVS, distortionFS, this.attribs);
+                this.uniforms = getProgramUniforms(gl, this.program);
+                this.viewportOffsetScale = new Float32Array(8);
+                this.setTextureBounds();
+                this.vertexBuffer = gl.createBuffer();
+                this.indexBuffer = gl.createBuffer();
+                this.indexCount = 0;
+                this.renderTarget = gl.createTexture();
+                this.framebuffer = gl.createFramebuffer();
+                this.depthStencilBuffer = null;
+                this.depthBuffer = null;
+                this.stencilBuffer = null;
+                if (this.ctxAttribs.depth && this.ctxAttribs.stencil) {
+                    this.depthStencilBuffer = gl.createRenderbuffer();
+                } else if (this.ctxAttribs.depth) {
+                    this.depthBuffer = gl.createRenderbuffer();
+                } else if (this.ctxAttribs.stencil) {
+                    this.stencilBuffer = gl.createRenderbuffer();
+                }
+                this.patch();
+                this.onResize();
+            }
+
+            CardboardDistorter.prototype.destroy = function () {
+                var gl = this.gl;
+                this.unpatch();
+                gl.deleteProgram(this.program);
+                gl.deleteBuffer(this.vertexBuffer);
+                gl.deleteBuffer(this.indexBuffer);
+                gl.deleteTexture(this.renderTarget);
+                gl.deleteFramebuffer(this.framebuffer);
+                if (this.depthStencilBuffer) {
+                    gl.deleteRenderbuffer(this.depthStencilBuffer);
+                }
+                if (this.depthBuffer) {
+                    gl.deleteRenderbuffer(this.depthBuffer);
+                }
+                if (this.stencilBuffer) {
+                    gl.deleteRenderbuffer(this.stencilBuffer);
+                }
+                if (this.cardboardUI) {
+                    this.cardboardUI.destroy();
+                }
+            };
+            CardboardDistorter.prototype.onResize = function () {
+                var gl = this.gl;
+                var self = this;
+                var glState = [gl.RENDERBUFFER_BINDING, gl.TEXTURE_BINDING_2D, gl.TEXTURE0];
+                glPreserveState(gl, glState, function (gl) {
+                    self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, null);
+                    if (self.scissorTest) {
+                        self.realDisable.call(gl, gl.SCISSOR_TEST);
+                    }
+                    self.realColorMask.call(gl, true, true, true, true);
+                    self.realViewport.call(gl, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+                    self.realClearColor.call(gl, 0, 0, 0, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.framebuffer);
+                    gl.bindTexture(gl.TEXTURE_2D, self.renderTarget);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, self.ctxAttribs.alpha ? gl.RGBA : gl.RGB, self.bufferWidth, self.bufferHeight, 0, self.ctxAttribs.alpha ? gl.RGBA : gl.RGB, gl.UNSIGNED_BYTE, null);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, self.renderTarget, 0);
+                    if (self.ctxAttribs.depth && self.ctxAttribs.stencil) {
+                        gl.bindRenderbuffer(gl.RENDERBUFFER, self.depthStencilBuffer);
+                        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, self.bufferWidth, self.bufferHeight);
+                        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, self.depthStencilBuffer);
+                    } else if (self.ctxAttribs.depth) {
+                        gl.bindRenderbuffer(gl.RENDERBUFFER, self.depthBuffer);
+                        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, self.bufferWidth, self.bufferHeight);
+                        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, self.depthBuffer);
+                    } else if (self.ctxAttribs.stencil) {
+                        gl.bindRenderbuffer(gl.RENDERBUFFER, self.stencilBuffer);
+                        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, self.bufferWidth, self.bufferHeight);
+                        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, self.stencilBuffer);
+                    }
+                    if (!gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
+                        console.error('Framebuffer incomplete!');
+                    }
+                    self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.lastBoundFramebuffer);
+                    if (self.scissorTest) {
+                        self.realEnable.call(gl, gl.SCISSOR_TEST);
+                    }
+                    self.realColorMask.apply(gl, self.colorMask);
+                    self.realViewport.apply(gl, self.viewport);
+                    self.realClearColor.apply(gl, self.clearColor);
+                });
+                if (this.cardboardUI) {
+                    this.cardboardUI.onResize();
+                }
+            };
+            CardboardDistorter.prototype.patch = function () {
+                if (this.isPatched) {
+                    return;
+                }
+                var self = this;
+                var canvas = this.gl.canvas;
+                var gl = this.gl;
+                if (!isIOS()) {
+                    canvas.width = getScreenWidth() * this.bufferScale;
+                    canvas.height = getScreenHeight() * this.bufferScale;
+                    Object.defineProperty(canvas, 'width', {
+                        configurable: true,
+                        enumerable: true,
+                        get: function get() {
+                            return self.bufferWidth;
+                        },
+                        set: function set(value) {
+                            self.bufferWidth = value;
+                            self.realCanvasWidth.set.call(canvas, value);
+                            self.onResize();
+                        }
+                    });
+                    Object.defineProperty(canvas, 'height', {
+                        configurable: true,
+                        enumerable: true,
+                        get: function get() {
+                            return self.bufferHeight;
+                        },
+                        set: function set(value) {
+                            self.bufferHeight = value;
+                            self.realCanvasHeight.set.call(canvas, value);
+                            self.onResize();
+                        }
+                    });
+                }
+                this.lastBoundFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+                if (this.lastBoundFramebuffer == null) {
+                    this.lastBoundFramebuffer = this.framebuffer;
+                    this.gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+                }
+                this.gl.bindFramebuffer = function (target, framebuffer) {
+                    self.lastBoundFramebuffer = framebuffer ? framebuffer : self.framebuffer;
+                    self.realBindFramebuffer.call(gl, target, self.lastBoundFramebuffer);
+                };
+                this.cullFace = gl.getParameter(gl.CULL_FACE);
+                this.depthTest = gl.getParameter(gl.DEPTH_TEST);
+                this.blend = gl.getParameter(gl.BLEND);
+                this.scissorTest = gl.getParameter(gl.SCISSOR_TEST);
+                this.stencilTest = gl.getParameter(gl.STENCIL_TEST);
+                gl.enable = function (pname) {
+                    switch (pname) {
+                        case gl.CULL_FACE:
+                            self.cullFace = true;
+                            break;
+                        case gl.DEPTH_TEST:
+                            self.depthTest = true;
+                            break;
+                        case gl.BLEND:
+                            self.blend = true;
+                            break;
+                        case gl.SCISSOR_TEST:
+                            self.scissorTest = true;
+                            break;
+                        case gl.STENCIL_TEST:
+                            self.stencilTest = true;
+                            break;
+                    }
+                    self.realEnable.call(gl, pname);
+                };
+                gl.disable = function (pname) {
+                    switch (pname) {
+                        case gl.CULL_FACE:
+                            self.cullFace = false;
+                            break;
+                        case gl.DEPTH_TEST:
+                            self.depthTest = false;
+                            break;
+                        case gl.BLEND:
+                            self.blend = false;
+                            break;
+                        case gl.SCISSOR_TEST:
+                            self.scissorTest = false;
+                            break;
+                        case gl.STENCIL_TEST:
+                            self.stencilTest = false;
+                            break;
+                    }
+                    self.realDisable.call(gl, pname);
+                };
+                this.colorMask = gl.getParameter(gl.COLOR_WRITEMASK);
+                gl.colorMask = function (r, g, b, a) {
+                    self.colorMask[0] = r;
+                    self.colorMask[1] = g;
+                    self.colorMask[2] = b;
+                    self.colorMask[3] = a;
+                    self.realColorMask.call(gl, r, g, b, a);
+                };
+                this.clearColor = gl.getParameter(gl.COLOR_CLEAR_VALUE);
+                gl.clearColor = function (r, g, b, a) {
+                    self.clearColor[0] = r;
+                    self.clearColor[1] = g;
+                    self.clearColor[2] = b;
+                    self.clearColor[3] = a;
+                    self.realClearColor.call(gl, r, g, b, a);
+                };
+                this.viewport = gl.getParameter(gl.VIEWPORT);
+                gl.viewport = function (x, y, w, h) {
+                    self.viewport[0] = x;
+                    self.viewport[1] = y;
+                    self.viewport[2] = w;
+                    self.viewport[3] = h;
+                    self.realViewport.call(gl, x, y, w, h);
+                };
+                this.isPatched = true;
+                safariCssSizeWorkaround(canvas);
+            };
+            CardboardDistorter.prototype.unpatch = function () {
+                if (!this.isPatched) {
+                    return;
+                }
+                var gl = this.gl;
+                var canvas = this.gl.canvas;
+                if (!isIOS()) {
+                    Object.defineProperty(canvas, 'width', this.realCanvasWidth);
+                    Object.defineProperty(canvas, 'height', this.realCanvasHeight);
+                }
+                canvas.width = this.bufferWidth;
+                canvas.height = this.bufferHeight;
+                gl.bindFramebuffer = this.realBindFramebuffer;
+                gl.enable = this.realEnable;
+                gl.disable = this.realDisable;
+                gl.colorMask = this.realColorMask;
+                gl.clearColor = this.realClearColor;
+                gl.viewport = this.realViewport;
+                if (this.lastBoundFramebuffer == this.framebuffer) {
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                }
+                this.isPatched = false;
+                setTimeout(function () {
+                    safariCssSizeWorkaround(canvas);
+                }, 1);
+            };
+            CardboardDistorter.prototype.setTextureBounds = function (leftBounds, rightBounds) {
+                if (!leftBounds) {
+                    leftBounds = [0, 0, 0.5, 1];
+                }
+                if (!rightBounds) {
+                    rightBounds = [0.5, 0, 0.5, 1];
+                }
+                this.viewportOffsetScale[0] = leftBounds[0];
+                this.viewportOffsetScale[1] = leftBounds[1];
+                this.viewportOffsetScale[2] = leftBounds[2];
+                this.viewportOffsetScale[3] = leftBounds[3];
+                this.viewportOffsetScale[4] = rightBounds[0];
+                this.viewportOffsetScale[5] = rightBounds[1];
+                this.viewportOffsetScale[6] = rightBounds[2];
+                this.viewportOffsetScale[7] = rightBounds[3];
+            };
+            CardboardDistorter.prototype.submitFrame = function () {
+                var gl = this.gl;
+                var self = this;
+                var glState = [];
+                if (!this.dirtySubmitFrameBindings) {
+                    glState.push(gl.CURRENT_PROGRAM, gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING, gl.TEXTURE_BINDING_2D, gl.TEXTURE0);
+                }
+                glPreserveState(gl, glState, function (gl) {
+                    self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, null);
+                    if (self.cullFace) {
+                        self.realDisable.call(gl, gl.CULL_FACE);
+                    }
+                    if (self.depthTest) {
+                        self.realDisable.call(gl, gl.DEPTH_TEST);
+                    }
+                    if (self.blend) {
+                        self.realDisable.call(gl, gl.BLEND);
+                    }
+                    if (self.scissorTest) {
+                        self.realDisable.call(gl, gl.SCISSOR_TEST);
+                    }
+                    if (self.stencilTest) {
+                        self.realDisable.call(gl, gl.STENCIL_TEST);
+                    }
+                    self.realColorMask.call(gl, true, true, true, true);
+                    self.realViewport.call(gl, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+                    if (self.ctxAttribs.alpha || isIOS()) {
+                        self.realClearColor.call(gl, 0, 0, 0, 1);
+                        gl.clear(gl.COLOR_BUFFER_BIT);
+                    }
+                    gl.useProgram(self.program);
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, self.indexBuffer);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
+                    gl.enableVertexAttribArray(self.attribs.position);
+                    gl.enableVertexAttribArray(self.attribs.texCoord);
+                    gl.vertexAttribPointer(self.attribs.position, 2, gl.FLOAT, false, 20, 0);
+                    gl.vertexAttribPointer(self.attribs.texCoord, 3, gl.FLOAT, false, 20, 8);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.uniform1i(self.uniforms.diffuse, 0);
+                    gl.bindTexture(gl.TEXTURE_2D, self.renderTarget);
+                    gl.uniform4fv(self.uniforms.viewportOffsetScale, self.viewportOffsetScale);
+                    gl.drawElements(gl.TRIANGLES, self.indexCount, gl.UNSIGNED_SHORT, 0);
+                    if (self.cardboardUI) {
+                        self.cardboardUI.renderNoState();
+                    }
+                    self.realBindFramebuffer.call(self.gl, gl.FRAMEBUFFER, self.framebuffer);
+                    if (!self.ctxAttribs.preserveDrawingBuffer) {
+                        self.realClearColor.call(gl, 0, 0, 0, 0);
+                        gl.clear(gl.COLOR_BUFFER_BIT);
+                    }
+                    if (!self.dirtySubmitFrameBindings) {
+                        self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.lastBoundFramebuffer);
+                    }
+                    if (self.cullFace) {
+                        self.realEnable.call(gl, gl.CULL_FACE);
+                    }
+                    if (self.depthTest) {
+                        self.realEnable.call(gl, gl.DEPTH_TEST);
+                    }
+                    if (self.blend) {
+                        self.realEnable.call(gl, gl.BLEND);
+                    }
+                    if (self.scissorTest) {
+                        self.realEnable.call(gl, gl.SCISSOR_TEST);
+                    }
+                    if (self.stencilTest) {
+                        self.realEnable.call(gl, gl.STENCIL_TEST);
+                    }
+                    self.realColorMask.apply(gl, self.colorMask);
+                    self.realViewport.apply(gl, self.viewport);
+                    if (self.ctxAttribs.alpha || !self.ctxAttribs.preserveDrawingBuffer) {
+                        self.realClearColor.apply(gl, self.clearColor);
+                    }
+                });
+                if (isIOS()) {
+                    var canvas = gl.canvas;
+                    if (canvas.width != self.bufferWidth || canvas.height != self.bufferHeight) {
+                        self.bufferWidth = canvas.width;
+                        self.bufferHeight = canvas.height;
+                        self.onResize();
+                    }
+                }
+            };
+            CardboardDistorter.prototype.updateDeviceInfo = function (deviceInfo) {
+                var gl = this.gl;
+                var self = this;
+                var glState = [gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING];
+                glPreserveState(gl, glState, function (gl) {
+                    var vertices = self.computeMeshVertices_(self.meshWidth, self.meshHeight, deviceInfo);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+                    if (!self.indexCount) {
+                        var indices = self.computeMeshIndices_(self.meshWidth, self.meshHeight);
+                        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, self.indexBuffer);
+                        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+                        self.indexCount = indices.length;
+                    }
+                });
+            };
+            CardboardDistorter.prototype.computeMeshVertices_ = function (width, height, deviceInfo) {
+                var vertices = new Float32Array(2 * width * height * 5);
+                var lensFrustum = deviceInfo.getLeftEyeVisibleTanAngles();
+                var noLensFrustum = deviceInfo.getLeftEyeNoLensTanAngles();
+                var viewport = deviceInfo.getLeftEyeVisibleScreenRect(noLensFrustum);
+                var vidx = 0;
+                for (var e = 0; e < 2; e++) {
+                    for (var j = 0; j < height; j++) {
+                        for (var i = 0; i < width; i++, vidx++) {
+                            var u = i / (width - 1);
+                            var v = j / (height - 1);
+                            var s = u;
+                            var t = v;
+                            var x = lerp(lensFrustum[0], lensFrustum[2], u);
+                            var y = lerp(lensFrustum[3], lensFrustum[1], v);
+                            var d = Math.sqrt(x * x + y * y);
+                            var r = deviceInfo.distortion.distortInverse(d);
+                            var p = x * r / d;
+                            var q = y * r / d;
+                            u = (p - noLensFrustum[0]) / (noLensFrustum[2] - noLensFrustum[0]);
+                            v = (q - noLensFrustum[3]) / (noLensFrustum[1] - noLensFrustum[3]);
+                            u = (viewport.x + u * viewport.width - 0.5) * 2.0;
+                            v = (viewport.y + v * viewport.height - 0.5) * 2.0;
+                            vertices[vidx * 5 + 0] = u;
+                            vertices[vidx * 5 + 1] = v;
+                            vertices[vidx * 5 + 2] = s;
+                            vertices[vidx * 5 + 3] = t;
+                            vertices[vidx * 5 + 4] = e;
+                        }
+                    }
+                    var w = lensFrustum[2] - lensFrustum[0];
+                    lensFrustum[0] = -(w + lensFrustum[0]);
+                    lensFrustum[2] = w - lensFrustum[2];
+                    w = noLensFrustum[2] - noLensFrustum[0];
+                    noLensFrustum[0] = -(w + noLensFrustum[0]);
+                    noLensFrustum[2] = w - noLensFrustum[2];
+                    viewport.x = 1 - (viewport.x + viewport.width);
+                }
+                return vertices;
+            };
+            CardboardDistorter.prototype.computeMeshIndices_ = function (width, height) {
+                var indices = new Uint16Array(2 * (width - 1) * (height - 1) * 6);
+                var halfwidth = width / 2;
+                var halfheight = height / 2;
+                var vidx = 0;
+                var iidx = 0;
+                for (var e = 0; e < 2; e++) {
+                    for (var j = 0; j < height; j++) {
+                        for (var i = 0; i < width; i++, vidx++) {
+                            if (i == 0 || j == 0) continue;
+                            if (i <= halfwidth == j <= halfheight) {
+                                indices[iidx++] = vidx;
+                                indices[iidx++] = vidx - width - 1;
+                                indices[iidx++] = vidx - width;
+                                indices[iidx++] = vidx - width - 1;
+                                indices[iidx++] = vidx;
+                                indices[iidx++] = vidx - 1;
+                            } else {
+                                indices[iidx++] = vidx - 1;
+                                indices[iidx++] = vidx - width;
+                                indices[iidx++] = vidx;
+                                indices[iidx++] = vidx - width;
+                                indices[iidx++] = vidx - 1;
+                                indices[iidx++] = vidx - width - 1;
+                            }
+                        }
+                    }
+                }
+                return indices;
+            };
+            CardboardDistorter.prototype.getOwnPropertyDescriptor_ = function (proto, attrName) {
+                var descriptor = Object.getOwnPropertyDescriptor(proto, attrName);
+                if (descriptor.get === undefined || descriptor.set === undefined) {
+                    descriptor.configurable = true;
+                    descriptor.enumerable = true;
+                    descriptor.get = function () {
+                        return this.getAttribute(attrName);
+                    };
+                    descriptor.set = function (val) {
+                        this.setAttribute(attrName, val);
+                    };
+                }
+                return descriptor;
+            };
+            var uiVS = ['attribute vec2 position;', 'uniform mat4 projectionMat;', 'void main() {', '  gl_Position = projectionMat * vec4( position, -1.0, 1.0 );', '}'].join('\n');
+            var uiFS = ['precision mediump float;', 'uniform vec4 color;', 'void main() {', '  gl_FragColor = color;', '}'].join('\n');
+            var DEG2RAD = Math.PI / 180.0;
+            var kAnglePerGearSection = 60;
+            var kOuterRimEndAngle = 12;
+            var kInnerRimBeginAngle = 20;
+            var kOuterRadius = 1;
+            var kMiddleRadius = 0.75;
+            var kInnerRadius = 0.3125;
+            var kCenterLineThicknessDp = 4;
+            var kButtonWidthDp = 28;
+            var kTouchSlopFactor = 1.5;
+
+            function CardboardUI(gl) {
+                this.gl = gl;
+                this.attribs = {
+                    position: 0
+                };
+                this.program = linkProgram(gl, uiVS, uiFS, this.attribs);
+                this.uniforms = getProgramUniforms(gl, this.program);
+                this.vertexBuffer = gl.createBuffer();
+                this.gearOffset = 0;
+                this.gearVertexCount = 0;
+                this.arrowOffset = 0;
+                this.arrowVertexCount = 0;
+                this.projMat = new Float32Array(16);
+                this.listener = null;
+                this.onResize();
+            }
+
+            CardboardUI.prototype.destroy = function () {
+                var gl = this.gl;
+                if (this.listener) {
+                    gl.canvas.removeEventListener('click', this.listener, false);
+                }
+                gl.deleteProgram(this.program);
+                gl.deleteBuffer(this.vertexBuffer);
+            };
+            CardboardUI.prototype.listen = function (optionsCallback, backCallback) {
+                var canvas = this.gl.canvas;
+                this.listener = function (event) {
+                    var midline = canvas.clientWidth / 2;
+                    var buttonSize = kButtonWidthDp * kTouchSlopFactor;
+                    if (event.clientX > midline - buttonSize && event.clientX < midline + buttonSize && event.clientY > canvas.clientHeight - buttonSize) {
+                        optionsCallback(event);
+                    }
+                    else if (event.clientX < buttonSize && event.clientY < buttonSize) {
+                        backCallback(event);
+                    }
+                };
+                canvas.addEventListener('click', this.listener, false);
+            };
+            CardboardUI.prototype.onResize = function () {
+                var gl = this.gl;
+                var self = this;
+                var glState = [gl.ARRAY_BUFFER_BINDING];
+                glPreserveState(gl, glState, function (gl) {
+                    var vertices = [];
+                    var midline = gl.drawingBufferWidth / 2;
+                    var physicalPixels = Math.max(screen.width, screen.height) * window.devicePixelRatio;
+                    var scalingRatio = gl.drawingBufferWidth / physicalPixels;
+                    var dps = scalingRatio * window.devicePixelRatio;
+                    var lineWidth = kCenterLineThicknessDp * dps / 2;
+                    var buttonSize = kButtonWidthDp * kTouchSlopFactor * dps;
+                    var buttonScale = kButtonWidthDp * dps / 2;
+                    var buttonBorder = (kButtonWidthDp * kTouchSlopFactor - kButtonWidthDp) * dps;
+                    vertices.push(midline - lineWidth, buttonSize);
+                    vertices.push(midline - lineWidth, gl.drawingBufferHeight);
+                    vertices.push(midline + lineWidth, buttonSize);
+                    vertices.push(midline + lineWidth, gl.drawingBufferHeight);
+                    self.gearOffset = vertices.length / 2;
+
+                    function addGearSegment(theta, r) {
+                        var angle = (90 - theta) * DEG2RAD;
+                        var x = Math.cos(angle);
+                        var y = Math.sin(angle);
+                        vertices.push(kInnerRadius * x * buttonScale + midline, kInnerRadius * y * buttonScale + buttonScale);
+                        vertices.push(r * x * buttonScale + midline, r * y * buttonScale + buttonScale);
+                    }
+
+                    for (var i = 0; i <= 6; i++) {
+                        var segmentTheta = i * kAnglePerGearSection;
+                        addGearSegment(segmentTheta, kOuterRadius);
+                        addGearSegment(segmentTheta + kOuterRimEndAngle, kOuterRadius);
+                        addGearSegment(segmentTheta + kInnerRimBeginAngle, kMiddleRadius);
+                        addGearSegment(segmentTheta + (kAnglePerGearSection - kInnerRimBeginAngle), kMiddleRadius);
+                        addGearSegment(segmentTheta + (kAnglePerGearSection - kOuterRimEndAngle), kOuterRadius);
+                    }
+                    self.gearVertexCount = vertices.length / 2 - self.gearOffset;
+                    self.arrowOffset = vertices.length / 2;
+
+                    function addArrowVertex(x, y) {
+                        vertices.push(buttonBorder + x, gl.drawingBufferHeight - buttonBorder - y);
+                    }
+
+                    var angledLineWidth = lineWidth / Math.sin(45 * DEG2RAD);
+                    addArrowVertex(0, buttonScale);
+                    addArrowVertex(buttonScale, 0);
+                    addArrowVertex(buttonScale + angledLineWidth, angledLineWidth);
+                    addArrowVertex(angledLineWidth, buttonScale + angledLineWidth);
+                    addArrowVertex(angledLineWidth, buttonScale - angledLineWidth);
+                    addArrowVertex(0, buttonScale);
+                    addArrowVertex(buttonScale, buttonScale * 2);
+                    addArrowVertex(buttonScale + angledLineWidth, buttonScale * 2 - angledLineWidth);
+                    addArrowVertex(angledLineWidth, buttonScale - angledLineWidth);
+                    addArrowVertex(0, buttonScale);
+                    addArrowVertex(angledLineWidth, buttonScale - lineWidth);
+                    addArrowVertex(kButtonWidthDp * dps, buttonScale - lineWidth);
+                    addArrowVertex(angledLineWidth, buttonScale + lineWidth);
+                    addArrowVertex(kButtonWidthDp * dps, buttonScale + lineWidth);
+                    self.arrowVertexCount = vertices.length / 2 - self.arrowOffset;
+                    gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                });
+            };
+            CardboardUI.prototype.render = function () {
+                var gl = this.gl;
+                var self = this;
+                var glState = [gl.CULL_FACE, gl.DEPTH_TEST, gl.BLEND, gl.SCISSOR_TEST, gl.STENCIL_TEST, gl.COLOR_WRITEMASK, gl.VIEWPORT, gl.CURRENT_PROGRAM, gl.ARRAY_BUFFER_BINDING];
+                glPreserveState(gl, glState, function (gl) {
+                    gl.disable(gl.CULL_FACE);
+                    gl.disable(gl.DEPTH_TEST);
+                    gl.disable(gl.BLEND);
+                    gl.disable(gl.SCISSOR_TEST);
+                    gl.disable(gl.STENCIL_TEST);
+                    gl.colorMask(true, true, true, true);
+                    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+                    self.renderNoState();
+                });
+            };
+            CardboardUI.prototype.renderNoState = function () {
+                var gl = this.gl;
+                gl.useProgram(this.program);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+                gl.enableVertexAttribArray(this.attribs.position);
+                gl.vertexAttribPointer(this.attribs.position, 2, gl.FLOAT, false, 8, 0);
+                gl.uniform4f(this.uniforms.color, 1.0, 1.0, 1.0, 1.0);
+                orthoMatrix(this.projMat, 0, gl.drawingBufferWidth, 0, gl.drawingBufferHeight, 0.1, 1024.0);
+                gl.uniformMatrix4fv(this.uniforms.projectionMat, false, this.projMat);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                gl.drawArrays(gl.TRIANGLE_STRIP, this.gearOffset, this.gearVertexCount);
+                gl.drawArrays(gl.TRIANGLE_STRIP, this.arrowOffset, this.arrowVertexCount);
+            };
+
+            function Distortion(coefficients) {
+                this.coefficients = coefficients;
+            }
+
+            Distortion.prototype.distortInverse = function (radius) {
+                var r0 = 0;
+                var r1 = 1;
+                var dr0 = radius - this.distort(r0);
+                while (Math.abs(r1 - r0) > 0.0001) {
+                    var dr1 = radius - this.distort(r1);
+                    var r2 = r1 - dr1 * ((r1 - r0) / (dr1 - dr0));
+                    r0 = r1;
+                    r1 = r2;
+                    dr0 = dr1;
+                }
+                return r1;
+            };
+            Distortion.prototype.distort = function (radius) {
+                var r2 = radius * radius;
+                var ret = 0;
+                for (var i = 0; i < this.coefficients.length; i++) {
+                    ret = r2 * (ret + this.coefficients[i]);
+                }
+                return (ret + 1) * radius;
+            };
+            var degToRad = Math.PI / 180;
+            var radToDeg = 180 / Math.PI;
+            var Vector3 = function Vector3(x, y, z) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.z = z || 0;
+            };
+            Vector3.prototype = {
+                constructor: Vector3,
+                set: function set(x, y, z) {
+                    this.x = x;
+                    this.y = y;
+                    this.z = z;
+                    return this;
+                },
+                copy: function copy(v) {
+                    this.x = v.x;
+                    this.y = v.y;
+                    this.z = v.z;
+                    return this;
+                },
+                length: function length() {
+                    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+                },
+                normalize: function normalize() {
+                    var scalar = this.length();
+                    if (scalar !== 0) {
+                        var invScalar = 1 / scalar;
+                        this.multiplyScalar(invScalar);
+                    } else {
+                        this.x = 0;
+                        this.y = 0;
+                        this.z = 0;
+                    }
+                    return this;
+                },
+                multiplyScalar: function multiplyScalar(scalar) {
+                    this.x *= scalar;
+                    this.y *= scalar;
+                    this.z *= scalar;
+                },
+                applyQuaternion: function applyQuaternion(q) {
+                    var x = this.x;
+                    var y = this.y;
+                    var z = this.z;
+                    var qx = q.x;
+                    var qy = q.y;
+                    var qz = q.z;
+                    var qw = q.w;
+                    var ix = qw * x + qy * z - qz * y;
+                    var iy = qw * y + qz * x - qx * z;
+                    var iz = qw * z + qx * y - qy * x;
+                    var iw = -qx * x - qy * y - qz * z;
+                    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+                    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+                    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+                    return this;
+                },
+                dot: function dot(v) {
+                    return this.x * v.x + this.y * v.y + this.z * v.z;
+                },
+                crossVectors: function crossVectors(a, b) {
+                    var ax = a.x,
+                        ay = a.y,
+                        az = a.z;
+                    var bx = b.x,
+                        by = b.y,
+                        bz = b.z;
+                    this.x = ay * bz - az * by;
+                    this.y = az * bx - ax * bz;
+                    this.z = ax * by - ay * bx;
+                    return this;
+                }
+            };
+            var Quaternion = function Quaternion(x, y, z, w) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.z = z || 0;
+                this.w = w !== undefined ? w : 1;
+            };
+            Quaternion.prototype = {
+                constructor: Quaternion,
+                set: function set(x, y, z, w) {
+                    this.x = x;
+                    this.y = y;
+                    this.z = z;
+                    this.w = w;
+                    return this;
+                },
+                copy: function copy(quaternion) {
+                    this.x = quaternion.x;
+                    this.y = quaternion.y;
+                    this.z = quaternion.z;
+                    this.w = quaternion.w;
+                    return this;
+                },
+                setFromEulerXYZ: function setFromEulerXYZ(x, y, z) {
+                    var c1 = Math.cos(x / 2);
+                    var c2 = Math.cos(y / 2);
+                    var c3 = Math.cos(z / 2);
+                    var s1 = Math.sin(x / 2);
+                    var s2 = Math.sin(y / 2);
+                    var s3 = Math.sin(z / 2);
+                    this.x = s1 * c2 * c3 + c1 * s2 * s3;
+                    this.y = c1 * s2 * c3 - s1 * c2 * s3;
+                    this.z = c1 * c2 * s3 + s1 * s2 * c3;
+                    this.w = c1 * c2 * c3 - s1 * s2 * s3;
+                    return this;
+                },
+                setFromEulerYXZ: function setFromEulerYXZ(x, y, z) {
+                    var c1 = Math.cos(x / 2);
+                    var c2 = Math.cos(y / 2);
+                    var c3 = Math.cos(z / 2);
+                    var s1 = Math.sin(x / 2);
+                    var s2 = Math.sin(y / 2);
+                    var s3 = Math.sin(z / 2);
+                    this.x = s1 * c2 * c3 + c1 * s2 * s3;
+                    this.y = c1 * s2 * c3 - s1 * c2 * s3;
+                    this.z = c1 * c2 * s3 - s1 * s2 * c3;
+                    this.w = c1 * c2 * c3 + s1 * s2 * s3;
+                    return this;
+                },
+                setFromAxisAngle: function setFromAxisAngle(axis, angle) {
+                    var halfAngle = angle / 2,
+                        s = Math.sin(halfAngle);
+                    this.x = axis.x * s;
+                    this.y = axis.y * s;
+                    this.z = axis.z * s;
+                    this.w = Math.cos(halfAngle);
+                    return this;
+                },
+                multiply: function multiply(q) {
+                    return this.multiplyQuaternions(this, q);
+                },
+                multiplyQuaternions: function multiplyQuaternions(a, b) {
+                    var qax = a.x,
+                        qay = a.y,
+                        qaz = a.z,
+                        qaw = a.w;
+                    var qbx = b.x,
+                        qby = b.y,
+                        qbz = b.z,
+                        qbw = b.w;
+                    this.x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+                    this.y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+                    this.z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+                    this.w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+                    return this;
+                },
+                inverse: function inverse() {
+                    this.x *= -1;
+                    this.y *= -1;
+                    this.z *= -1;
+                    this.normalize();
+                    return this;
+                },
+                normalize: function normalize() {
+                    var l = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+                    if (l === 0) {
+                        this.x = 0;
+                        this.y = 0;
+                        this.z = 0;
+                        this.w = 1;
+                    } else {
+                        l = 1 / l;
+                        this.x = this.x * l;
+                        this.y = this.y * l;
+                        this.z = this.z * l;
+                        this.w = this.w * l;
+                    }
+                    return this;
+                },
+                slerp: function slerp(qb, t) {
+                    if (t === 0) return this;
+                    if (t === 1) return this.copy(qb);
+                    var x = this.x,
+                        y = this.y,
+                        z = this.z,
+                        w = this.w;
+                    var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+                    if (cosHalfTheta < 0) {
+                        this.w = -qb.w;
+                        this.x = -qb.x;
+                        this.y = -qb.y;
+                        this.z = -qb.z;
+                        cosHalfTheta = -cosHalfTheta;
+                    } else {
+                        this.copy(qb);
+                    }
+                    if (cosHalfTheta >= 1.0) {
+                        this.w = w;
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
+                        return this;
+                    }
+                    var halfTheta = Math.acos(cosHalfTheta);
+                    var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+                    if (Math.abs(sinHalfTheta) < 0.001) {
+                        this.w = 0.5 * (w + this.w);
+                        this.x = 0.5 * (x + this.x);
+                        this.y = 0.5 * (y + this.y);
+                        this.z = 0.5 * (z + this.z);
+                        return this;
+                    }
+                    var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta,
+                        ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+                    this.w = w * ratioA + this.w * ratioB;
+                    this.x = x * ratioA + this.x * ratioB;
+                    this.y = y * ratioA + this.y * ratioB;
+                    this.z = z * ratioA + this.z * ratioB;
+                    return this;
+                },
+                setFromUnitVectors: function () {
+                    var v1, r;
+                    var EPS = 0.000001;
+                    return function (vFrom, vTo) {
+                        if (v1 === undefined) v1 = new Vector3();
+                        r = vFrom.dot(vTo) + 1;
+                        if (r < EPS) {
+                            r = 0;
+                            if (Math.abs(vFrom.x) > Math.abs(vFrom.z)) {
+                                v1.set(-vFrom.y, vFrom.x, 0);
+                            } else {
+                                v1.set(0, -vFrom.z, vFrom.y);
+                            }
+                        } else {
+                            v1.crossVectors(vFrom, vTo);
+                        }
+                        this.x = v1.x;
+                        this.y = v1.y;
+                        this.z = v1.z;
+                        this.w = r;
+                        this.normalize();
+                        return this;
+                    };
+                }()
+            };
+
+            function Device(params) {
+                this.width = params.width || getScreenWidth();
+                this.height = params.height || getScreenHeight();
+                this.widthMeters = params.widthMeters;
+                this.heightMeters = params.heightMeters;
+                this.bevelMeters = params.bevelMeters;
+            }
+
+            var DEFAULT_ANDROID = new Device({
+                widthMeters: 0.110,
+                heightMeters: 0.062,
+                bevelMeters: 0.004
+            });
+            var DEFAULT_IOS = new Device({
+                widthMeters: 0.1038,
+                heightMeters: 0.0584,
+                bevelMeters: 0.004
+            });
+            var Viewers = {
+                CardboardV1: new CardboardViewer({
+                    id: 'CardboardV1',
+                    label: 'Cardboard I/O 2014',
+                    fov: 40,
+                    interLensDistance: 0.060,
+                    baselineLensDistance: 0.035,
+                    screenLensDistance: 0.042,
+                    distortionCoefficients: [0.441, 0.156],
+                    inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139, -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841, 0.0651772, -0.01488963, 0.001559834]
+                }),
+                CardboardV2: new CardboardViewer({
+                    id: 'CardboardV2',
+                    label: 'Cardboard I/O 2015',
+                    fov: 60,
+                    interLensDistance: 0.064,
+                    baselineLensDistance: 0.035,
+                    screenLensDistance: 0.039,
+                    distortionCoefficients: [0.34, 0.55],
+                    inverseCoefficients: [-0.33836704, -0.18162185, 0.862655, -1.2462051, 1.0560602, -0.58208317, 0.21609078, -0.05444823, 0.009177956, -9.904169E-4, 6.183535E-5, -1.6981803E-6]
+                })
+            };
+
+            function DeviceInfo(deviceParams, additionalViewers) {
+                this.viewer = Viewers.CardboardV2;
+                this.updateDeviceParams(deviceParams);
+                this.distortion = new Distortion(this.viewer.distortionCoefficients);
+                for (var i = 0; i < additionalViewers.length; i++) {
+                    var viewer = additionalViewers[i];
+                    Viewers[viewer.id] = new CardboardViewer(viewer);
+                }
+            }
+
+            DeviceInfo.prototype.updateDeviceParams = function (deviceParams) {
+                this.device = this.determineDevice_(deviceParams) || this.device;
+            };
+            DeviceInfo.prototype.getDevice = function () {
+                return this.device;
+            };
+            DeviceInfo.prototype.setViewer = function (viewer) {
+                this.viewer = viewer;
+                this.distortion = new Distortion(this.viewer.distortionCoefficients);
+            };
+            DeviceInfo.prototype.determineDevice_ = function (deviceParams) {
+                if (!deviceParams) {
+                    if (isIOS()) {
+                        console.warn('Using fallback iOS device measurements.');
+                        return DEFAULT_IOS;
+                    } else {
+                        console.warn('Using fallback Android device measurements.');
+                        return DEFAULT_ANDROID;
+                    }
+                }
+                var METERS_PER_INCH = 0.0254;
+                var metersPerPixelX = METERS_PER_INCH / deviceParams.xdpi;
+                var metersPerPixelY = METERS_PER_INCH / deviceParams.ydpi;
+                var width = getScreenWidth();
+                var height = getScreenHeight();
+                return new Device({
+                    widthMeters: metersPerPixelX * width,
+                    heightMeters: metersPerPixelY * height,
+                    bevelMeters: deviceParams.bevelMm * 0.001
+                });
+            };
+            DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function () {
+                var viewer = this.viewer;
+                var device = this.device;
+                var distortion = this.distortion;
+                var eyeToScreenDistance = viewer.screenLensDistance;
+                var outerDist = (device.widthMeters - viewer.interLensDistance) / 2;
+                var innerDist = viewer.interLensDistance / 2;
+                var bottomDist = viewer.baselineLensDistance - device.bevelMeters;
+                var topDist = device.heightMeters - bottomDist;
+                var outerAngle = radToDeg * Math.atan(distortion.distort(outerDist / eyeToScreenDistance));
+                var innerAngle = radToDeg * Math.atan(distortion.distort(innerDist / eyeToScreenDistance));
+                var bottomAngle = radToDeg * Math.atan(distortion.distort(bottomDist / eyeToScreenDistance));
+                var topAngle = radToDeg * Math.atan(distortion.distort(topDist / eyeToScreenDistance));
+                return {
+                    leftDegrees: Math.min(outerAngle, viewer.fov),
+                    rightDegrees: Math.min(innerAngle, viewer.fov),
+                    downDegrees: Math.min(bottomAngle, viewer.fov),
+                    upDegrees: Math.min(topAngle, viewer.fov)
+                };
+            };
+            DeviceInfo.prototype.getLeftEyeVisibleTanAngles = function () {
+                var viewer = this.viewer;
+                var device = this.device;
+                var distortion = this.distortion;
+                var fovLeft = Math.tan(-degToRad * viewer.fov);
+                var fovTop = Math.tan(degToRad * viewer.fov);
+                var fovRight = Math.tan(degToRad * viewer.fov);
+                var fovBottom = Math.tan(-degToRad * viewer.fov);
+                var halfWidth = device.widthMeters / 4;
+                var halfHeight = device.heightMeters / 2;
+                var verticalLensOffset = viewer.baselineLensDistance - device.bevelMeters - halfHeight;
+                var centerX = viewer.interLensDistance / 2 - halfWidth;
+                var centerY = -verticalLensOffset;
+                var centerZ = viewer.screenLensDistance;
+                var screenLeft = distortion.distort((centerX - halfWidth) / centerZ);
+                var screenTop = distortion.distort((centerY + halfHeight) / centerZ);
+                var screenRight = distortion.distort((centerX + halfWidth) / centerZ);
+                var screenBottom = distortion.distort((centerY - halfHeight) / centerZ);
+                var result = new Float32Array(4);
+                result[0] = Math.max(fovLeft, screenLeft);
+                result[1] = Math.min(fovTop, screenTop);
+                result[2] = Math.min(fovRight, screenRight);
+                result[3] = Math.max(fovBottom, screenBottom);
+                return result;
+            };
+            DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function () {
+                var viewer = this.viewer;
+                var device = this.device;
+                var distortion = this.distortion;
+                var result = new Float32Array(4);
+                var fovLeft = distortion.distortInverse(Math.tan(-degToRad * viewer.fov));
+                var fovTop = distortion.distortInverse(Math.tan(degToRad * viewer.fov));
+                var fovRight = distortion.distortInverse(Math.tan(degToRad * viewer.fov));
+                var fovBottom = distortion.distortInverse(Math.tan(-degToRad * viewer.fov));
+                var halfWidth = device.widthMeters / 4;
+                var halfHeight = device.heightMeters / 2;
+                var verticalLensOffset = viewer.baselineLensDistance - device.bevelMeters - halfHeight;
+                var centerX = viewer.interLensDistance / 2 - halfWidth;
+                var centerY = -verticalLensOffset;
+                var centerZ = viewer.screenLensDistance;
+                var screenLeft = (centerX - halfWidth) / centerZ;
+                var screenTop = (centerY + halfHeight) / centerZ;
+                var screenRight = (centerX + halfWidth) / centerZ;
+                var screenBottom = (centerY - halfHeight) / centerZ;
+                result[0] = Math.max(fovLeft, screenLeft);
+                result[1] = Math.min(fovTop, screenTop);
+                result[2] = Math.min(fovRight, screenRight);
+                result[3] = Math.max(fovBottom, screenBottom);
+                return result;
+            };
+            DeviceInfo.prototype.getLeftEyeVisibleScreenRect = function (undistortedFrustum) {
+                var viewer = this.viewer;
+                var device = this.device;
+                var dist = viewer.screenLensDistance;
+                var eyeX = (device.widthMeters - viewer.interLensDistance) / 2;
+                var eyeY = viewer.baselineLensDistance - device.bevelMeters;
+                var left = (undistortedFrustum[0] * dist + eyeX) / device.widthMeters;
+                var top = (undistortedFrustum[1] * dist + eyeY) / device.heightMeters;
+                var right = (undistortedFrustum[2] * dist + eyeX) / device.widthMeters;
+                var bottom = (undistortedFrustum[3] * dist + eyeY) / device.heightMeters;
+                return {
+                    x: left,
+                    y: bottom,
+                    width: right - left,
+                    height: top - bottom
+                };
+            };
+            DeviceInfo.prototype.getFieldOfViewLeftEye = function (opt_isUndistorted) {
+                return opt_isUndistorted ? this.getUndistortedFieldOfViewLeftEye() : this.getDistortedFieldOfViewLeftEye();
+            };
+            DeviceInfo.prototype.getFieldOfViewRightEye = function (opt_isUndistorted) {
+                var fov = this.getFieldOfViewLeftEye(opt_isUndistorted);
+                return {
+                    leftDegrees: fov.rightDegrees,
+                    rightDegrees: fov.leftDegrees,
+                    upDegrees: fov.upDegrees,
+                    downDegrees: fov.downDegrees
+                };
+            };
+            DeviceInfo.prototype.getUndistortedFieldOfViewLeftEye = function () {
+                var p = this.getUndistortedParams_();
+                return {
+                    leftDegrees: radToDeg * Math.atan(p.outerDist),
+                    rightDegrees: radToDeg * Math.atan(p.innerDist),
+                    downDegrees: radToDeg * Math.atan(p.bottomDist),
+                    upDegrees: radToDeg * Math.atan(p.topDist)
+                };
+            };
+            DeviceInfo.prototype.getUndistortedViewportLeftEye = function () {
+                var p = this.getUndistortedParams_();
+                var viewer = this.viewer;
+                var device = this.device;
+                var eyeToScreenDistance = viewer.screenLensDistance;
+                var screenWidth = device.widthMeters / eyeToScreenDistance;
+                var screenHeight = device.heightMeters / eyeToScreenDistance;
+                var xPxPerTanAngle = device.width / screenWidth;
+                var yPxPerTanAngle = device.height / screenHeight;
+                var x = Math.round((p.eyePosX - p.outerDist) * xPxPerTanAngle);
+                var y = Math.round((p.eyePosY - p.bottomDist) * yPxPerTanAngle);
+                return {
+                    x: x,
+                    y: y,
+                    width: Math.round((p.eyePosX + p.innerDist) * xPxPerTanAngle) - x,
+                    height: Math.round((p.eyePosY + p.topDist) * yPxPerTanAngle) - y
+                };
+            };
+            DeviceInfo.prototype.getUndistortedParams_ = function () {
+                var viewer = this.viewer;
+                var device = this.device;
+                var distortion = this.distortion;
+                var eyeToScreenDistance = viewer.screenLensDistance;
+                var halfLensDistance = viewer.interLensDistance / 2 / eyeToScreenDistance;
+                var screenWidth = device.widthMeters / eyeToScreenDistance;
+                var screenHeight = device.heightMeters / eyeToScreenDistance;
+                var eyePosX = screenWidth / 2 - halfLensDistance;
+                var eyePosY = (viewer.baselineLensDistance - device.bevelMeters) / eyeToScreenDistance;
+                var maxFov = viewer.fov;
+                var viewerMax = distortion.distortInverse(Math.tan(degToRad * maxFov));
+                var outerDist = Math.min(eyePosX, viewerMax);
+                var innerDist = Math.min(halfLensDistance, viewerMax);
+                var bottomDist = Math.min(eyePosY, viewerMax);
+                var topDist = Math.min(screenHeight - eyePosY, viewerMax);
+                return {
+                    outerDist: outerDist,
+                    innerDist: innerDist,
+                    topDist: topDist,
+                    bottomDist: bottomDist,
+                    eyePosX: eyePosX,
+                    eyePosY: eyePosY
+                };
+            };
+
+            function CardboardViewer(params) {
+                this.id = params.id;
+                this.label = params.label;
+                this.fov = params.fov;
+                this.interLensDistance = params.interLensDistance;
+                this.baselineLensDistance = params.baselineLensDistance;
+                this.screenLensDistance = params.screenLensDistance;
+                this.distortionCoefficients = params.distortionCoefficients;
+                this.inverseCoefficients = params.inverseCoefficients;
+            }
+
+            DeviceInfo.Viewers = Viewers;
+            var format = 1;
+            var last_updated = "2018-02-20T22:55:10Z";
+            var devices = [{
+                "type": "android",
+                "rules": [{"mdmh": "asus/*/Nexus 7/*"}, {"ua": "Nexus 7"}],
+                "dpi": [320.8, 323],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "asus/*/ASUS_Z00AD/*"}, {"ua": "ASUS_Z00AD"}],
+                "dpi": [403, 404.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Google/*/Pixel XL/*"}, {"ua": "Pixel XL"}],
+                "dpi": [537.9, 533],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Google/*/Pixel/*"}, {"ua": "Pixel"}],
+                "dpi": [432.6, 436.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "HTC/*/HTC6435LVW/*"}, {"ua": "HTC6435LVW"}],
+                "dpi": [449.7, 443.3],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "HTC/*/HTC One XL/*"}, {"ua": "HTC One XL"}],
+                "dpi": [315.3, 314.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "htc/*/Nexus 9/*"}, {"ua": "Nexus 9"}],
+                "dpi": 289,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "HTC/*/HTC One M9/*"}, {"ua": "HTC One M9"}],
+                "dpi": [442.5, 443.3],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "HTC/*/HTC One_M8/*"}, {"ua": "HTC One_M8"}],
+                "dpi": [449.7, 447.4],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "HTC/*/HTC One/*"}, {"ua": "HTC One"}],
+                "dpi": 472.8,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Huawei/*/Nexus 6P/*"}, {"ua": "Nexus 6P"}],
+                "dpi": [515.1, 518],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LENOVO/*/Lenovo PB2-690Y/*"}, {"ua": "Lenovo PB2-690Y"}],
+                "dpi": [457.2, 454.713],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/Nexus 5X/*"}, {"ua": "Nexus 5X"}],
+                "dpi": [422, 419.9],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LGMS345/*"}, {"ua": "LGMS345"}],
+                "dpi": [221.7, 219.1],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LG-D800/*"}, {"ua": "LG-D800"}],
+                "dpi": [422, 424.1],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LG-D850/*"}, {"ua": "LG-D850"}],
+                "dpi": [537.9, 541.9],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/VS985 4G/*"}, {"ua": "VS985 4G"}],
+                "dpi": [537.9, 535.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/Nexus 5/*"}, {"ua": "Nexus 5 B"}],
+                "dpi": [442.4, 444.8],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/Nexus 4/*"}, {"ua": "Nexus 4"}],
+                "dpi": [319.8, 318.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LG-P769/*"}, {"ua": "LG-P769"}],
+                "dpi": [240.6, 247.5],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LGMS323/*"}, {"ua": "LGMS323"}],
+                "dpi": [206.6, 204.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "LGE/*/LGLS996/*"}, {"ua": "LGLS996"}],
+                "dpi": [403.4, 401.5],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Micromax/*/4560MMX/*"}, {"ua": "4560MMX"}],
+                "dpi": [240, 219.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Micromax/*/A250/*"}, {"ua": "Micromax A250"}],
+                "dpi": [480, 446.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Micromax/*/Micromax AQ4501/*"}, {"ua": "Micromax AQ4501"}],
+                "dpi": 240,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/G5/*"}, {"ua": "Moto G (5) Plus"}],
+                "dpi": [403.4, 403],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/DROID RAZR/*"}, {"ua": "DROID RAZR"}],
+                "dpi": [368.1, 256.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT830C/*"}, {"ua": "XT830C"}],
+                "dpi": [254, 255.9],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1021/*"}, {"ua": "XT1021"}],
+                "dpi": [254, 256.7],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1023/*"}, {"ua": "XT1023"}],
+                "dpi": [254, 256.7],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1028/*"}, {"ua": "XT1028"}],
+                "dpi": [326.6, 327.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1034/*"}, {"ua": "XT1034"}],
+                "dpi": [326.6, 328.4],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1053/*"}, {"ua": "XT1053"}],
+                "dpi": [315.3, 316.1],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1562/*"}, {"ua": "XT1562"}],
+                "dpi": [403.4, 402.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/Nexus 6/*"}, {"ua": "Nexus 6 B"}],
+                "dpi": [494.3, 489.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1063/*"}, {"ua": "XT1063"}],
+                "dpi": [295, 296.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1064/*"}, {"ua": "XT1064"}],
+                "dpi": [295, 295.6],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1092/*"}, {"ua": "XT1092"}],
+                "dpi": [422, 424.1],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/XT1095/*"}, {"ua": "XT1095"}],
+                "dpi": [422, 423.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "motorola/*/G4/*"}, {"ua": "Moto G (4)"}],
+                "dpi": 401,
+                "bw": 4,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OnePlus/*/A0001/*"}, {"ua": "A0001"}],
+                "dpi": [403.4, 401],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OnePlus/*/ONE E1005/*"}, {"ua": "ONE E1005"}],
+                "dpi": [442.4, 441.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OnePlus/*/ONE A2005/*"}, {"ua": "ONE A2005"}],
+                "dpi": [391.9, 405.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OnePlus/*/ONEPLUS A5000/*"}, {"ua": "ONEPLUS A5000 "}],
+                "dpi": [403.411, 399.737],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OnePlus/*/ONE A5010/*"}, {"ua": "ONEPLUS A5010"}],
+                "dpi": [403, 400],
+                "bw": 2,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "OPPO/*/X909/*"}, {"ua": "X909"}],
+                "dpi": [442.4, 444.1],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9082/*"}, {"ua": "GT-I9082"}],
+                "dpi": [184.7, 185.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G360P/*"}, {"ua": "SM-G360P"}],
+                "dpi": [196.7, 205.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/Nexus S/*"}, {"ua": "Nexus S"}],
+                "dpi": [234.5, 229.8],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9300/*"}, {"ua": "GT-I9300"}],
+                "dpi": [304.8, 303.9],
+                "bw": 5,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-T230NU/*"}, {"ua": "SM-T230NU"}],
+                "dpi": 216,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SGH-T399/*"}, {"ua": "SGH-T399"}],
+                "dpi": [217.7, 231.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SGH-M919/*"}, {"ua": "SGH-M919"}],
+                "dpi": [440.8, 437.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N9005/*"}, {"ua": "SM-N9005"}],
+                "dpi": [386.4, 387],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SAMSUNG-SM-N900A/*"}, {"ua": "SAMSUNG-SM-N900A"}],
+                "dpi": [386.4, 387.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9500/*"}, {"ua": "GT-I9500"}],
+                "dpi": [442.5, 443.3],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9505/*"}, {"ua": "GT-I9505"}],
+                "dpi": 439.4,
+                "bw": 4,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G900F/*"}, {"ua": "SM-G900F"}],
+                "dpi": [415.6, 431.6],
+                "bw": 5,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G900M/*"}, {"ua": "SM-G900M"}],
+                "dpi": [415.6, 431.6],
+                "bw": 5,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G800F/*"}, {"ua": "SM-G800F"}],
+                "dpi": 326.8,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G906S/*"}, {"ua": "SM-G906S"}],
+                "dpi": [562.7, 572.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9300/*"}, {"ua": "GT-I9300"}],
+                "dpi": [306.7, 304.8],
+                "bw": 5,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-T535/*"}, {"ua": "SM-T535"}],
+                "dpi": [142.6, 136.4],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N920C/*"}, {"ua": "SM-N920C"}],
+                "dpi": [515.1, 518.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N920P/*"}, {"ua": "SM-N920P"}],
+                "dpi": [386.3655, 390.144],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N920W8/*"}, {"ua": "SM-N920W8"}],
+                "dpi": [515.1, 518.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9300I/*"}, {"ua": "GT-I9300I"}],
+                "dpi": [304.8, 305.8],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-I9195/*"}, {"ua": "GT-I9195"}],
+                "dpi": [249.4, 256.7],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SPH-L520/*"}, {"ua": "SPH-L520"}],
+                "dpi": [249.4, 255.9],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SAMSUNG-SGH-I717/*"}, {"ua": "SAMSUNG-SGH-I717"}],
+                "dpi": 285.8,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SPH-D710/*"}, {"ua": "SPH-D710"}],
+                "dpi": [217.7, 204.2],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/GT-N7100/*"}, {"ua": "GT-N7100"}],
+                "dpi": 265.1,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SCH-I605/*"}, {"ua": "SCH-I605"}],
+                "dpi": 265.1,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/Galaxy Nexus/*"}, {"ua": "Galaxy Nexus"}],
+                "dpi": [315.3, 314.2],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N910H/*"}, {"ua": "SM-N910H"}],
+                "dpi": [515.1, 518],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-N910C/*"}, {"ua": "SM-N910C"}],
+                "dpi": [515.2, 520.2],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G130M/*"}, {"ua": "SM-G130M"}],
+                "dpi": [165.9, 164.8],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G928I/*"}, {"ua": "SM-G928I"}],
+                "dpi": [515.1, 518.4],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G920F/*"}, {"ua": "SM-G920F"}],
+                "dpi": 580.6,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G920P/*"}, {"ua": "SM-G920P"}],
+                "dpi": [522.5, 577],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G925F/*"}, {"ua": "SM-G925F"}],
+                "dpi": 580.6,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G925V/*"}, {"ua": "SM-G925V"}],
+                "dpi": [522.5, 576.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G930F/*"}, {"ua": "SM-G930F"}],
+                "dpi": 576.6,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G935F/*"}, {"ua": "SM-G935F"}],
+                "dpi": 533,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G950F/*"}, {"ua": "SM-G950F"}],
+                "dpi": [562.707, 565.293],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "samsung/*/SM-G955U/*"}, {"ua": "SM-G955U"}],
+                "dpi": [522.514, 525.762],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Sony/*/C6903/*"}, {"ua": "C6903"}],
+                "dpi": [442.5, 443.3],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Sony/*/D6653/*"}, {"ua": "D6653"}],
+                "dpi": [428.6, 427.6],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Sony/*/E6653/*"}, {"ua": "E6653"}],
+                "dpi": [428.6, 425.7],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Sony/*/E6853/*"}, {"ua": "E6853"}],
+                "dpi": [403.4, 401.9],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Sony/*/SGP321/*"}, {"ua": "SGP321"}],
+                "dpi": [224.7, 224.1],
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "TCT/*/ALCATEL ONE TOUCH Fierce/*"}, {"ua": "ALCATEL ONE TOUCH Fierce"}],
+                "dpi": [240, 247.5],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "THL/*/thl 5000/*"}, {"ua": "thl 5000"}],
+                "dpi": [480, 443.3],
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "Fly/*/IQ4412/*"}, {"ua": "IQ4412"}],
+                "dpi": 307.9,
+                "bw": 3,
+                "ac": 1000
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "ZTE/*/ZTE Blade L2/*"}, {"ua": "ZTE Blade L2"}],
+                "dpi": 240,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "android",
+                "rules": [{"mdmh": "BENEVE/*/VR518/*"}, {"ua": "VR518"}],
+                "dpi": 480,
+                "bw": 3,
+                "ac": 500
+            }, {
+                "type": "ios",
+                "rules": [{"res": [640, 960]}],
+                "dpi": [325.1, 328.4],
+                "bw": 4,
+                "ac": 1000
+            }, {
+                "type": "ios",
+                "rules": [{"res": [640, 1136]}],
+                "dpi": [317.1, 320.2],
+                "bw": 3,
+                "ac": 1000
+            }, {"type": "ios", "rules": [{"res": [750, 1334]}], "dpi": 326.4, "bw": 4, "ac": 1000}, {
+                "type": "ios",
+                "rules": [{"res": [1242, 2208]}],
+                "dpi": [453.6, 458.4],
+                "bw": 4,
+                "ac": 1000
+            }, {
+                "type": "ios",
+                "rules": [{"res": [1125, 2001]}],
+                "dpi": [410.9, 415.4],
+                "bw": 4,
+                "ac": 1000
+            }, {"type": "ios", "rules": [{"res": [1125, 2436]}], "dpi": 458, "bw": 4, "ac": 1000}];
+            var DPDB_CACHE = {
+                format: format,
+                last_updated: last_updated,
+                devices: devices
+            };
+
+            function Dpdb(url, onDeviceParamsUpdated) {
+                this.dpdb = DPDB_CACHE;
+                this.recalculateDeviceParams_();
+                if (url) {
+                    this.onDeviceParamsUpdated = onDeviceParamsUpdated;
+                    var xhr = new XMLHttpRequest();
+                    var obj = this;
+                    xhr.open('GET', url, true);
+                    xhr.addEventListener('load', function () {
+                        obj.loading = false;
+                        if (xhr.status >= 200 && xhr.status <= 299) {
+                            obj.dpdb = JSON.parse(xhr.response);
+                            obj.recalculateDeviceParams_();
+                        } else {
+                            console.error('Error loading online DPDB!');
+                        }
+                    });
+                    xhr.send();
+                }
+            }
+
+            Dpdb.prototype.getDeviceParams = function () {
+                return this.deviceParams;
+            };
+            Dpdb.prototype.recalculateDeviceParams_ = function () {
+                var newDeviceParams = this.calcDeviceParams_();
+                if (newDeviceParams) {
+                    this.deviceParams = newDeviceParams;
+                    if (this.onDeviceParamsUpdated) {
+                        this.onDeviceParamsUpdated(this.deviceParams);
+                    }
+                } else {
+                    console.error('Failed to recalculate device parameters.');
+                }
+            };
+            Dpdb.prototype.calcDeviceParams_ = function () {
+                var db = this.dpdb;
+                if (!db) {
+                    console.error('DPDB not available.');
+                    return null;
+                }
+                if (db.format != 1) {
+                    console.error('DPDB has unexpected format version.');
+                    return null;
+                }
+                if (!db.devices || !db.devices.length) {
+                    console.error('DPDB does not have a devices section.');
+                    return null;
+                }
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                var width = getScreenWidth();
+                var height = getScreenHeight();
+                if (!db.devices) {
+                    console.error('DPDB has no devices section.');
+                    return null;
+                }
+                for (var i = 0; i < db.devices.length; i++) {
+                    var device = db.devices[i];
+                    if (!device.rules) {
+                        console.warn('Device[' + i + '] has no rules section.');
+                        continue;
+                    }
+                    if (device.type != 'ios' && device.type != 'android') {
+                        console.warn('Device[' + i + '] has invalid type.');
+                        continue;
+                    }
+                    if (isIOS() != (device.type == 'ios')) continue;
+                    var matched = false;
+                    for (var j = 0; j < device.rules.length; j++) {
+                        var rule = device.rules[j];
+                        if (this.matchRule_(rule, userAgent, width, height)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) continue;
+                    var xdpi = device.dpi[0] || device.dpi;
+                    var ydpi = device.dpi[1] || device.dpi;
+                    return new DeviceParams({xdpi: xdpi, ydpi: ydpi, bevelMm: device.bw});
+                }
+                console.warn('No DPDB device match.');
+                return null;
+            };
+            Dpdb.prototype.matchRule_ = function (rule, ua, screenWidth, screenHeight) {
+                if (!rule.ua && !rule.res) return false;
+                if (rule.ua && ua.indexOf(rule.ua) < 0) return false;
+                if (rule.res) {
+                    if (!rule.res[0] || !rule.res[1]) return false;
+                    var resX = rule.res[0];
+                    var resY = rule.res[1];
+                    if (Math.min(screenWidth, screenHeight) != Math.min(resX, resY) || Math.max(screenWidth, screenHeight) != Math.max(resX, resY)) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            function DeviceParams(params) {
+                this.xdpi = params.xdpi;
+                this.ydpi = params.ydpi;
+                this.bevelMm = params.bevelMm;
+            }
+
+            function SensorSample(sample, timestampS) {
+                this.set(sample, timestampS);
+            }
+
+            SensorSample.prototype.set = function (sample, timestampS) {
+                this.sample = sample;
+                this.timestampS = timestampS;
+            };
+            SensorSample.prototype.copy = function (sensorSample) {
+                this.set(sensorSample.sample, sensorSample.timestampS);
+            };
+
+            function ComplementaryFilter(kFilter, isDebug) {
+                this.kFilter = kFilter;
+                this.isDebug = isDebug;
+                this.currentAccelMeasurement = new SensorSample();
+                this.currentGyroMeasurement = new SensorSample();
+                this.previousGyroMeasurement = new SensorSample();
+                if (isIOS()) {
+                    this.filterQ = new Quaternion(-1, 0, 0, 1);
+                } else {
+                    this.filterQ = new Quaternion(1, 0, 0, 1);
+                }
+                this.previousFilterQ = new Quaternion();
+                this.previousFilterQ.copy(this.filterQ);
+                this.accelQ = new Quaternion();
+                this.isOrientationInitialized = false;
+                this.estimatedGravity = new Vector3();
+                this.measuredGravity = new Vector3();
+                this.gyroIntegralQ = new Quaternion();
+            }
+
+            ComplementaryFilter.prototype.addAccelMeasurement = function (vector, timestampS) {
+                this.currentAccelMeasurement.set(vector, timestampS);
+            };
+            ComplementaryFilter.prototype.addGyroMeasurement = function (vector, timestampS) {
+                this.currentGyroMeasurement.set(vector, timestampS);
+                var deltaT = timestampS - this.previousGyroMeasurement.timestampS;
+                if (isTimestampDeltaValid(deltaT)) {
+                    this.run_();
+                }
+                this.previousGyroMeasurement.copy(this.currentGyroMeasurement);
+            };
+            ComplementaryFilter.prototype.run_ = function () {
+                if (!this.isOrientationInitialized) {
+                    this.accelQ = this.accelToQuaternion_(this.currentAccelMeasurement.sample);
+                    this.previousFilterQ.copy(this.accelQ);
+                    this.isOrientationInitialized = true;
+                    return;
+                }
+                var deltaT = this.currentGyroMeasurement.timestampS - this.previousGyroMeasurement.timestampS;
+                var gyroDeltaQ = this.gyroToQuaternionDelta_(this.currentGyroMeasurement.sample, deltaT);
+                this.gyroIntegralQ.multiply(gyroDeltaQ);
+                this.filterQ.copy(this.previousFilterQ);
+                this.filterQ.multiply(gyroDeltaQ);
+                var invFilterQ = new Quaternion();
+                invFilterQ.copy(this.filterQ);
+                invFilterQ.inverse();
+                this.estimatedGravity.set(0, 0, -1);
+                this.estimatedGravity.applyQuaternion(invFilterQ);
+                this.estimatedGravity.normalize();
+                this.measuredGravity.copy(this.currentAccelMeasurement.sample);
+                this.measuredGravity.normalize();
+                var deltaQ = new Quaternion();
+                deltaQ.setFromUnitVectors(this.estimatedGravity, this.measuredGravity);
+                deltaQ.inverse();
+                if (this.isDebug) {
+                    console.log('Delta: %d deg, G_est: (%s, %s, %s), G_meas: (%s, %s, %s)', radToDeg * getQuaternionAngle(deltaQ), this.estimatedGravity.x.toFixed(1), this.estimatedGravity.y.toFixed(1), this.estimatedGravity.z.toFixed(1), this.measuredGravity.x.toFixed(1), this.measuredGravity.y.toFixed(1), this.measuredGravity.z.toFixed(1));
+                }
+                var targetQ = new Quaternion();
+                targetQ.copy(this.filterQ);
+                targetQ.multiply(deltaQ);
+                this.filterQ.slerp(targetQ, 1 - this.kFilter);
+                this.previousFilterQ.copy(this.filterQ);
+            };
+            ComplementaryFilter.prototype.getOrientation = function () {
+                return this.filterQ;
+            };
+            ComplementaryFilter.prototype.accelToQuaternion_ = function (accel) {
+                var normAccel = new Vector3();
+                normAccel.copy(accel);
+                normAccel.normalize();
+                var quat = new Quaternion();
+                quat.setFromUnitVectors(new Vector3(0, 0, -1), normAccel);
+                quat.inverse();
+                return quat;
+            };
+            ComplementaryFilter.prototype.gyroToQuaternionDelta_ = function (gyro, dt) {
+                var quat = new Quaternion();
+                var axis = new Vector3();
+                axis.copy(gyro);
+                axis.normalize();
+                quat.setFromAxisAngle(axis, gyro.length() * dt);
+                return quat;
+            };
+
+            function PosePredictor(predictionTimeS, isDebug) {
+                this.predictionTimeS = predictionTimeS;
+                this.isDebug = isDebug;
+                this.previousQ = new Quaternion();
+                this.previousTimestampS = null;
+                this.deltaQ = new Quaternion();
+                this.outQ = new Quaternion();
+            }
+
+            PosePredictor.prototype.getPrediction = function (currentQ, gyro, timestampS) {
+                if (!this.previousTimestampS) {
+                    this.previousQ.copy(currentQ);
+                    this.previousTimestampS = timestampS;
+                    return currentQ;
+                }
+                var axis = new Vector3();
+                axis.copy(gyro);
+                axis.normalize();
+                var angularSpeed = gyro.length();
+                if (angularSpeed < degToRad * 20) {
+                    if (this.isDebug) {
+                        console.log('Moving slowly, at %s deg/s: no prediction', (radToDeg * angularSpeed).toFixed(1));
+                    }
+                    this.outQ.copy(currentQ);
+                    this.previousQ.copy(currentQ);
+                    return this.outQ;
+                }
+                var predictAngle = angularSpeed * this.predictionTimeS;
+                this.deltaQ.setFromAxisAngle(axis, predictAngle);
+                this.outQ.copy(this.previousQ);
+                this.outQ.multiply(this.deltaQ);
+                this.previousQ.copy(currentQ);
+                this.previousTimestampS = timestampS;
+                return this.outQ;
+            };
+
+            function FusionPoseSensor(kFilter, predictionTime, yawOnly, isDebug) {
+                this.yawOnly = yawOnly;
+                this.accelerometer = new Vector3();
+                this.gyroscope = new Vector3();
+                this.filter = new ComplementaryFilter(kFilter, isDebug);
+                this.posePredictor = new PosePredictor(predictionTime, isDebug);
+                this.isFirefoxAndroid = isFirefoxAndroid();
+                this.isIOS = isIOS();
+                var chromeVersion = getChromeVersion();
+                this.isDeviceMotionInRadians = !this.isIOS && chromeVersion && chromeVersion < 66;
+                this.isWithoutDeviceMotion = isChromeWithoutDeviceMotion();
+                this.filterToWorldQ = new Quaternion();
+                if (isIOS()) {
+                    this.filterToWorldQ.setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
+                } else {
+                    this.filterToWorldQ.setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2);
+                }
+                this.inverseWorldToScreenQ = new Quaternion();
+                this.worldToScreenQ = new Quaternion();
+                this.originalPoseAdjustQ = new Quaternion();
+                this.originalPoseAdjustQ.setFromAxisAngle(new Vector3(0, 0, 1), -window.orientation * Math.PI / 180);
+                this.setScreenTransform_();
+                if (isLandscapeMode()) {
+                    this.filterToWorldQ.multiply(this.inverseWorldToScreenQ);
+                }
+                this.resetQ = new Quaternion();
+                this.orientationOut_ = new Float32Array(4);
+                this.start();
+            }
+
+            FusionPoseSensor.prototype.getPosition = function () {
+                return null;
+            };
+            FusionPoseSensor.prototype.getOrientation = function () {
+                var orientation = void 0;
+                if (this.isWithoutDeviceMotion && this._deviceOrientationQ) {
+                    this.deviceOrientationFixQ = this.deviceOrientationFixQ || function () {
+                        var z = new Quaternion().setFromAxisAngle(new Vector3(0, 0, -1), 0);
+                        var y = new Quaternion();
+                        if (window.orientation === -90) {
+                            y.setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / -2);
+                        } else {
+                            y.setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2);
+                        }
+                        return z.multiply(y);
+                    }();
+                    this.deviceOrientationFilterToWorldQ = this.deviceOrientationFilterToWorldQ || function () {
+                        var q = new Quaternion();
+                        q.setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2);
+                        return q;
+                    }();
+                    orientation = this._deviceOrientationQ;
+                    var out = new Quaternion();
+                    out.copy(orientation);
+                    out.multiply(this.deviceOrientationFilterToWorldQ);
+                    out.multiply(this.resetQ);
+                    out.multiply(this.worldToScreenQ);
+                    out.multiplyQuaternions(this.deviceOrientationFixQ, out);
+                    if (this.yawOnly) {
+                        out.x = 0;
+                        out.z = 0;
+                        out.normalize();
+                    }
+                    this.orientationOut_[0] = out.x;
+                    this.orientationOut_[1] = out.y;
+                    this.orientationOut_[2] = out.z;
+                    this.orientationOut_[3] = out.w;
+                    return this.orientationOut_;
+                } else {
+                    var filterOrientation = this.filter.getOrientation();
+                    orientation = this.posePredictor.getPrediction(filterOrientation, this.gyroscope, this.previousTimestampS);
+                }
+                var out = new Quaternion();
+                out.copy(this.filterToWorldQ);
+                out.multiply(this.resetQ);
+                out.multiply(orientation);
+                out.multiply(this.worldToScreenQ);
+                if (this.yawOnly) {
+                    out.x = 0;
+                    out.z = 0;
+                    out.normalize();
+                }
+                this.orientationOut_[0] = out.x;
+                this.orientationOut_[1] = out.y;
+                this.orientationOut_[2] = out.z;
+                this.orientationOut_[3] = out.w;
+                return this.orientationOut_;
+            };
+            FusionPoseSensor.prototype.resetPose = function () {
+                this.resetQ.copy(this.filter.getOrientation());
+                this.resetQ.x = 0;
+                this.resetQ.y = 0;
+                this.resetQ.z *= -1;
+                this.resetQ.normalize();
+                if (isLandscapeMode()) {
+                    this.resetQ.multiply(this.inverseWorldToScreenQ);
+                }
+                this.resetQ.multiply(this.originalPoseAdjustQ);
+            };
+            FusionPoseSensor.prototype.onDeviceOrientation_ = function (e) {
+                this._deviceOrientationQ = this._deviceOrientationQ || new Quaternion();
+                var alpha = e.alpha,
+                    beta = e.beta,
+                    gamma = e.gamma;
+                alpha = (alpha || 0) * Math.PI / 180;
+                beta = (beta || 0) * Math.PI / 180;
+                gamma = (gamma || 0) * Math.PI / 180;
+                this._deviceOrientationQ.setFromEulerYXZ(beta, alpha, -gamma);
+            };
+            FusionPoseSensor.prototype.onDeviceMotion_ = function (deviceMotion) {
+                this.updateDeviceMotion_(deviceMotion);
+            };
+            FusionPoseSensor.prototype.updateDeviceMotion_ = function (deviceMotion) {
+                var accGravity = deviceMotion.accelerationIncludingGravity;
+                var rotRate = deviceMotion.rotationRate;
+                var timestampS = deviceMotion.timeStamp / 1000;
+                var deltaS = timestampS - this.previousTimestampS;
+                if (deltaS < 0) {
+                    warnOnce('fusion-pose-sensor:invalid:non-monotonic', 'Invalid timestamps detected: non-monotonic timestamp from devicemotion');
+                    this.previousTimestampS = timestampS;
+                    return;
+                } else if (deltaS <= MIN_TIMESTEP || deltaS > MAX_TIMESTEP) {
+                    warnOnce('fusion-pose-sensor:invalid:outside-threshold', 'Invalid timestamps detected: Timestamp from devicemotion outside expected range.');
+                    this.previousTimestampS = timestampS;
+                    return;
+                }
+                this.accelerometer.set(-accGravity.x, -accGravity.y, -accGravity.z);
+                if (isR7()) {
+                    this.gyroscope.set(-rotRate.beta, rotRate.alpha, rotRate.gamma);
+                } else {
+                    this.gyroscope.set(rotRate.alpha, rotRate.beta, rotRate.gamma);
+                }
+                if (!this.isDeviceMotionInRadians) {
+                    this.gyroscope.multiplyScalar(Math.PI / 180);
+                }
+                this.filter.addAccelMeasurement(this.accelerometer, timestampS);
+                this.filter.addGyroMeasurement(this.gyroscope, timestampS);
+                this.previousTimestampS = timestampS;
+            };
+            FusionPoseSensor.prototype.onOrientationChange_ = function (screenOrientation) {
+                this.setScreenTransform_();
+            };
+            FusionPoseSensor.prototype.onMessage_ = function (event) {
+                var message = event.data;
+                if (!message || !message.type) {
+                    return;
+                }
+                var type = message.type.toLowerCase();
+                if (type !== 'devicemotion') {
+                    return;
+                }
+                this.updateDeviceMotion_(message.deviceMotionEvent);
+            };
+            FusionPoseSensor.prototype.setScreenTransform_ = function () {
+                this.worldToScreenQ.set(0, 0, 0, 1);
+                switch (window.orientation) {
+                    case 0:
+                        break;
+                    case 90:
+                        this.worldToScreenQ.setFromAxisAngle(new Vector3(0, 0, 1), -Math.PI / 2);
+                        break;
+                    case -90:
+                        this.worldToScreenQ.setFromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2);
+                        break;
+                    case 180:
+                        break;
+                }
+                this.inverseWorldToScreenQ.copy(this.worldToScreenQ);
+                this.inverseWorldToScreenQ.inverse();
+            };
+            FusionPoseSensor.prototype.start = function () {
+                this.onDeviceMotionCallback_ = this.onDeviceMotion_.bind(this);
+                this.onOrientationChangeCallback_ = this.onOrientationChange_.bind(this);
+                this.onMessageCallback_ = this.onMessage_.bind(this);
+                this.onDeviceOrientationCallback_ = this.onDeviceOrientation_.bind(this);
+                if (isIOS() && isInsideCrossOriginIFrame()) {
+                    window.addEventListener('message', this.onMessageCallback_);
+                }
+                window.addEventListener('orientationchange', this.onOrientationChangeCallback_);
+                if (this.isWithoutDeviceMotion) {
+                    window.addEventListener('deviceorientation', this.onDeviceOrientationCallback_);
+                } else {
+                    window.addEventListener('devicemotion', this.onDeviceMotionCallback_);
+                }
+            };
+            FusionPoseSensor.prototype.stop = function () {
+                window.removeEventListener('devicemotion', this.onDeviceMotionCallback_);
+                window.removeEventListener('deviceorientation', this.onDeviceOrientationCallback_);
+                window.removeEventListener('orientationchange', this.onOrientationChangeCallback_);
+                window.removeEventListener('message', this.onMessageCallback_);
+            };
+            var SENSOR_FREQUENCY = 60;
+            var X_AXIS = new Vector3(1, 0, 0);
+            var Z_AXIS = new Vector3(0, 0, 1);
+            var orientation = {};
+            if (screen.orientation) {
+                orientation = screen.orientation;
+            } else if (screen.msOrientation) {
+                orientation = screen.msOrientation;
+            } else {
+                Object.defineProperty(orientation, 'angle', {
+                    get: function get$$1() {
+                        return window.orientation || 0;
+                    }
+                });
+            }
+            var SENSOR_TO_VR = new Quaternion();
+            SENSOR_TO_VR.setFromAxisAngle(X_AXIS, -Math.PI / 2);
+            SENSOR_TO_VR.multiply(new Quaternion().setFromAxisAngle(Z_AXIS, Math.PI / 2));
+            var PoseSensor = function () {
+                function PoseSensor(config) {
+                    classCallCheck(this, PoseSensor);
+                    this.config = config;
+                    this.sensor = null;
+                    this.fusionSensor = null;
+                    this._out = new Float32Array(4);
+                    this.api = null;
+                    this.errors = [];
+                    this._sensorQ = new Quaternion();
+                    this._worldToScreenQ = new Quaternion();
+                    this._outQ = new Quaternion();
+                    this._onSensorRead = this._onSensorRead.bind(this);
+                    this._onSensorError = this._onSensorError.bind(this);
+                    this._onOrientationChange = this._onOrientationChange.bind(this);
+                    this._onOrientationChange();
+                    this.init();
+                }
+
+                createClass(PoseSensor, [{
+                    key: 'init',
+                    value: function init() {
+                        var sensor = null;
+                        try {
+                            sensor = new RelativeOrientationSensor({frequency: SENSOR_FREQUENCY});
+                            sensor.addEventListener('error', this._onSensorError);
+                        } catch (error) {
+                            this.errors.push(error);
+                            if (error.name === 'SecurityError') {
+                                console.error('Cannot construct sensors due to the Feature Policy');
+                                console.warn('Attempting to fall back using "devicemotion"; however this will ' + 'fail in the future without correct permissions.');
+                                this.useDeviceMotion();
+                            } else if (error.name === 'ReferenceError') {
+                                this.useDeviceMotion();
+                            } else {
+                                console.error(error);
+                            }
+                        }
+                        if (sensor) {
+                            this.api = 'sensor';
+                            this.sensor = sensor;
+                            this.sensor.addEventListener('reading', this._onSensorRead);
+                            this.sensor.start();
+                        }
+                        window.addEventListener('orientationchange', this._onOrientationChange);
+                    }
+                }, {
+                    key: 'useDeviceMotion',
+                    value: function useDeviceMotion() {
+                        this.api = 'devicemotion';
+                        this.fusionSensor = new FusionPoseSensor(this.config.K_FILTER, this.config.PREDICTION_TIME_S, this.config.YAW_ONLY, this.config.DEBUG);
+                        if (this.sensor) {
+                            this.sensor.removeEventListener('reading', this._onSensorRead);
+                            this.sensor.removeEventListener('error', this._onSensorError);
+                            this.sensor = null;
+                        }
+                    }
+                }, {
+                    key: 'getOrientation',
+                    value: function getOrientation() {
+                        if (this.fusionSensor) {
+                            return this.fusionSensor.getOrientation();
+                        }
+                        if (!this.sensor || !this.sensor.quaternion) {
+                            this._out[0] = this._out[1] = this._out[2] = 0;
+                            this._out[3] = 1;
+                            return this._out;
+                        }
+                        var q = this.sensor.quaternion;
+                        this._sensorQ.set(q[0], q[1], q[2], q[3]);
+                        var out = this._outQ;
+                        out.copy(SENSOR_TO_VR);
+                        out.multiply(this._sensorQ);
+                        out.multiply(this._worldToScreenQ);
+                        if (this.config.YAW_ONLY) {
+                            out.x = out.z = 0;
+                            out.normalize();
+                        }
+                        this._out[0] = out.x;
+                        this._out[1] = out.y;
+                        this._out[2] = out.z;
+                        this._out[3] = out.w;
+                        return this._out;
+                    }
+                }, {
+                    key: '_onSensorError',
+                    value: function _onSensorError(event) {
+                        this.errors.push(event.error);
+                        if (event.error.name === 'NotAllowedError') {
+                            console.error('Permission to access sensor was denied');
+                        } else if (event.error.name === 'NotReadableError') {
+                            console.error('Sensor could not be read');
+                        } else {
+                            console.error(event.error);
+                        }
+                        this.useDeviceMotion();
+                    }
+                }, {
+                    key: '_onSensorRead',
+                    value: function _onSensorRead() {
+                    }
+                }, {
+                    key: '_onOrientationChange',
+                    value: function _onOrientationChange() {
+                        var angle = -orientation.angle * Math.PI / 180;
+                        this._worldToScreenQ.setFromAxisAngle(Z_AXIS, angle);
+                    }
+                }]);
+                return PoseSensor;
+            }();
+            var rotateInstructionsAsset = 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjE5OHB4IiBoZWlnaHQ9IjI0MHB4IiB2aWV3Qm94PSIwIDAgMTk4IDI0MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWxuczpza2V0Y2g9Imh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaC9ucyI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDMuMy4zICgxMjA4MSkgLSBodHRwOi8vd3d3LmJvaGVtaWFuY29kaW5nLmNvbS9za2V0Y2ggLS0+CiAgICA8dGl0bGU+dHJhbnNpdGlvbjwvdGl0bGU+CiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4KICAgIDxkZWZzPjwvZGVmcz4KICAgIDxnIGlkPSJQYWdlLTEiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHNrZXRjaDp0eXBlPSJNU1BhZ2UiPgogICAgICAgIDxnIGlkPSJ0cmFuc2l0aW9uIiBza2V0Y2g6dHlwZT0iTVNBcnRib2FyZEdyb3VwIj4KICAgICAgICAgICAgPGcgaWQ9IkltcG9ydGVkLUxheWVycy1Db3B5LTQtKy1JbXBvcnRlZC1MYXllcnMtQ29weS0rLUltcG9ydGVkLUxheWVycy1Db3B5LTItQ29weSIgc2tldGNoOnR5cGU9Ik1TTGF5ZXJHcm91cCI+CiAgICAgICAgICAgICAgICA8ZyBpZD0iSW1wb3J0ZWQtTGF5ZXJzLUNvcHktNCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsIDEwNy4wMDAwMDApIiBza2V0Y2g6dHlwZT0iTVNTaGFwZUdyb3VwIj4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTQ5LjYyNSwyLjUyNyBDMTQ5LjYyNSwyLjUyNyAxNTUuODA1LDYuMDk2IDE1Ni4zNjIsNi40MTggTDE1Ni4zNjIsNy4zMDQgQzE1Ni4zNjIsNy40ODEgMTU2LjM3NSw3LjY2NCAxNTYuNCw3Ljg1MyBDMTU2LjQxLDcuOTM0IDE1Ni40Miw4LjAxNSAxNTYuNDI3LDguMDk1IEMxNTYuNTY3LDkuNTEgMTU3LjQwMSwxMS4wOTMgMTU4LjUzMiwxMi4wOTQgTDE2NC4yNTIsMTcuMTU2IEwxNjQuMzMzLDE3LjA2NiBDMTY0LjMzMywxNy4wNjYgMTY4LjcxNSwxNC41MzYgMTY5LjU2OCwxNC4wNDIgQzE3MS4wMjUsMTQuODgzIDE5NS41MzgsMjkuMDM1IDE5NS41MzgsMjkuMDM1IEwxOTUuNTM4LDgzLjAzNiBDMTk1LjUzOCw4My44MDcgMTk1LjE1Miw4NC4yNTMgMTk0LjU5LDg0LjI1MyBDMTk0LjM1Nyw4NC4yNTMgMTk0LjA5NSw4NC4xNzcgMTkzLjgxOCw4NC4wMTcgTDE2OS44NTEsNzAuMTc5IEwxNjkuODM3LDcwLjIwMyBMMTQyLjUxNSw4NS45NzggTDE0MS42NjUsODQuNjU1IEMxMzYuOTM0LDgzLjEyNiAxMzEuOTE3LDgxLjkxNSAxMjYuNzE0LDgxLjA0NSBDMTI2LjcwOSw4MS4wNiAxMjYuNzA3LDgxLjA2OSAxMjYuNzA3LDgxLjA2OSBMMTIxLjY0LDk4LjAzIEwxMTMuNzQ5LDEwMi41ODYgTDExMy43MTIsMTAyLjUyMyBMMTEzLjcxMiwxMzAuMTEzIEMxMTMuNzEyLDEzMC44ODUgMTEzLjMyNiwxMzEuMzMgMTEyLjc2NCwxMzEuMzMgQzExMi41MzIsMTMxLjMzIDExMi4yNjksMTMxLjI1NCAxMTEuOTkyLDEzMS4wOTQgTDY5LjUxOSwxMDYuNTcyIEM2OC41NjksMTA2LjAyMyA2Ny43OTksMTA0LjY5NSA2Ny43OTksMTAzLjYwNSBMNjcuNzk5LDEwMi41NyBMNjcuNzc4LDEwMi42MTcgQzY3LjI3LDEwMi4zOTMgNjYuNjQ4LDEwMi4yNDkgNjUuOTYyLDEwMi4yMTggQzY1Ljg3NSwxMDIuMjE0IDY1Ljc4OCwxMDIuMjEyIDY1LjcwMSwxMDIuMjEyIEM2NS42MDYsMTAyLjIxMiA2NS41MTEsMTAyLjIxNSA2NS40MTYsMTAyLjIxOSBDNjUuMTk1LDEwMi4yMjkgNjQuOTc0LDEwMi4yMzUgNjQuNzU0LDEwMi4yMzUgQzY0LjMzMSwxMDIuMjM1IDYzLjkxMSwxMDIuMjE2IDYzLjQ5OCwxMDIuMTc4IEM2MS44NDMsMTAyLjAyNSA2MC4yOTgsMTAxLjU3OCA1OS4wOTQsMTAwLjg4MiBMMTIuNTE4LDczLjk5MiBMMTIuNTIzLDc0LjAwNCBMMi4yNDUsNTUuMjU0IEMxLjI0NCw1My40MjcgMi4wMDQsNTEuMDM4IDMuOTQzLDQ5LjkxOCBMNTkuOTU0LDE3LjU3MyBDNjAuNjI2LDE3LjE4NSA2MS4zNSwxNy4wMDEgNjIuMDUzLDE3LjAwMSBDNjMuMzc5LDE3LjAwMSA2NC42MjUsMTcuNjYgNjUuMjgsMTguODU0IEw2NS4yODUsMTguODUxIEw2NS41MTIsMTkuMjY0IEw2NS41MDYsMTkuMjY4IEM2NS45MDksMjAuMDAzIDY2LjQwNSwyMC42OCA2Ni45ODMsMjEuMjg2IEw2Ny4yNiwyMS41NTYgQzY5LjE3NCwyMy40MDYgNzEuNzI4LDI0LjM1NyA3NC4zNzMsMjQuMzU3IEM3Ni4zMjIsMjQuMzU3IDc4LjMyMSwyMy44NCA4MC4xNDgsMjIuNzg1IEM4MC4xNjEsMjIuNzg1IDg3LjQ2NywxOC41NjYgODcuNDY3LDE4LjU2NiBDODguMTM5LDE4LjE3OCA4OC44NjMsMTcuOTk0IDg5LjU2NiwxNy45OTQgQzkwLjg5MiwxNy45OTQgOTIuMTM4LDE4LjY1MiA5Mi43OTIsMTkuODQ3IEw5Ni4wNDIsMjUuNzc1IEw5Ni4wNjQsMjUuNzU3IEwxMDIuODQ5LDI5LjY3NCBMMTAyLjc0NCwyOS40OTIgTDE0OS42MjUsMi41MjcgTTE0OS42MjUsMC44OTIgQzE0OS4zNDMsMC44OTIgMTQ5LjA2MiwwLjk2NSAxNDguODEsMS4xMSBMMTAyLjY0MSwyNy42NjYgTDk3LjIzMSwyNC41NDIgTDk0LjIyNiwxOS4wNjEgQzkzLjMxMywxNy4zOTQgOTEuNTI3LDE2LjM1OSA4OS41NjYsMTYuMzU4IEM4OC41NTUsMTYuMzU4IDg3LjU0NiwxNi42MzIgODYuNjQ5LDE3LjE1IEM4My44NzgsMTguNzUgNzkuNjg3LDIxLjE2OSA3OS4zNzQsMjEuMzQ1IEM3OS4zNTksMjEuMzUzIDc5LjM0NSwyMS4zNjEgNzkuMzMsMjEuMzY5IEM3Ny43OTgsMjIuMjU0IDc2LjA4NCwyMi43MjIgNzQuMzczLDIyLjcyMiBDNzIuMDgxLDIyLjcyMiA2OS45NTksMjEuODkgNjguMzk3LDIwLjM4IEw2OC4xNDUsMjAuMTM1IEM2Ny43MDYsMTkuNjcyIDY3LjMyMywxOS4xNTYgNjcuMDA2LDE4LjYwMSBDNjYuOTg4LDE4LjU1OSA2Ni45NjgsMTguNTE5IDY2Ljk0NiwxOC40NzkgTDY2LjcxOSwxOC4wNjUgQzY2LjY5LDE4LjAxMiA2Ni42NTgsMTcuOTYgNjYuNjI0LDE3LjkxMSBDNjUuNjg2LDE2LjMzNyA2My45NTEsMTUuMzY2IDYyLjA1MywxNS4zNjYgQzYxLjA0MiwxNS4zNjYgNjAuMDMzLDE1LjY0IDU5LjEzNiwxNi4xNTggTDMuMTI1LDQ4LjUwMiBDMC40MjYsNTAuMDYxIC0wLjYxMyw1My40NDIgMC44MTEsNTYuMDQgTDExLjA4OSw3NC43OSBDMTEuMjY2LDc1LjExMyAxMS41MzcsNzUuMzUzIDExLjg1LDc1LjQ5NCBMNTguMjc2LDEwMi4yOTggQzU5LjY3OSwxMDMuMTA4IDYxLjQzMywxMDMuNjMgNjMuMzQ4LDEwMy44MDYgQzYzLjgxMiwxMDMuODQ4IDY0LjI4NSwxMDMuODcgNjQuNzU0LDEwMy44NyBDNjUsMTAzLjg3IDY1LjI0OSwxMDMuODY0IDY1LjQ5NCwxMDMuODUyIEM2NS41NjMsMTAzLjg0OSA2NS42MzIsMTAzLjg0NyA2NS43MDEsMTAzLjg0NyBDNjUuNzY0LDEwMy44NDcgNjUuODI4LDEwMy44NDkgNjUuODksMTAzLjg1MiBDNjUuOTg2LDEwMy44NTYgNjYuMDgsMTAzLjg2MyA2Ni4xNzMsMTAzLjg3NCBDNjYuMjgyLDEwNS40NjcgNjcuMzMyLDEwNy4xOTcgNjguNzAyLDEwNy45ODggTDExMS4xNzQsMTMyLjUxIEMxMTEuNjk4LDEzMi44MTIgMTEyLjIzMiwxMzIuOTY1IDExMi43NjQsMTMyLjk2NSBDMTE0LjI2MSwxMzIuOTY1IDExNS4zNDcsMTMxLjc2NSAxMTUuMzQ3LDEzMC4xMTMgTDExNS4zNDcsMTAzLjU1MSBMMTIyLjQ1OCw5OS40NDYgQzEyMi44MTksOTkuMjM3IDEyMy4wODcsOTguODk4IDEyMy4yMDcsOTguNDk4IEwxMjcuODY1LDgyLjkwNSBDMTMyLjI3OSw4My43MDIgMTM2LjU1Nyw4NC43NTMgMTQwLjYwNyw4Ni4wMzMgTDE0MS4xNCw4Ni44NjIgQzE0MS40NTEsODcuMzQ2IDE0MS45NzcsODcuNjEzIDE0Mi41MTYsODcuNjEzIEMxNDIuNzk0LDg3LjYxMyAxNDMuMDc2LDg3LjU0MiAxNDMuMzMzLDg3LjM5MyBMMTY5Ljg2NSw3Mi4wNzYgTDE5Myw4NS40MzMgQzE5My41MjMsODUuNzM1IDE5NC4wNTgsODUuODg4IDE5NC41OSw4NS44ODggQzE5Ni4wODcsODUuODg4IDE5Ny4xNzMsODQuNjg5IDE5Ny4xNzMsODMuMDM2IEwxOTcuMTczLDI5LjAzNSBDMTk3LjE3MywyOC40NTEgMTk2Ljg2MSwyNy45MTEgMTk2LjM1NSwyNy42MTkgQzE5Ni4zNTUsMjcuNjE5IDE3MS44NDMsMTMuNDY3IDE3MC4zODUsMTIuNjI2IEMxNzAuMTMyLDEyLjQ4IDE2OS44NSwxMi40MDcgMTY5LjU2OCwxMi40MDcgQzE2OS4yODUsMTIuNDA3IDE2OS4wMDIsMTIuNDgxIDE2OC43NDksMTIuNjI3IEMxNjguMTQzLDEyLjk3OCAxNjUuNzU2LDE0LjM1NyAxNjQuNDI0LDE1LjEyNSBMMTU5LjYxNSwxMC44NyBDMTU4Ljc5NiwxMC4xNDUgMTU4LjE1NCw4LjkzNyAxNTguMDU0LDcuOTM0IEMxNTguMDQ1LDcuODM3IDE1OC4wMzQsNy43MzkgMTU4LjAyMSw3LjY0IEMxNTguMDA1LDcuNTIzIDE1Ny45OTgsNy40MSAxNTcuOTk4LDcuMzA0IEwxNTcuOTk4LDYuNDE4IEMxNTcuOTk4LDUuODM0IDE1Ny42ODYsNS4yOTUgMTU3LjE4MSw1LjAwMiBDMTU2LjYyNCw0LjY4IDE1MC40NDIsMS4xMTEgMTUwLjQ0MiwxLjExMSBDMTUwLjE4OSwwLjk2NSAxNDkuOTA3LDAuODkyIDE0OS42MjUsMC44OTIiIGlkPSJGaWxsLTEiIGZpbGw9IiM0NTVBNjQiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNOTYuMDI3LDI1LjYzNiBMMTQyLjYwMyw1Mi41MjcgQzE0My44MDcsNTMuMjIyIDE0NC41ODIsNTQuMTE0IDE0NC44NDUsNTUuMDY4IEwxNDQuODM1LDU1LjA3NSBMNjMuNDYxLDEwMi4wNTcgTDYzLjQ2LDEwMi4wNTcgQzYxLjgwNiwxMDEuOTA1IDYwLjI2MSwxMDEuNDU3IDU5LjA1NywxMDAuNzYyIEwxMi40ODEsNzMuODcxIEw5Ni4wMjcsMjUuNjM2IiBpZD0iRmlsbC0yIiBmaWxsPSIjRkFGQUZBIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTYzLjQ2MSwxMDIuMTc0IEM2My40NTMsMTAyLjE3NCA2My40NDYsMTAyLjE3NCA2My40MzksMTAyLjE3MiBDNjEuNzQ2LDEwMi4wMTYgNjAuMjExLDEwMS41NjMgNTguOTk4LDEwMC44NjMgTDEyLjQyMiw3My45NzMgQzEyLjM4Niw3My45NTIgMTIuMzY0LDczLjkxNCAxMi4zNjQsNzMuODcxIEMxMi4zNjQsNzMuODMgMTIuMzg2LDczLjc5MSAxMi40MjIsNzMuNzcgTDk1Ljk2OCwyNS41MzUgQzk2LjAwNCwyNS41MTQgOTYuMDQ5LDI1LjUxNCA5Ni4wODUsMjUuNTM1IEwxNDIuNjYxLDUyLjQyNiBDMTQzLjg4OCw1My4xMzQgMTQ0LjY4Miw1NC4wMzggMTQ0Ljk1Nyw1NS4wMzcgQzE0NC45Nyw1NS4wODMgMTQ0Ljk1Myw1NS4xMzMgMTQ0LjkxNSw1NS4xNjEgQzE0NC45MTEsNTUuMTY1IDE0NC44OTgsNTUuMTc0IDE0NC44OTQsNTUuMTc3IEw2My41MTksMTAyLjE1OCBDNjMuNTAxLDEwMi4xNjkgNjMuNDgxLDEwMi4xNzQgNjMuNDYxLDEwMi4xNzQgTDYzLjQ2MSwxMDIuMTc0IFogTTEyLjcxNCw3My44NzEgTDU5LjExNSwxMDAuNjYxIEM2MC4yOTMsMTAxLjM0MSA2MS43ODYsMTAxLjc4MiA2My40MzUsMTAxLjkzNyBMMTQ0LjcwNyw1NS4wMTUgQzE0NC40MjgsNTQuMTA4IDE0My42ODIsNTMuMjg1IDE0Mi41NDQsNTIuNjI4IEw5Ni4wMjcsMjUuNzcxIEwxMi43MTQsNzMuODcxIEwxMi43MTQsNzMuODcxIFoiIGlkPSJGaWxsLTMiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTQ4LjMyNyw1OC40NzEgQzE0OC4xNDUsNTguNDggMTQ3Ljk2Miw1OC40OCAxNDcuNzgxLDU4LjQ3MiBDMTQ1Ljg4Nyw1OC4zODkgMTQ0LjQ3OSw1Ny40MzQgMTQ0LjYzNiw1Ni4zNCBDMTQ0LjY4OSw1NS45NjcgMTQ0LjY2NCw1NS41OTcgMTQ0LjU2NCw1NS4yMzUgTDYzLjQ2MSwxMDIuMDU3IEM2NC4wODksMTAyLjExNSA2NC43MzMsMTAyLjEzIDY1LjM3OSwxMDIuMDk5IEM2NS41NjEsMTAyLjA5IDY1Ljc0MywxMDIuMDkgNjUuOTI1LDEwMi4wOTggQzY3LjgxOSwxMDIuMTgxIDY5LjIyNywxMDMuMTM2IDY5LjA3LDEwNC4yMyBMMTQ4LjMyNyw1OC40NzEiIGlkPSJGaWxsLTQiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNjkuMDcsMTA0LjM0NyBDNjkuMDQ4LDEwNC4zNDcgNjkuMDI1LDEwNC4zNCA2OS4wMDUsMTA0LjMyNyBDNjguOTY4LDEwNC4zMDEgNjguOTQ4LDEwNC4yNTcgNjguOTU1LDEwNC4yMTMgQzY5LDEwMy44OTYgNjguODk4LDEwMy41NzYgNjguNjU4LDEwMy4yODggQzY4LjE1MywxMDIuNjc4IDY3LjEwMywxMDIuMjY2IDY1LjkyLDEwMi4yMTQgQzY1Ljc0MiwxMDIuMjA2IDY1LjU2MywxMDIuMjA3IDY1LjM4NSwxMDIuMjE1IEM2NC43NDIsMTAyLjI0NiA2NC4wODcsMTAyLjIzMiA2My40NSwxMDIuMTc0IEM2My4zOTksMTAyLjE2OSA2My4zNTgsMTAyLjEzMiA2My4zNDcsMTAyLjA4MiBDNjMuMzM2LDEwMi4wMzMgNjMuMzU4LDEwMS45ODEgNjMuNDAyLDEwMS45NTYgTDE0NC41MDYsNTUuMTM0IEMxNDQuNTM3LDU1LjExNiAxNDQuNTc1LDU1LjExMyAxNDQuNjA5LDU1LjEyNyBDMTQ0LjY0Miw1NS4xNDEgMTQ0LjY2OCw1NS4xNyAxNDQuNjc3LDU1LjIwNCBDMTQ0Ljc4MSw1NS41ODUgMTQ0LjgwNiw1NS45NzIgMTQ0Ljc1MSw1Ni4zNTcgQzE0NC43MDYsNTYuNjczIDE0NC44MDgsNTYuOTk0IDE0NS4wNDcsNTcuMjgyIEMxNDUuNTUzLDU3Ljg5MiAxNDYuNjAyLDU4LjMwMyAxNDcuNzg2LDU4LjM1NSBDMTQ3Ljk2NCw1OC4zNjMgMTQ4LjE0Myw1OC4zNjMgMTQ4LjMyMSw1OC4zNTQgQzE0OC4zNzcsNTguMzUyIDE0OC40MjQsNTguMzg3IDE0OC40MzksNTguNDM4IEMxNDguNDU0LDU4LjQ5IDE0OC40MzIsNTguNTQ1IDE0OC4zODUsNTguNTcyIEw2OS4xMjksMTA0LjMzMSBDNjkuMTExLDEwNC4zNDIgNjkuMDksMTA0LjM0NyA2OS4wNywxMDQuMzQ3IEw2OS4wNywxMDQuMzQ3IFogTTY1LjY2NSwxMDEuOTc1IEM2NS43NTQsMTAxLjk3NSA2NS44NDIsMTAxLjk3NyA2NS45MywxMDEuOTgxIEM2Ny4xOTYsMTAyLjAzNyA2OC4yODMsMTAyLjQ2OSA2OC44MzgsMTAzLjEzOSBDNjkuMDY1LDEwMy40MTMgNjkuMTg4LDEwMy43MTQgNjkuMTk4LDEwNC4wMjEgTDE0Ny44ODMsNTguNTkyIEMxNDcuODQ3LDU4LjU5MiAxNDcuODExLDU4LjU5MSAxNDcuNzc2LDU4LjU4OSBDMTQ2LjUwOSw1OC41MzMgMTQ1LjQyMiw1OC4xIDE0NC44NjcsNTcuNDMxIEMxNDQuNTg1LDU3LjA5MSAxNDQuNDY1LDU2LjcwNyAxNDQuNTIsNTYuMzI0IEMxNDQuNTYzLDU2LjAyMSAxNDQuNTUyLDU1LjcxNiAxNDQuNDg4LDU1LjQxNCBMNjMuODQ2LDEwMS45NyBDNjQuMzUzLDEwMi4wMDIgNjQuODY3LDEwMi4wMDYgNjUuMzc0LDEwMS45ODIgQzY1LjQ3MSwxMDEuOTc3IDY1LjU2OCwxMDEuOTc1IDY1LjY2NSwxMDEuOTc1IEw2NS42NjUsMTAxLjk3NSBaIiBpZD0iRmlsbC01IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTIuMjA4LDU1LjEzNCBDMS4yMDcsNTMuMzA3IDEuOTY3LDUwLjkxNyAzLjkwNiw0OS43OTcgTDU5LjkxNywxNy40NTMgQzYxLjg1NiwxNi4zMzMgNjQuMjQxLDE2LjkwNyA2NS4yNDMsMTguNzM0IEw2NS40NzUsMTkuMTQ0IEM2NS44NzIsMTkuODgyIDY2LjM2OCwyMC41NiA2Ni45NDUsMjEuMTY1IEw2Ny4yMjMsMjEuNDM1IEM3MC41NDgsMjQuNjQ5IDc1LjgwNiwyNS4xNTEgODAuMTExLDIyLjY2NSBMODcuNDMsMTguNDQ1IEM4OS4zNywxNy4zMjYgOTEuNzU0LDE3Ljg5OSA5Mi43NTUsMTkuNzI3IEw5Ni4wMDUsMjUuNjU1IEwxMi40ODYsNzMuODg0IEwyLjIwOCw1NS4xMzQgWiIgaWQ9IkZpbGwtNiIgZmlsbD0iI0ZBRkFGQSI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMi40ODYsNzQuMDAxIEMxMi40NzYsNzQuMDAxIDEyLjQ2NSw3My45OTkgMTIuNDU1LDczLjk5NiBDMTIuNDI0LDczLjk4OCAxMi4zOTksNzMuOTY3IDEyLjM4NCw3My45NCBMMi4xMDYsNTUuMTkgQzEuMDc1LDUzLjMxIDEuODU3LDUwLjg0NSAzLjg0OCw0OS42OTYgTDU5Ljg1OCwxNy4zNTIgQzYwLjUyNSwxNi45NjcgNjEuMjcxLDE2Ljc2NCA2Mi4wMTYsMTYuNzY0IEM2My40MzEsMTYuNzY0IDY0LjY2NiwxNy40NjYgNjUuMzI3LDE4LjY0NiBDNjUuMzM3LDE4LjY1NCA2NS4zNDUsMTguNjYzIDY1LjM1MSwxOC42NzQgTDY1LjU3OCwxOS4wODggQzY1LjU4NCwxOS4xIDY1LjU4OSwxOS4xMTIgNjUuNTkxLDE5LjEyNiBDNjUuOTg1LDE5LjgzOCA2Ni40NjksMjAuNDk3IDY3LjAzLDIxLjA4NSBMNjcuMzA1LDIxLjM1MSBDNjkuMTUxLDIzLjEzNyA3MS42NDksMjQuMTIgNzQuMzM2LDI0LjEyIEM3Ni4zMTMsMjQuMTIgNzguMjksMjMuNTgyIDgwLjA1MywyMi41NjMgQzgwLjA2NCwyMi41NTcgODAuMDc2LDIyLjU1MyA4MC4wODgsMjIuNTUgTDg3LjM3MiwxOC4zNDQgQzg4LjAzOCwxNy45NTkgODguNzg0LDE3Ljc1NiA4OS41MjksMTcuNzU2IEM5MC45NTYsMTcuNzU2IDkyLjIwMSwxOC40NzIgOTIuODU4LDE5LjY3IEw5Ni4xMDcsMjUuNTk5IEM5Ni4xMzgsMjUuNjU0IDk2LjExOCwyNS43MjQgOTYuMDYzLDI1Ljc1NiBMMTIuNTQ1LDczLjk4NSBDMTIuNTI2LDczLjk5NiAxMi41MDYsNzQuMDAxIDEyLjQ4Niw3NC4wMDEgTDEyLjQ4Niw3NC4wMDEgWiBNNjIuMDE2LDE2Ljk5NyBDNjEuMzEyLDE2Ljk5NyA2MC42MDYsMTcuMTkgNTkuOTc1LDE3LjU1NCBMMy45NjUsNDkuODk5IEMyLjA4Myw1MC45ODUgMS4zNDEsNTMuMzA4IDIuMzEsNTUuMDc4IEwxMi41MzEsNzMuNzIzIEw5NS44NDgsMjUuNjExIEw5Mi42NTMsMTkuNzgyIEM5Mi4wMzgsMTguNjYgOTAuODcsMTcuOTkgODkuNTI5LDE3Ljk5IEM4OC44MjUsMTcuOTkgODguMTE5LDE4LjE4MiA4Ny40ODksMTguNTQ3IEw4MC4xNzIsMjIuNzcyIEM4MC4xNjEsMjIuNzc4IDgwLjE0OSwyMi43ODIgODAuMTM3LDIyLjc4NSBDNzguMzQ2LDIzLjgxMSA3Ni4zNDEsMjQuMzU0IDc0LjMzNiwyNC4zNTQgQzcxLjU4OCwyNC4zNTQgNjkuMDMzLDIzLjM0NyA2Ny4xNDIsMjEuNTE5IEw2Ni44NjQsMjEuMjQ5IEM2Ni4yNzcsMjAuNjM0IDY1Ljc3NCwxOS45NDcgNjUuMzY3LDE5LjIwMyBDNjUuMzYsMTkuMTkyIDY1LjM1NiwxOS4xNzkgNjUuMzU0LDE5LjE2NiBMNjUuMTYzLDE4LjgxOSBDNjUuMTU0LDE4LjgxMSA2NS4xNDYsMTguODAxIDY1LjE0LDE4Ljc5IEM2NC41MjUsMTcuNjY3IDYzLjM1NywxNi45OTcgNjIuMDE2LDE2Ljk5NyBMNjIuMDE2LDE2Ljk5NyBaIiBpZD0iRmlsbC03IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTQyLjQzNCw0OC44MDggTDQyLjQzNCw0OC44MDggQzM5LjkyNCw0OC44MDcgMzcuNzM3LDQ3LjU1IDM2LjU4Miw0NS40NDMgQzM0Ljc3MSw0Mi4xMzkgMzYuMTQ0LDM3LjgwOSAzOS42NDEsMzUuNzg5IEw1MS45MzIsMjguNjkxIEM1My4xMDMsMjguMDE1IDU0LjQxMywyNy42NTggNTUuNzIxLDI3LjY1OCBDNTguMjMxLDI3LjY1OCA2MC40MTgsMjguOTE2IDYxLjU3MywzMS4wMjMgQzYzLjM4NCwzNC4zMjcgNjIuMDEyLDM4LjY1NyA1OC41MTQsNDAuNjc3IEw0Ni4yMjMsNDcuNzc1IEM0NS4wNTMsNDguNDUgNDMuNzQyLDQ4LjgwOCA0Mi40MzQsNDguODA4IEw0Mi40MzQsNDguODA4IFogTTU1LjcyMSwyOC4xMjUgQzU0LjQ5NSwyOC4xMjUgNTMuMjY1LDI4LjQ2MSA1Mi4xNjYsMjkuMDk2IEwzOS44NzUsMzYuMTk0IEMzNi41OTYsMzguMDg3IDM1LjMwMiw0Mi4xMzYgMzYuOTkyLDQ1LjIxOCBDMzguMDYzLDQ3LjE3MyA0MC4wOTgsNDguMzQgNDIuNDM0LDQ4LjM0IEM0My42NjEsNDguMzQgNDQuODksNDguMDA1IDQ1Ljk5LDQ3LjM3IEw1OC4yODEsNDAuMjcyIEM2MS41NiwzOC4zNzkgNjIuODUzLDM0LjMzIDYxLjE2NCwzMS4yNDggQzYwLjA5MiwyOS4yOTMgNTguMDU4LDI4LjEyNSA1NS43MjEsMjguMTI1IEw1NS43MjEsMjguMTI1IFoiIGlkPSJGaWxsLTgiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTQ5LjU4OCwyLjQwNyBDMTQ5LjU4OCwyLjQwNyAxNTUuNzY4LDUuOTc1IDE1Ni4zMjUsNi4yOTcgTDE1Ni4zMjUsNy4xODQgQzE1Ni4zMjUsNy4zNiAxNTYuMzM4LDcuNTQ0IDE1Ni4zNjIsNy43MzMgQzE1Ni4zNzMsNy44MTQgMTU2LjM4Miw3Ljg5NCAxNTYuMzksNy45NzUgQzE1Ni41Myw5LjM5IDE1Ny4zNjMsMTAuOTczIDE1OC40OTUsMTEuOTc0IEwxNjUuODkxLDE4LjUxOSBDMTY2LjA2OCwxOC42NzUgMTY2LjI0OSwxOC44MTQgMTY2LjQzMiwxOC45MzQgQzE2OC4wMTEsMTkuOTc0IDE2OS4zODIsMTkuNCAxNjkuNDk0LDE3LjY1MiBDMTY5LjU0MywxNi44NjggMTY5LjU1MSwxNi4wNTcgMTY5LjUxNywxNS4yMjMgTDE2OS41MTQsMTUuMDYzIEwxNjkuNTE0LDEzLjkxMiBDMTcwLjc4LDE0LjY0MiAxOTUuNTAxLDI4LjkxNSAxOTUuNTAxLDI4LjkxNSBMMTk1LjUwMSw4Mi45MTUgQzE5NS41MDEsODQuMDA1IDE5NC43MzEsODQuNDQ1IDE5My43ODEsODMuODk3IEwxNTEuMzA4LDU5LjM3NCBDMTUwLjM1OCw1OC44MjYgMTQ5LjU4OCw1Ny40OTcgMTQ5LjU4OCw1Ni40MDggTDE0OS41ODgsMjIuMzc1IiBpZD0iRmlsbC05IiBmaWxsPSIjRkFGQUZBIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE5NC41NTMsODQuMjUgQzE5NC4yOTYsODQuMjUgMTk0LjAxMyw4NC4xNjUgMTkzLjcyMiw4My45OTcgTDE1MS4yNSw1OS40NzYgQzE1MC4yNjksNTguOTA5IDE0OS40NzEsNTcuNTMzIDE0OS40NzEsNTYuNDA4IEwxNDkuNDcxLDIyLjM3NSBMMTQ5LjcwNSwyMi4zNzUgTDE0OS43MDUsNTYuNDA4IEMxNDkuNzA1LDU3LjQ1OSAxNTAuNDUsNTguNzQ0IDE1MS4zNjYsNTkuMjc0IEwxOTMuODM5LDgzLjc5NSBDMTk0LjI2Myw4NC4wNCAxOTQuNjU1LDg0LjA4MyAxOTQuOTQyLDgzLjkxNyBDMTk1LjIyNyw4My43NTMgMTk1LjM4NCw4My4zOTcgMTk1LjM4NCw4Mi45MTUgTDE5NS4zODQsMjguOTgyIEMxOTQuMTAyLDI4LjI0MiAxNzIuMTA0LDE1LjU0MiAxNjkuNjMxLDE0LjExNCBMMTY5LjYzNCwxNS4yMiBDMTY5LjY2OCwxNi4wNTIgMTY5LjY2LDE2Ljg3NCAxNjkuNjEsMTcuNjU5IEMxNjkuNTU2LDE4LjUwMyAxNjkuMjE0LDE5LjEyMyAxNjguNjQ3LDE5LjQwNSBDMTY4LjAyOCwxOS43MTQgMTY3LjE5NywxOS41NzggMTY2LjM2NywxOS4wMzIgQzE2Ni4xODEsMTguOTA5IDE2NS45OTUsMTguNzY2IDE2NS44MTQsMTguNjA2IEwxNTguNDE3LDEyLjA2MiBDMTU3LjI1OSwxMS4wMzYgMTU2LjQxOCw5LjQzNyAxNTYuMjc0LDcuOTg2IEMxNTYuMjY2LDcuOTA3IDE1Ni4yNTcsNy44MjcgMTU2LjI0Nyw3Ljc0OCBDMTU2LjIyMSw3LjU1NSAxNTYuMjA5LDcuMzY1IDE1Ni4yMDksNy4xODQgTDE1Ni4yMDksNi4zNjQgQzE1NS4zNzUsNS44ODMgMTQ5LjUyOSwyLjUwOCAxNDkuNTI5LDIuNTA4IEwxNDkuNjQ2LDIuMzA2IEMxNDkuNjQ2LDIuMzA2IDE1NS44MjcsNS44NzQgMTU2LjM4NCw2LjE5NiBMMTU2LjQ0Miw2LjIzIEwxNTYuNDQyLDcuMTg0IEMxNTYuNDQyLDcuMzU1IDE1Ni40NTQsNy41MzUgMTU2LjQ3OCw3LjcxNyBDMTU2LjQ4OSw3LjggMTU2LjQ5OSw3Ljg4MiAxNTYuNTA3LDcuOTYzIEMxNTYuNjQ1LDkuMzU4IDE1Ny40NTUsMTAuODk4IDE1OC41NzIsMTEuODg2IEwxNjUuOTY5LDE4LjQzMSBDMTY2LjE0MiwxOC41ODQgMTY2LjMxOSwxOC43MiAxNjYuNDk2LDE4LjgzNyBDMTY3LjI1NCwxOS4zMzYgMTY4LDE5LjQ2NyAxNjguNTQzLDE5LjE5NiBDMTY5LjAzMywxOC45NTMgMTY5LjMyOSwxOC40MDEgMTY5LjM3NywxNy42NDUgQzE2OS40MjcsMTYuODY3IDE2OS40MzQsMTYuMDU0IDE2OS40MDEsMTUuMjI4IEwxNjkuMzk3LDE1LjA2NSBMMTY5LjM5NywxMy43MSBMMTY5LjU3MiwxMy44MSBDMTcwLjgzOSwxNC41NDEgMTk1LjU1OSwyOC44MTQgMTk1LjU1OSwyOC44MTQgTDE5NS42MTgsMjguODQ3IEwxOTUuNjE4LDgyLjkxNSBDMTk1LjYxOCw4My40ODQgMTk1LjQyLDgzLjkxMSAxOTUuMDU5LDg0LjExOSBDMTk0LjkwOCw4NC4yMDYgMTk0LjczNyw4NC4yNSAxOTQuNTUzLDg0LjI1IiBpZD0iRmlsbC0xMCIgZmlsbD0iIzYwN0Q4QiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNDUuNjg1LDU2LjE2MSBMMTY5LjgsNzAuMDgzIEwxNDMuODIyLDg1LjA4MSBMMTQyLjM2LDg0Ljc3NCBDMTM1LjgyNiw4Mi42MDQgMTI4LjczMiw4MS4wNDYgMTIxLjM0MSw4MC4xNTggQzExNi45NzYsNzkuNjM0IDExMi42NzgsODEuMjU0IDExMS43NDMsODMuNzc4IEMxMTEuNTA2LDg0LjQxNCAxMTEuNTAzLDg1LjA3MSAxMTEuNzMyLDg1LjcwNiBDMTEzLjI3LDg5Ljk3MyAxMTUuOTY4LDk0LjA2OSAxMTkuNzI3LDk3Ljg0MSBMMTIwLjI1OSw5OC42ODYgQzEyMC4yNiw5OC42ODUgOTQuMjgyLDExMy42ODMgOTQuMjgyLDExMy42ODMgTDcwLjE2Nyw5OS43NjEgTDE0NS42ODUsNTYuMTYxIiBpZD0iRmlsbC0xMSIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik05NC4yODIsMTEzLjgxOCBMOTQuMjIzLDExMy43ODUgTDY5LjkzMyw5OS43NjEgTDcwLjEwOCw5OS42NiBMMTQ1LjY4NSw1Ni4wMjYgTDE0NS43NDMsNTYuMDU5IEwxNzAuMDMzLDcwLjA4MyBMMTQzLjg0Miw4NS4yMDUgTDE0My43OTcsODUuMTk1IEMxNDMuNzcyLDg1LjE5IDE0Mi4zMzYsODQuODg4IDE0Mi4zMzYsODQuODg4IEMxMzUuNzg3LDgyLjcxNCAxMjguNzIzLDgxLjE2MyAxMjEuMzI3LDgwLjI3NCBDMTIwLjc4OCw4MC4yMDkgMTIwLjIzNiw4MC4xNzcgMTE5LjY4OSw4MC4xNzcgQzExNS45MzEsODAuMTc3IDExMi42MzUsODEuNzA4IDExMS44NTIsODMuODE5IEMxMTEuNjI0LDg0LjQzMiAxMTEuNjIxLDg1LjA1MyAxMTEuODQyLDg1LjY2NyBDMTEzLjM3Nyw4OS45MjUgMTE2LjA1OCw5My45OTMgMTE5LjgxLDk3Ljc1OCBMMTE5LjgyNiw5Ny43NzkgTDEyMC4zNTIsOTguNjE0IEMxMjAuMzU0LDk4LjYxNyAxMjAuMzU2LDk4LjYyIDEyMC4zNTgsOTguNjI0IEwxMjAuNDIyLDk4LjcyNiBMMTIwLjMxNyw5OC43ODcgQzEyMC4yNjQsOTguODE4IDk0LjU5OSwxMTMuNjM1IDk0LjM0LDExMy43ODUgTDk0LjI4MiwxMTMuODE4IEw5NC4yODIsMTEzLjgxOCBaIE03MC40MDEsOTkuNzYxIEw5NC4yODIsMTEzLjU0OSBMMTE5LjA4NCw5OS4yMjkgQzExOS42Myw5OC45MTQgMTE5LjkzLDk4Ljc0IDEyMC4xMDEsOTguNjU0IEwxMTkuNjM1LDk3LjkxNCBDMTE1Ljg2NCw5NC4xMjcgMTEzLjE2OCw5MC4wMzMgMTExLjYyMiw4NS43NDYgQzExMS4zODIsODUuMDc5IDExMS4zODYsODQuNDA0IDExMS42MzMsODMuNzM4IEMxMTIuNDQ4LDgxLjUzOSAxMTUuODM2LDc5Ljk0MyAxMTkuNjg5LDc5Ljk0MyBDMTIwLjI0Niw3OS45NDMgMTIwLjgwNiw3OS45NzYgMTIxLjM1NSw4MC4wNDIgQzEyOC43NjcsODAuOTMzIDEzNS44NDYsODIuNDg3IDE0Mi4zOTYsODQuNjYzIEMxNDMuMjMyLDg0LjgzOCAxNDMuNjExLDg0LjkxNyAxNDMuNzg2LDg0Ljk2NyBMMTY5LjU2Niw3MC4wODMgTDE0NS42ODUsNTYuMjk1IEw3MC40MDEsOTkuNzYxIEw3MC40MDEsOTkuNzYxIFoiIGlkPSJGaWxsLTEyIiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE2Ny4yMywxOC45NzkgTDE2Ny4yMyw2OS44NSBMMTM5LjkwOSw4NS42MjMgTDEzMy40NDgsNzEuNDU2IEMxMzIuNTM4LDY5LjQ2IDEzMC4wMiw2OS43MTggMTI3LjgyNCw3Mi4wMyBDMTI2Ljc2OSw3My4xNCAxMjUuOTMxLDc0LjU4NSAxMjUuNDk0LDc2LjA0OCBMMTE5LjAzNCw5Ny42NzYgTDkxLjcxMiwxMTMuNDUgTDkxLjcxMiw2Mi41NzkgTDE2Ny4yMywxOC45NzkiIGlkPSJGaWxsLTEzIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTkxLjcxMiwxMTMuNTY3IEM5MS42OTIsMTEzLjU2NyA5MS42NzIsMTEzLjU2MSA5MS42NTMsMTEzLjU1MSBDOTEuNjE4LDExMy41MyA5MS41OTUsMTEzLjQ5MiA5MS41OTUsMTEzLjQ1IEw5MS41OTUsNjIuNTc5IEM5MS41OTUsNjIuNTM3IDkxLjYxOCw2Mi40OTkgOTEuNjUzLDYyLjQ3OCBMMTY3LjE3MiwxOC44NzggQzE2Ny4yMDgsMTguODU3IDE2Ny4yNTIsMTguODU3IDE2Ny4yODgsMTguODc4IEMxNjcuMzI0LDE4Ljg5OSAxNjcuMzQ3LDE4LjkzNyAxNjcuMzQ3LDE4Ljk3OSBMMTY3LjM0Nyw2OS44NSBDMTY3LjM0Nyw2OS44OTEgMTY3LjMyNCw2OS45MyAxNjcuMjg4LDY5Ljk1IEwxMzkuOTY3LDg1LjcyNSBDMTM5LjkzOSw4NS43NDEgMTM5LjkwNSw4NS43NDUgMTM5Ljg3Myw4NS43MzUgQzEzOS44NDIsODUuNzI1IDEzOS44MTYsODUuNzAyIDEzOS44MDIsODUuNjcyIEwxMzMuMzQyLDcxLjUwNCBDMTMyLjk2Nyw3MC42ODIgMTMyLjI4LDcwLjIyOSAxMzEuNDA4LDcwLjIyOSBDMTMwLjMxOSw3MC4yMjkgMTI5LjA0NCw3MC45MTUgMTI3LjkwOCw3Mi4xMSBDMTI2Ljg3NCw3My4yIDEyNi4wMzQsNzQuNjQ3IDEyNS42MDYsNzYuMDgyIEwxMTkuMTQ2LDk3LjcwOSBDMTE5LjEzNyw5Ny43MzggMTE5LjExOCw5Ny43NjIgMTE5LjA5Miw5Ny43NzcgTDkxLjc3LDExMy41NTEgQzkxLjc1MiwxMTMuNTYxIDkxLjczMiwxMTMuNTY3IDkxLjcxMiwxMTMuNTY3IEw5MS43MTIsMTEzLjU2NyBaIE05MS44MjksNjIuNjQ3IEw5MS44MjksMTEzLjI0OCBMMTE4LjkzNSw5Ny41OTggTDEyNS4zODIsNzYuMDE1IEMxMjUuODI3LDc0LjUyNSAxMjYuNjY0LDczLjA4MSAxMjcuNzM5LDcxLjk1IEMxMjguOTE5LDcwLjcwOCAxMzAuMjU2LDY5Ljk5NiAxMzEuNDA4LDY5Ljk5NiBDMTMyLjM3Nyw2OS45OTYgMTMzLjEzOSw3MC40OTcgMTMzLjU1NCw3MS40MDcgTDEzOS45NjEsODUuNDU4IEwxNjcuMTEzLDY5Ljc4MiBMMTY3LjExMywxOS4xODEgTDkxLjgyOSw2Mi42NDcgTDkxLjgyOSw2Mi42NDcgWiIgaWQ9IkZpbGwtMTQiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTY4LjU0MywxOS4yMTMgTDE2OC41NDMsNzAuMDgzIEwxNDEuMjIxLDg1Ljg1NyBMMTM0Ljc2MSw3MS42ODkgQzEzMy44NTEsNjkuNjk0IDEzMS4zMzMsNjkuOTUxIDEyOS4xMzcsNzIuMjYzIEMxMjguMDgyLDczLjM3NCAxMjcuMjQ0LDc0LjgxOSAxMjYuODA3LDc2LjI4MiBMMTIwLjM0Niw5Ny45MDkgTDkzLjAyNSwxMTMuNjgzIEw5My4wMjUsNjIuODEzIEwxNjguNTQzLDE5LjIxMyIgaWQ9IkZpbGwtMTUiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNOTMuMDI1LDExMy44IEM5My4wMDUsMTEzLjggOTIuOTg0LDExMy43OTUgOTIuOTY2LDExMy43ODUgQzkyLjkzMSwxMTMuNzY0IDkyLjkwOCwxMTMuNzI1IDkyLjkwOCwxMTMuNjg0IEw5Mi45MDgsNjIuODEzIEM5Mi45MDgsNjIuNzcxIDkyLjkzMSw2Mi43MzMgOTIuOTY2LDYyLjcxMiBMMTY4LjQ4NCwxOS4xMTIgQzE2OC41MiwxOS4wOSAxNjguNTY1LDE5LjA5IDE2OC42MDEsMTkuMTEyIEMxNjguNjM3LDE5LjEzMiAxNjguNjYsMTkuMTcxIDE2OC42NiwxOS4yMTIgTDE2OC42Niw3MC4wODMgQzE2OC42Niw3MC4xMjUgMTY4LjYzNyw3MC4xNjQgMTY4LjYwMSw3MC4xODQgTDE0MS4yOCw4NS45NTggQzE0MS4yNTEsODUuOTc1IDE0MS4yMTcsODUuOTc5IDE0MS4xODYsODUuOTY4IEMxNDEuMTU0LDg1Ljk1OCAxNDEuMTI5LDg1LjkzNiAxNDEuMTE1LDg1LjkwNiBMMTM0LjY1NSw3MS43MzggQzEzNC4yOCw3MC45MTUgMTMzLjU5Myw3MC40NjMgMTMyLjcyLDcwLjQ2MyBDMTMxLjYzMiw3MC40NjMgMTMwLjM1Nyw3MS4xNDggMTI5LjIyMSw3Mi4zNDQgQzEyOC4xODYsNzMuNDMzIDEyNy4zNDcsNzQuODgxIDEyNi45MTksNzYuMzE1IEwxMjAuNDU4LDk3Ljk0MyBDMTIwLjQ1LDk3Ljk3MiAxMjAuNDMxLDk3Ljk5NiAxMjAuNDA1LDk4LjAxIEw5My4wODMsMTEzLjc4NSBDOTMuMDY1LDExMy43OTUgOTMuMDQ1LDExMy44IDkzLjAyNSwxMTMuOCBMOTMuMDI1LDExMy44IFogTTkzLjE0Miw2Mi44ODEgTDkzLjE0MiwxMTMuNDgxIEwxMjAuMjQ4LDk3LjgzMiBMMTI2LjY5NSw3Ni4yNDggQzEyNy4xNCw3NC43NTggMTI3Ljk3Nyw3My4zMTUgMTI5LjA1Miw3Mi4xODMgQzEzMC4yMzEsNzAuOTQyIDEzMS41NjgsNzAuMjI5IDEzMi43Miw3MC4yMjkgQzEzMy42ODksNzAuMjI5IDEzNC40NTIsNzAuNzMxIDEzNC44NjcsNzEuNjQxIEwxNDEuMjc0LDg1LjY5MiBMMTY4LjQyNiw3MC4wMTYgTDE2OC40MjYsMTkuNDE1IEw5My4xNDIsNjIuODgxIEw5My4xNDIsNjIuODgxIFoiIGlkPSJGaWxsLTE2IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE2OS44LDcwLjA4MyBMMTQyLjQ3OCw4NS44NTcgTDEzNi4wMTgsNzEuNjg5IEMxMzUuMTA4LDY5LjY5NCAxMzIuNTksNjkuOTUxIDEzMC4zOTMsNzIuMjYzIEMxMjkuMzM5LDczLjM3NCAxMjguNSw3NC44MTkgMTI4LjA2NCw3Ni4yODIgTDEyMS42MDMsOTcuOTA5IEw5NC4yODIsMTEzLjY4MyBMOTQuMjgyLDYyLjgxMyBMMTY5LjgsMTkuMjEzIEwxNjkuOCw3MC4wODMgWiIgaWQ9IkZpbGwtMTciIGZpbGw9IiNGQUZBRkEiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNOTQuMjgyLDExMy45MTcgQzk0LjI0MSwxMTMuOTE3IDk0LjIwMSwxMTMuOTA3IDk0LjE2NSwxMTMuODg2IEM5NC4wOTMsMTEzLjg0NSA5NC4wNDgsMTEzLjc2NyA5NC4wNDgsMTEzLjY4NCBMOTQuMDQ4LDYyLjgxMyBDOTQuMDQ4LDYyLjczIDk0LjA5Myw2Mi42NTIgOTQuMTY1LDYyLjYxMSBMMTY5LjY4MywxOS4wMSBDMTY5Ljc1NSwxOC45NjkgMTY5Ljg0NCwxOC45NjkgMTY5LjkxNywxOS4wMSBDMTY5Ljk4OSwxOS4wNTIgMTcwLjAzMywxOS4xMjkgMTcwLjAzMywxOS4yMTIgTDE3MC4wMzMsNzAuMDgzIEMxNzAuMDMzLDcwLjE2NiAxNjkuOTg5LDcwLjI0NCAxNjkuOTE3LDcwLjI4NSBMMTQyLjU5NSw4Ni4wNiBDMTQyLjUzOCw4Ni4wOTIgMTQyLjQ2OSw4Ni4xIDE0Mi40MDcsODYuMDggQzE0Mi4zNDQsODYuMDYgMTQyLjI5Myw4Ni4wMTQgMTQyLjI2Niw4NS45NTQgTDEzNS44MDUsNzEuNzg2IEMxMzUuNDQ1LDcwLjk5NyAxMzQuODEzLDcwLjU4IDEzMy45NzcsNzAuNTggQzEzMi45MjEsNzAuNTggMTMxLjY3Niw3MS4yNTIgMTMwLjU2Miw3Mi40MjQgQzEyOS41NCw3My41MDEgMTI4LjcxMSw3NC45MzEgMTI4LjI4Nyw3Ni4zNDggTDEyMS44MjcsOTcuOTc2IEMxMjEuODEsOTguMDM0IDEyMS43NzEsOTguMDgyIDEyMS43Miw5OC4xMTIgTDk0LjM5OCwxMTMuODg2IEM5NC4zNjIsMTEzLjkwNyA5NC4zMjIsMTEzLjkxNyA5NC4yODIsMTEzLjkxNyBMOTQuMjgyLDExMy45MTcgWiBNOTQuNTE1LDYyLjk0OCBMOTQuNTE1LDExMy4yNzkgTDEyMS40MDYsOTcuNzU0IEwxMjcuODQsNzYuMjE1IEMxMjguMjksNzQuNzA4IDEyOS4xMzcsNzMuMjQ3IDEzMC4yMjQsNzIuMTAzIEMxMzEuNDI1LDcwLjgzOCAxMzIuNzkzLDcwLjExMiAxMzMuOTc3LDcwLjExMiBDMTM0Ljk5NSw3MC4xMTIgMTM1Ljc5NSw3MC42MzggMTM2LjIzLDcxLjU5MiBMMTQyLjU4NCw4NS41MjYgTDE2OS41NjYsNjkuOTQ4IEwxNjkuNTY2LDE5LjYxNyBMOTQuNTE1LDYyLjk0OCBMOTQuNTE1LDYyLjk0OCBaIiBpZD0iRmlsbC0xOCIgZmlsbD0iIzYwN0Q4QiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMDkuODk0LDkyLjk0MyBMMTA5Ljg5NCw5Mi45NDMgQzEwOC4xMiw5Mi45NDMgMTA2LjY1Myw5Mi4yMTggMTA1LjY1LDkwLjgyMyBDMTA1LjU4Myw5MC43MzEgMTA1LjU5Myw5MC42MSAxMDUuNjczLDkwLjUyOSBDMTA1Ljc1Myw5MC40NDggMTA1Ljg4LDkwLjQ0IDEwNS45NzQsOTAuNTA2IEMxMDYuNzU0LDkxLjA1MyAxMDcuNjc5LDkxLjMzMyAxMDguNzI0LDkxLjMzMyBDMTEwLjA0Nyw5MS4zMzMgMTExLjQ3OCw5MC44OTQgMTEyLjk4LDkwLjAyNyBDMTE4LjI5MSw4Ni45NiAxMjIuNjExLDc5LjUwOSAxMjIuNjExLDczLjQxNiBDMTIyLjYxMSw3MS40ODkgMTIyLjE2OSw2OS44NTYgMTIxLjMzMyw2OC42OTIgQzEyMS4yNjYsNjguNiAxMjEuMjc2LDY4LjQ3MyAxMjEuMzU2LDY4LjM5MiBDMTIxLjQzNiw2OC4zMTEgMTIxLjU2Myw2OC4yOTkgMTIxLjY1Niw2OC4zNjUgQzEyMy4zMjcsNjkuNTM3IDEyNC4yNDcsNzEuNzQ2IDEyNC4yNDcsNzQuNTg0IEMxMjQuMjQ3LDgwLjgyNiAxMTkuODIxLDg4LjQ0NyAxMTQuMzgyLDkxLjU4NyBDMTEyLjgwOCw5Mi40OTUgMTExLjI5OCw5Mi45NDMgMTA5Ljg5NCw5Mi45NDMgTDEwOS44OTQsOTIuOTQzIFogTTEwNi45MjUsOTEuNDAxIEMxMDcuNzM4LDkyLjA1MiAxMDguNzQ1LDkyLjI3OCAxMDkuODkzLDkyLjI3OCBMMTA5Ljg5NCw5Mi4yNzggQzExMS4yMTUsOTIuMjc4IDExMi42NDcsOTEuOTUxIDExNC4xNDgsOTEuMDg0IEMxMTkuNDU5LDg4LjAxNyAxMjMuNzgsODAuNjIxIDEyMy43OCw3NC41MjggQzEyMy43OCw3Mi41NDkgMTIzLjMxNyw3MC45MjkgMTIyLjQ1NCw2OS43NjcgQzEyMi44NjUsNzAuODAyIDEyMy4wNzksNzIuMDQyIDEyMy4wNzksNzMuNDAyIEMxMjMuMDc5LDc5LjY0NSAxMTguNjUzLDg3LjI4NSAxMTMuMjE0LDkwLjQyNSBDMTExLjY0LDkxLjMzNCAxMTAuMTMsOTEuNzQyIDEwOC43MjQsOTEuNzQyIEMxMDguMDgzLDkxLjc0MiAxMDcuNDgxLDkxLjU5MyAxMDYuOTI1LDkxLjQwMSBMMTA2LjkyNSw5MS40MDEgWiIgaWQ9IkZpbGwtMTkiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTEzLjA5Nyw5MC4yMyBDMTE4LjQ4MSw4Ny4xMjIgMTIyLjg0NSw3OS41OTQgMTIyLjg0NSw3My40MTYgQzEyMi44NDUsNzEuMzY1IDEyMi4zNjIsNjkuNzI0IDEyMS41MjIsNjguNTU2IEMxMTkuNzM4LDY3LjMwNCAxMTcuMTQ4LDY3LjM2MiAxMTQuMjY1LDY5LjAyNiBDMTA4Ljg4MSw3Mi4xMzQgMTA0LjUxNyw3OS42NjIgMTA0LjUxNyw4NS44NCBDMTA0LjUxNyw4Ny44OTEgMTA1LDg5LjUzMiAxMDUuODQsOTAuNyBDMTA3LjYyNCw5MS45NTIgMTEwLjIxNCw5MS44OTQgMTEzLjA5Nyw5MC4yMyIgaWQ9IkZpbGwtMjAiIGZpbGw9IiNGQUZBRkEiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTA4LjcyNCw5MS42MTQgTDEwOC43MjQsOTEuNjE0IEMxMDcuNTgyLDkxLjYxNCAxMDYuNTY2LDkxLjQwMSAxMDUuNzA1LDkwLjc5NyBDMTA1LjY4NCw5MC43ODMgMTA1LjY2NSw5MC44MTEgMTA1LjY1LDkwLjc5IEMxMDQuNzU2LDg5LjU0NiAxMDQuMjgzLDg3Ljg0MiAxMDQuMjgzLDg1LjgxNyBDMTA0LjI4Myw3OS41NzUgMTA4LjcwOSw3MS45NTMgMTE0LjE0OCw2OC44MTIgQzExNS43MjIsNjcuOTA0IDExNy4yMzIsNjcuNDQ5IDExOC42MzgsNjcuNDQ5IEMxMTkuNzgsNjcuNDQ5IDEyMC43OTYsNjcuNzU4IDEyMS42NTYsNjguMzYyIEMxMjEuNjc4LDY4LjM3NyAxMjEuNjk3LDY4LjM5NyAxMjEuNzEyLDY4LjQxOCBDMTIyLjYwNiw2OS42NjIgMTIzLjA3OSw3MS4zOSAxMjMuMDc5LDczLjQxNSBDMTIzLjA3OSw3OS42NTggMTE4LjY1Myw4Ny4xOTggMTEzLjIxNCw5MC4zMzggQzExMS42NCw5MS4yNDcgMTEwLjEzLDkxLjYxNCAxMDguNzI0LDkxLjYxNCBMMTA4LjcyNCw5MS42MTQgWiBNMTA2LjAwNiw5MC41MDUgQzEwNi43OCw5MS4wMzcgMTA3LjY5NCw5MS4yODEgMTA4LjcyNCw5MS4yODEgQzExMC4wNDcsOTEuMjgxIDExMS40NzgsOTAuODY4IDExMi45OCw5MC4wMDEgQzExOC4yOTEsODYuOTM1IDEyMi42MTEsNzkuNDk2IDEyMi42MTEsNzMuNDAzIEMxMjIuNjExLDcxLjQ5NCAxMjIuMTc3LDY5Ljg4IDEyMS4zNTYsNjguNzE4IEMxMjAuNTgyLDY4LjE4NSAxMTkuNjY4LDY3LjkxOSAxMTguNjM4LDY3LjkxOSBDMTE3LjMxNSw2Ny45MTkgMTE1Ljg4Myw2OC4zNiAxMTQuMzgyLDY5LjIyNyBDMTA5LjA3MSw3Mi4yOTMgMTA0Ljc1MSw3OS43MzMgMTA0Ljc1MSw4NS44MjYgQzEwNC43NTEsODcuNzM1IDEwNS4xODUsODkuMzQzIDEwNi4wMDYsOTAuNTA1IEwxMDYuMDA2LDkwLjUwNSBaIiBpZD0iRmlsbC0yMSIgZmlsbD0iIzYwN0Q4QiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNDkuMzE4LDcuMjYyIEwxMzkuMzM0LDE2LjE0IEwxNTUuMjI3LDI3LjE3MSBMMTYwLjgxNiwyMS4wNTkgTDE0OS4zMTgsNy4yNjIiIGlkPSJGaWxsLTIyIiBmaWxsPSIjRkFGQUZBIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE2OS42NzYsMTMuODQgTDE1OS45MjgsMTkuNDY3IEMxNTYuMjg2LDIxLjU3IDE1MC40LDIxLjU4IDE0Ni43ODEsMTkuNDkxIEMxNDMuMTYxLDE3LjQwMiAxNDMuMTgsMTQuMDAzIDE0Ni44MjIsMTEuOSBMMTU2LjMxNyw2LjI5MiBMMTQ5LjU4OCwyLjQwNyBMNjcuNzUyLDQ5LjQ3OCBMMTEzLjY3NSw3NS45OTIgTDExNi43NTYsNzQuMjEzIEMxMTcuMzg3LDczLjg0OCAxMTcuNjI1LDczLjMxNSAxMTcuMzc0LDcyLjgyMyBDMTE1LjAxNyw2OC4xOTEgMTE0Ljc4MSw2My4yNzcgMTE2LjY5MSw1OC41NjEgQzEyMi4zMjksNDQuNjQxIDE0MS4yLDMzLjc0NiAxNjUuMzA5LDMwLjQ5MSBDMTczLjQ3OCwyOS4zODggMTgxLjk4OSwyOS41MjQgMTkwLjAxMywzMC44ODUgQzE5MC44NjUsMzEuMDMgMTkxLjc4OSwzMC44OTMgMTkyLjQyLDMwLjUyOCBMMTk1LjUwMSwyOC43NSBMMTY5LjY3NiwxMy44NCIgaWQ9IkZpbGwtMjMiIGZpbGw9IiNGQUZBRkEiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTEzLjY3NSw3Ni40NTkgQzExMy41OTQsNzYuNDU5IDExMy41MTQsNzYuNDM4IDExMy40NDIsNzYuMzk3IEw2Ny41MTgsNDkuODgyIEM2Ny4zNzQsNDkuNzk5IDY3LjI4NCw0OS42NDUgNjcuMjg1LDQ5LjQ3OCBDNjcuMjg1LDQ5LjMxMSA2Ny4zNzQsNDkuMTU3IDY3LjUxOSw0OS4wNzMgTDE0OS4zNTUsMi4wMDIgQzE0OS40OTksMS45MTkgMTQ5LjY3NywxLjkxOSAxNDkuODIxLDIuMDAyIEwxNTYuNTUsNS44ODcgQzE1Ni43NzQsNi4wMTcgMTU2Ljg1LDYuMzAyIDE1Ni43MjIsNi41MjYgQzE1Ni41OTIsNi43NDkgMTU2LjMwNyw2LjgyNiAxNTYuMDgzLDYuNjk2IEwxNDkuNTg3LDIuOTQ2IEw2OC42ODcsNDkuNDc5IEwxMTMuNjc1LDc1LjQ1MiBMMTE2LjUyMyw3My44MDggQzExNi43MTUsNzMuNjk3IDExNy4xNDMsNzMuMzk5IDExNi45NTgsNzMuMDM1IEMxMTQuNTQyLDY4LjI4NyAxMTQuMyw2My4yMjEgMTE2LjI1OCw1OC4zODUgQzExOS4wNjQsNTEuNDU4IDEyNS4xNDMsNDUuMTQzIDEzMy44NCw0MC4xMjIgQzE0Mi40OTcsMzUuMTI0IDE1My4zNTgsMzEuNjMzIDE2NS4yNDcsMzAuMDI4IEMxNzMuNDQ1LDI4LjkyMSAxODIuMDM3LDI5LjA1OCAxOTAuMDkxLDMwLjQyNSBDMTkwLjgzLDMwLjU1IDE5MS42NTIsMzAuNDMyIDE5Mi4xODYsMzAuMTI0IEwxOTQuNTY3LDI4Ljc1IEwxNjkuNDQyLDE0LjI0NCBDMTY5LjIxOSwxNC4xMTUgMTY5LjE0MiwxMy44MjkgMTY5LjI3MSwxMy42MDYgQzE2OS40LDEzLjM4MiAxNjkuNjg1LDEzLjMwNiAxNjkuOTA5LDEzLjQzNSBMMTk1LjczNCwyOC4zNDUgQzE5NS44NzksMjguNDI4IDE5NS45NjgsMjguNTgzIDE5NS45NjgsMjguNzUgQzE5NS45NjgsMjguOTE2IDE5NS44NzksMjkuMDcxIDE5NS43MzQsMjkuMTU0IEwxOTIuNjUzLDMwLjkzMyBDMTkxLjkzMiwzMS4zNSAxOTAuODksMzEuNTA4IDE4OS45MzUsMzEuMzQ2IEMxODEuOTcyLDI5Ljk5NSAxNzMuNDc4LDI5Ljg2IDE2NS4zNzIsMzAuOTU0IEMxNTMuNjAyLDMyLjU0MyAxNDIuODYsMzUuOTkzIDEzNC4zMDcsNDAuOTMxIEMxMjUuNzkzLDQ1Ljg0NyAxMTkuODUxLDUyLjAwNCAxMTcuMTI0LDU4LjczNiBDMTE1LjI3LDYzLjMxNCAxMTUuNTAxLDY4LjExMiAxMTcuNzksNzIuNjExIEMxMTguMTYsNzMuMzM2IDExNy44NDUsNzQuMTI0IDExNi45OSw3NC42MTcgTDExMy45MDksNzYuMzk3IEMxMTMuODM2LDc2LjQzOCAxMTMuNzU2LDc2LjQ1OSAxMTMuNjc1LDc2LjQ1OSIgaWQ9IkZpbGwtMjQiIGZpbGw9IiM0NTVBNjQiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTUzLjMxNiwyMS4yNzkgQzE1MC45MDMsMjEuMjc5IDE0OC40OTUsMjAuNzUxIDE0Ni42NjQsMTkuNjkzIEMxNDQuODQ2LDE4LjY0NCAxNDMuODQ0LDE3LjIzMiAxNDMuODQ0LDE1LjcxOCBDMTQzLjg0NCwxNC4xOTEgMTQ0Ljg2LDEyLjc2MyAxNDYuNzA1LDExLjY5OCBMMTU2LjE5OCw2LjA5MSBDMTU2LjMwOSw2LjAyNSAxNTYuNDUyLDYuMDYyIDE1Ni41MTgsNi4xNzMgQzE1Ni41ODMsNi4yODQgMTU2LjU0Nyw2LjQyNyAxNTYuNDM2LDYuNDkzIEwxNDYuOTQsMTIuMTAyIEMxNDUuMjQ0LDEzLjA4MSAxNDQuMzEyLDE0LjM2NSAxNDQuMzEyLDE1LjcxOCBDMTQ0LjMxMiwxNy4wNTggMTQ1LjIzLDE4LjMyNiAxNDYuODk3LDE5LjI4OSBDMTUwLjQ0NiwyMS4zMzggMTU2LjI0LDIxLjMyNyAxNTkuODExLDE5LjI2NSBMMTY5LjU1OSwxMy42MzcgQzE2OS42NywxMy41NzMgMTY5LjgxMywxMy42MTEgMTY5Ljg3OCwxMy43MjMgQzE2OS45NDMsMTMuODM0IDE2OS45MDQsMTMuOTc3IDE2OS43OTMsMTQuMDQyIEwxNjAuMDQ1LDE5LjY3IEMxNTguMTg3LDIwLjc0MiAxNTUuNzQ5LDIxLjI3OSAxNTMuMzE2LDIxLjI3OSIgaWQ9IkZpbGwtMjUiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTEzLjY3NSw3NS45OTIgTDY3Ljc2Miw0OS40ODQiIGlkPSJGaWxsLTI2IiBmaWxsPSIjNDU1QTY0Ij48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTExMy42NzUsNzYuMzQyIEMxMTMuNjE1LDc2LjM0MiAxMTMuNTU1LDc2LjMyNyAxMTMuNSw3Ni4yOTUgTDY3LjU4Nyw0OS43ODcgQzY3LjQxOSw0OS42OSA2Ny4zNjIsNDkuNDc2IDY3LjQ1OSw0OS4zMDkgQzY3LjU1Niw0OS4xNDEgNjcuNzcsNDkuMDgzIDY3LjkzNyw0OS4xOCBMMTEzLjg1LDc1LjY4OCBDMTE0LjAxOCw3NS43ODUgMTE0LjA3NSw3NiAxMTMuOTc4LDc2LjE2NyBDMTEzLjkxNCw3Ni4yNzkgMTEzLjc5Niw3Ni4zNDIgMTEzLjY3NSw3Ni4zNDIiIGlkPSJGaWxsLTI3IiBmaWxsPSIjNDU1QTY0Ij48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTY3Ljc2Miw0OS40ODQgTDY3Ljc2MiwxMDMuNDg1IEM2Ny43NjIsMTA0LjU3NSA2OC41MzIsMTA1LjkwMyA2OS40ODIsMTA2LjQ1MiBMMTExLjk1NSwxMzAuOTczIEMxMTIuOTA1LDEzMS41MjIgMTEzLjY3NSwxMzEuMDgzIDExMy42NzUsMTI5Ljk5MyBMMTEzLjY3NSw3NS45OTIiIGlkPSJGaWxsLTI4IiBmaWxsPSIjRkFGQUZBIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTExMi43MjcsMTMxLjU2MSBDMTEyLjQzLDEzMS41NjEgMTEyLjEwNywxMzEuNDY2IDExMS43OCwxMzEuMjc2IEw2OS4zMDcsMTA2Ljc1NSBDNjguMjQ0LDEwNi4xNDIgNjcuNDEyLDEwNC43MDUgNjcuNDEyLDEwMy40ODUgTDY3LjQxMiw0OS40ODQgQzY3LjQxMiw0OS4yOSA2Ny41NjksNDkuMTM0IDY3Ljc2Miw0OS4xMzQgQzY3Ljk1Niw0OS4xMzQgNjguMTEzLDQ5LjI5IDY4LjExMyw0OS40ODQgTDY4LjExMywxMDMuNDg1IEM2OC4xMTMsMTA0LjQ0NSA2OC44MiwxMDUuNjY1IDY5LjY1NywxMDYuMTQ4IEwxMTIuMTMsMTMwLjY3IEMxMTIuNDc0LDEzMC44NjggMTEyLjc5MSwxMzAuOTEzIDExMywxMzAuNzkyIEMxMTMuMjA2LDEzMC42NzMgMTEzLjMyNSwxMzAuMzgxIDExMy4zMjUsMTI5Ljk5MyBMMTEzLjMyNSw3NS45OTIgQzExMy4zMjUsNzUuNzk4IDExMy40ODIsNzUuNjQxIDExMy42NzUsNzUuNjQxIEMxMTMuODY5LDc1LjY0MSAxMTQuMDI1LDc1Ljc5OCAxMTQuMDI1LDc1Ljk5MiBMMTE0LjAyNSwxMjkuOTkzIEMxMTQuMDI1LDEzMC42NDggMTEzLjc4NiwxMzEuMTQ3IDExMy4zNSwxMzEuMzk5IEMxMTMuMTYyLDEzMS41MDcgMTEyLjk1MiwxMzEuNTYxIDExMi43MjcsMTMxLjU2MSIgaWQ9IkZpbGwtMjkiIGZpbGw9IiM0NTVBNjQiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTEyLjg2LDQwLjUxMiBDMTEyLjg2LDQwLjUxMiAxMTIuODYsNDAuNTEyIDExMi44NTksNDAuNTEyIEMxMTAuNTQxLDQwLjUxMiAxMDguMzYsMzkuOTkgMTA2LjcxNywzOS4wNDEgQzEwNS4wMTIsMzguMDU3IDEwNC4wNzQsMzYuNzI2IDEwNC4wNzQsMzUuMjkyIEMxMDQuMDc0LDMzLjg0NyAxMDUuMDI2LDMyLjUwMSAxMDYuNzU0LDMxLjUwNCBMMTE4Ljc5NSwyNC41NTEgQzEyMC40NjMsMjMuNTg5IDEyMi42NjksMjMuMDU4IDEyNS4wMDcsMjMuMDU4IEMxMjcuMzI1LDIzLjA1OCAxMjkuNTA2LDIzLjU4MSAxMzEuMTUsMjQuNTMgQzEzMi44NTQsMjUuNTE0IDEzMy43OTMsMjYuODQ1IDEzMy43OTMsMjguMjc4IEMxMzMuNzkzLDI5LjcyNCAxMzIuODQxLDMxLjA2OSAxMzEuMTEzLDMyLjA2NyBMMTE5LjA3MSwzOS4wMTkgQzExNy40MDMsMzkuOTgyIDExNS4xOTcsNDAuNTEyIDExMi44Niw0MC41MTIgTDExMi44Niw0MC41MTIgWiBNMTI1LjAwNywyMy43NTkgQzEyMi43OSwyMy43NTkgMTIwLjcwOSwyNC4yNTYgMTE5LjE0NiwyNS4xNTggTDEwNy4xMDQsMzIuMTEgQzEwNS42MDIsMzIuOTc4IDEwNC43NzQsMzQuMTA4IDEwNC43NzQsMzUuMjkyIEMxMDQuNzc0LDM2LjQ2NSAxMDUuNTg5LDM3LjU4MSAxMDcuMDY3LDM4LjQzNCBDMTA4LjYwNSwzOS4zMjMgMTEwLjY2MywzOS44MTIgMTEyLjg1OSwzOS44MTIgTDExMi44NiwzOS44MTIgQzExNS4wNzYsMzkuODEyIDExNy4xNTgsMzkuMzE1IDExOC43MjEsMzguNDEzIEwxMzAuNzYyLDMxLjQ2IEMxMzIuMjY0LDMwLjU5MyAxMzMuMDkyLDI5LjQ2MyAxMzMuMDkyLDI4LjI3OCBDMTMzLjA5MiwyNy4xMDYgMTMyLjI3OCwyNS45OSAxMzAuOCwyNS4xMzYgQzEyOS4yNjEsMjQuMjQ4IDEyNy4yMDQsMjMuNzU5IDEyNS4wMDcsMjMuNzU5IEwxMjUuMDA3LDIzLjc1OSBaIiBpZD0iRmlsbC0zMCIgZmlsbD0iIzYwN0Q4QiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNjUuNjMsMTYuMjE5IEwxNTkuODk2LDE5LjUzIEMxNTYuNzI5LDIxLjM1OCAxNTEuNjEsMjEuMzY3IDE0OC40NjMsMTkuNTUgQzE0NS4zMTYsMTcuNzMzIDE0NS4zMzIsMTQuNzc4IDE0OC40OTksMTIuOTQ5IEwxNTQuMjMzLDkuNjM5IEwxNjUuNjMsMTYuMjE5IiBpZD0iRmlsbC0zMSIgZmlsbD0iI0ZBRkFGQSI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xNTQuMjMzLDEwLjQ0OCBMMTY0LjIyOCwxNi4yMTkgTDE1OS41NDYsMTguOTIzIEMxNTguMTEyLDE5Ljc1IDE1Ni4xOTQsMjAuMjA2IDE1NC4xNDcsMjAuMjA2IEMxNTIuMTE4LDIwLjIwNiAxNTAuMjI0LDE5Ljc1NyAxNDguODE0LDE4Ljk0MyBDMTQ3LjUyNCwxOC4xOTkgMTQ2LjgxNCwxNy4yNDkgMTQ2LjgxNCwxNi4yNjkgQzE0Ni44MTQsMTUuMjc4IDE0Ny41MzcsMTQuMzE0IDE0OC44NSwxMy41NTYgTDE1NC4yMzMsMTAuNDQ4IE0xNTQuMjMzLDkuNjM5IEwxNDguNDk5LDEyLjk0OSBDMTQ1LjMzMiwxNC43NzggMTQ1LjMxNiwxNy43MzMgMTQ4LjQ2MywxOS41NSBDMTUwLjAzMSwyMC40NTUgMTUyLjA4NiwyMC45MDcgMTU0LjE0NywyMC45MDcgQzE1Ni4yMjQsMjAuOTA3IDE1OC4zMDYsMjAuNDQ3IDE1OS44OTYsMTkuNTMgTDE2NS42MywxNi4yMTkgTDE1NC4yMzMsOS42MzkiIGlkPSJGaWxsLTMyIiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE0NS40NDUsNzIuNjY3IEwxNDUuNDQ1LDcyLjY2NyBDMTQzLjY3Miw3Mi42NjcgMTQyLjIwNCw3MS44MTcgMTQxLjIwMiw3MC40MjIgQzE0MS4xMzUsNzAuMzMgMTQxLjE0NSw3MC4xNDcgMTQxLjIyNSw3MC4wNjYgQzE0MS4zMDUsNjkuOTg1IDE0MS40MzIsNjkuOTQ2IDE0MS41MjUsNzAuMDExIEMxNDIuMzA2LDcwLjU1OSAxNDMuMjMxLDcwLjgyMyAxNDQuMjc2LDcwLjgyMiBDMTQ1LjU5OCw3MC44MjIgMTQ3LjAzLDcwLjM3NiAxNDguNTMyLDY5LjUwOSBDMTUzLjg0Miw2Ni40NDMgMTU4LjE2Myw1OC45ODcgMTU4LjE2Myw1Mi44OTQgQzE1OC4xNjMsNTAuOTY3IDE1Ny43MjEsNDkuMzMyIDE1Ni44ODQsNDguMTY4IEMxNTYuODE4LDQ4LjA3NiAxNTYuODI4LDQ3Ljk0OCAxNTYuOTA4LDQ3Ljg2NyBDMTU2Ljk4OCw0Ny43ODYgMTU3LjExNCw0Ny43NzQgMTU3LjIwOCw0Ny44NCBDMTU4Ljg3OCw0OS4wMTIgMTU5Ljc5OCw1MS4yMiAxNTkuNzk4LDU0LjA1OSBDMTU5Ljc5OCw2MC4zMDEgMTU1LjM3Myw2OC4wNDYgMTQ5LjkzMyw3MS4xODYgQzE0OC4zNiw3Mi4wOTQgMTQ2Ljg1LDcyLjY2NyAxNDUuNDQ1LDcyLjY2NyBMMTQ1LjQ0NSw3Mi42NjcgWiBNMTQyLjQ3Niw3MSBDMTQzLjI5LDcxLjY1MSAxNDQuMjk2LDcyLjAwMiAxNDUuNDQ1LDcyLjAwMiBDMTQ2Ljc2Nyw3Mi4wMDIgMTQ4LjE5OCw3MS41NSAxNDkuNyw3MC42ODIgQzE1NS4wMSw2Ny42MTcgMTU5LjMzMSw2MC4xNTkgMTU5LjMzMSw1NC4wNjUgQzE1OS4zMzEsNTIuMDg1IDE1OC44NjgsNTAuNDM1IDE1OC4wMDYsNDkuMjcyIEMxNTguNDE3LDUwLjMwNyAxNTguNjMsNTEuNTMyIDE1OC42Myw1Mi44OTIgQzE1OC42Myw1OS4xMzQgMTU0LjIwNSw2Ni43NjcgMTQ4Ljc2NSw2OS45MDcgQzE0Ny4xOTIsNzAuODE2IDE0NS42ODEsNzEuMjgzIDE0NC4yNzYsNzEuMjgzIEMxNDMuNjM0LDcxLjI4MyAxNDMuMDMzLDcxLjE5MiAxNDIuNDc2LDcxIEwxNDIuNDc2LDcxIFoiIGlkPSJGaWxsLTMzIiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE0OC42NDgsNjkuNzA0IEMxNTQuMDMyLDY2LjU5NiAxNTguMzk2LDU5LjA2OCAxNTguMzk2LDUyLjg5MSBDMTU4LjM5Niw1MC44MzkgMTU3LjkxMyw0OS4xOTggMTU3LjA3NCw0OC4wMyBDMTU1LjI4OSw0Ni43NzggMTUyLjY5OSw0Ni44MzYgMTQ5LjgxNiw0OC41MDEgQzE0NC40MzMsNTEuNjA5IDE0MC4wNjgsNTkuMTM3IDE0MC4wNjgsNjUuMzE0IEMxNDAuMDY4LDY3LjM2NSAxNDAuNTUyLDY5LjAwNiAxNDEuMzkxLDcwLjE3NCBDMTQzLjE3Niw3MS40MjcgMTQ1Ljc2NSw3MS4zNjkgMTQ4LjY0OCw2OS43MDQiIGlkPSJGaWxsLTM0IiBmaWxsPSIjRkFGQUZBIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTE0NC4yNzYsNzEuMjc2IEwxNDQuMjc2LDcxLjI3NiBDMTQzLjEzMyw3MS4yNzYgMTQyLjExOCw3MC45NjkgMTQxLjI1Nyw3MC4zNjUgQzE0MS4yMzYsNzAuMzUxIDE0MS4yMTcsNzAuMzMyIDE0MS4yMDIsNzAuMzExIEMxNDAuMzA3LDY5LjA2NyAxMzkuODM1LDY3LjMzOSAxMzkuODM1LDY1LjMxNCBDMTM5LjgzNSw1OS4wNzMgMTQ0LjI2LDUxLjQzOSAxNDkuNyw0OC4yOTggQzE1MS4yNzMsNDcuMzkgMTUyLjc4NCw0Ni45MjkgMTU0LjE4OSw0Ni45MjkgQzE1NS4zMzIsNDYuOTI5IDE1Ni4zNDcsNDcuMjM2IDE1Ny4yMDgsNDcuODM5IEMxNTcuMjI5LDQ3Ljg1NCAxNTcuMjQ4LDQ3Ljg3MyAxNTcuMjYzLDQ3Ljg5NCBDMTU4LjE1Nyw0OS4xMzggMTU4LjYzLDUwLjg2NSAxNTguNjMsNTIuODkxIEMxNTguNjMsNTkuMTMyIDE1NC4yMDUsNjYuNzY2IDE0OC43NjUsNjkuOTA3IEMxNDcuMTkyLDcwLjgxNSAxNDUuNjgxLDcxLjI3NiAxNDQuMjc2LDcxLjI3NiBMMTQ0LjI3Niw3MS4yNzYgWiBNMTQxLjU1OCw3MC4xMDQgQzE0Mi4zMzEsNzAuNjM3IDE0My4yNDUsNzEuMDA1IDE0NC4yNzYsNzEuMDA1IEMxNDUuNTk4LDcxLjAwNSAxNDcuMDMsNzAuNDY3IDE0OC41MzIsNjkuNiBDMTUzLjg0Miw2Ni41MzQgMTU4LjE2Myw1OS4wMzMgMTU4LjE2Myw1Mi45MzkgQzE1OC4xNjMsNTEuMDMxIDE1Ny43MjksNDkuMzg1IDE1Ni45MDcsNDguMjIzIEMxNTYuMTMzLDQ3LjY5MSAxNTUuMjE5LDQ3LjQwOSAxNTQuMTg5LDQ3LjQwOSBDMTUyLjg2Nyw0Ny40MDkgMTUxLjQzNSw0Ny44NDIgMTQ5LjkzMyw0OC43MDkgQzE0NC42MjMsNTEuNzc1IDE0MC4zMDIsNTkuMjczIDE0MC4zMDIsNjUuMzY2IEMxNDAuMzAyLDY3LjI3NiAxNDAuNzM2LDY4Ljk0MiAxNDEuNTU4LDcwLjEwNCBMMTQxLjU1OCw3MC4xMDQgWiIgaWQ9IkZpbGwtMzUiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTUwLjcyLDY1LjM2MSBMMTUwLjM1Nyw2NS4wNjYgQzE1MS4xNDcsNjQuMDkyIDE1MS44NjksNjMuMDQgMTUyLjUwNSw2MS45MzggQzE1My4zMTMsNjAuNTM5IDE1My45NzgsNTkuMDY3IDE1NC40ODIsNTcuNTYzIEwxNTQuOTI1LDU3LjcxMiBDMTU0LjQxMiw1OS4yNDUgMTUzLjczMyw2MC43NDUgMTUyLjkxLDYyLjE3MiBDMTUyLjI2Miw2My4yOTUgMTUxLjUyNSw2NC4zNjggMTUwLjcyLDY1LjM2MSIgaWQ9IkZpbGwtMzYiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTE1LjkxNyw4NC41MTQgTDExNS41NTQsODQuMjIgQzExNi4zNDQsODMuMjQ1IDExNy4wNjYsODIuMTk0IDExNy43MDIsODEuMDkyIEMxMTguNTEsNzkuNjkyIDExOS4xNzUsNzguMjIgMTE5LjY3OCw3Ni43MTcgTDEyMC4xMjEsNzYuODY1IEMxMTkuNjA4LDc4LjM5OCAxMTguOTMsNzkuODk5IDExOC4xMDYsODEuMzI2IEMxMTcuNDU4LDgyLjQ0OCAxMTYuNzIyLDgzLjUyMSAxMTUuOTE3LDg0LjUxNCIgaWQ9IkZpbGwtMzciIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTE0LDEzMC40NzYgTDExNCwxMzAuMDA4IEwxMTQsNzYuMDUyIEwxMTQsNzUuNTg0IEwxMTQsNzYuMDUyIEwxMTQsMTMwLjAwOCBMMTE0LDEzMC40NzYiIGlkPSJGaWxsLTM4IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICA8L2c+CiAgICAgICAgICAgICAgICA8ZyBpZD0iSW1wb3J0ZWQtTGF5ZXJzLUNvcHkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYyLjAwMDAwMCwgMC4wMDAwMDApIiBza2V0Y2g6dHlwZT0iTVNTaGFwZUdyb3VwIj4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTkuODIyLDM3LjQ3NCBDMTkuODM5LDM3LjMzOSAxOS43NDcsMzcuMTk0IDE5LjU1NSwzNy4wODIgQzE5LjIyOCwzNi44OTQgMTguNzI5LDM2Ljg3MiAxOC40NDYsMzcuMDM3IEwxMi40MzQsNDAuNTA4IEMxMi4zMDMsNDAuNTg0IDEyLjI0LDQwLjY4NiAxMi4yNDMsNDAuNzkzIEMxMi4yNDUsNDAuOTI1IDEyLjI0NSw0MS4yNTQgMTIuMjQ1LDQxLjM3MSBMMTIuMjQ1LDQxLjQxNCBMMTIuMjM4LDQxLjU0MiBDOC4xNDgsNDMuODg3IDUuNjQ3LDQ1LjMyMSA1LjY0Nyw0NS4zMjEgQzUuNjQ2LDQ1LjMyMSAzLjU3LDQ2LjM2NyAyLjg2LDUwLjUxMyBDMi44Niw1MC41MTMgMS45NDgsNTcuNDc0IDEuOTYyLDcwLjI1OCBDMS45NzcsODIuODI4IDIuNTY4LDg3LjMyOCAzLjEyOSw5MS42MDkgQzMuMzQ5LDkzLjI5MyA2LjEzLDkzLjczNCA2LjEzLDkzLjczNCBDNi40NjEsOTMuNzc0IDYuODI4LDkzLjcwNyA3LjIxLDkzLjQ4NiBMODIuNDgzLDQ5LjkzNSBDODQuMjkxLDQ4Ljg2NiA4NS4xNSw0Ni4yMTYgODUuNTM5LDQzLjY1MSBDODYuNzUyLDM1LjY2MSA4Ny4yMTQsMTAuNjczIDg1LjI2NCwzLjc3MyBDODUuMDY4LDMuMDggODQuNzU0LDIuNjkgODQuMzk2LDIuNDkxIEw4Mi4zMSwxLjcwMSBDODEuNTgzLDEuNzI5IDgwLjg5NCwyLjE2OCA4MC43NzYsMi4yMzYgQzgwLjYzNiwyLjMxNyA0MS44MDcsMjQuNTg1IDIwLjAzMiwzNy4wNzIgTDE5LjgyMiwzNy40NzQiIGlkPSJGaWxsLTEiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNODIuMzExLDEuNzAxIEw4NC4zOTYsMi40OTEgQzg0Ljc1NCwyLjY5IDg1LjA2OCwzLjA4IDg1LjI2NCwzLjc3MyBDODcuMjEzLDEwLjY3MyA4Ni43NTEsMzUuNjYgODUuNTM5LDQzLjY1MSBDODUuMTQ5LDQ2LjIxNiA4NC4yOSw0OC44NjYgODIuNDgzLDQ5LjkzNSBMNy4yMSw5My40ODYgQzYuODk3LDkzLjY2NyA2LjU5NSw5My43NDQgNi4zMTQsOTMuNzQ0IEw2LjEzMSw5My43MzMgQzYuMTMxLDkzLjczNCAzLjM0OSw5My4yOTMgMy4xMjgsOTEuNjA5IEMyLjU2OCw4Ny4zMjcgMS45NzcsODIuODI4IDEuOTYzLDcwLjI1OCBDMS45NDgsNTcuNDc0IDIuODYsNTAuNTEzIDIuODYsNTAuNTEzIEMzLjU3LDQ2LjM2NyA1LjY0Nyw0NS4zMjEgNS42NDcsNDUuMzIxIEM1LjY0Nyw0NS4zMjEgOC4xNDgsNDMuODg3IDEyLjIzOCw0MS41NDIgTDEyLjI0NSw0MS40MTQgTDEyLjI0NSw0MS4zNzEgQzEyLjI0NSw0MS4yNTQgMTIuMjQ1LDQwLjkyNSAxMi4yNDMsNDAuNzkzIEMxMi4yNCw0MC42ODYgMTIuMzAyLDQwLjU4MyAxMi40MzQsNDAuNTA4IEwxOC40NDYsMzcuMDM2IEMxOC41NzQsMzYuOTYyIDE4Ljc0NiwzNi45MjYgMTguOTI3LDM2LjkyNiBDMTkuMTQ1LDM2LjkyNiAxOS4zNzYsMzYuOTc5IDE5LjU1NCwzNy4wODIgQzE5Ljc0NywzNy4xOTQgMTkuODM5LDM3LjM0IDE5LjgyMiwzNy40NzQgTDIwLjAzMywzNy4wNzIgQzQxLjgwNiwyNC41ODUgODAuNjM2LDIuMzE4IDgwLjc3NywyLjIzNiBDODAuODk0LDIuMTY4IDgxLjU4MywxLjcyOSA4Mi4zMTEsMS43MDEgTTgyLjMxMSwwLjcwNCBMODIuMjcyLDAuNzA1IEM4MS42NTQsMC43MjggODAuOTg5LDAuOTQ5IDgwLjI5OCwxLjM2MSBMODAuMjc3LDEuMzczIEM4MC4xMjksMS40NTggNTkuNzY4LDEzLjEzNSAxOS43NTgsMzYuMDc5IEMxOS41LDM1Ljk4MSAxOS4yMTQsMzUuOTI5IDE4LjkyNywzNS45MjkgQzE4LjU2MiwzNS45MjkgMTguMjIzLDM2LjAxMyAxNy45NDcsMzYuMTczIEwxMS45MzUsMzkuNjQ0IEMxMS40OTMsMzkuODk5IDExLjIzNiw0MC4zMzQgMTEuMjQ2LDQwLjgxIEwxMS4yNDcsNDAuOTYgTDUuMTY3LDQ0LjQ0NyBDNC43OTQsNDQuNjQ2IDIuNjI1LDQ1Ljk3OCAxLjg3Nyw1MC4zNDUgTDEuODcxLDUwLjM4NCBDMS44NjIsNTAuNDU0IDAuOTUxLDU3LjU1NyAwLjk2NSw3MC4yNTkgQzAuOTc5LDgyLjg3OSAxLjU2OCw4Ny4zNzUgMi4xMzcsOTEuNzI0IEwyLjEzOSw5MS43MzkgQzIuNDQ3LDk0LjA5NCA1LjYxNCw5NC42NjIgNS45NzUsOTQuNzE5IEw2LjAwOSw5NC43MjMgQzYuMTEsOTQuNzM2IDYuMjEzLDk0Ljc0MiA2LjMxNCw5NC43NDIgQzYuNzksOTQuNzQyIDcuMjYsOTQuNjEgNy43MSw5NC4zNSBMODIuOTgzLDUwLjc5OCBDODQuNzk0LDQ5LjcyNyA4NS45ODIsNDcuMzc1IDg2LjUyNSw0My44MDEgQzg3LjcxMSwzNS45ODcgODguMjU5LDEwLjcwNSA4Ni4yMjQsMy41MDIgQzg1Ljk3MSwyLjYwOSA4NS41MiwxLjk3NSA4NC44ODEsMS42MiBMODQuNzQ5LDEuNTU4IEw4Mi42NjQsMC43NjkgQzgyLjU1MSwwLjcyNSA4Mi40MzEsMC43MDQgODIuMzExLDAuNzA0IiBpZD0iRmlsbC0yIiBmaWxsPSIjNDU1QTY0Ij48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTY2LjI2NywxMS41NjUgTDY3Ljc2MiwxMS45OTkgTDExLjQyMyw0NC4zMjUiIGlkPSJGaWxsLTMiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTIuMjAyLDkwLjU0NSBDMTIuMDI5LDkwLjU0NSAxMS44NjIsOTAuNDU1IDExLjc2OSw5MC4yOTUgQzExLjYzMiw5MC4wNTcgMTEuNzEzLDg5Ljc1MiAxMS45NTIsODkuNjE0IEwzMC4zODksNzguOTY5IEMzMC42MjgsNzguODMxIDMwLjkzMyw3OC45MTMgMzEuMDcxLDc5LjE1MiBDMzEuMjA4LDc5LjM5IDMxLjEyNyw3OS42OTYgMzAuODg4LDc5LjgzMyBMMTIuNDUxLDkwLjQ3OCBMMTIuMjAyLDkwLjU0NSIgaWQ9IkZpbGwtNCIgZmlsbD0iIzYwN0Q4QiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMy43NjQsNDIuNjU0IEwxMy42NTYsNDIuNTkyIEwxMy43MDIsNDIuNDIxIEwxOC44MzcsMzkuNDU3IEwxOS4wMDcsMzkuNTAyIEwxOC45NjIsMzkuNjczIEwxMy44MjcsNDIuNjM3IEwxMy43NjQsNDIuNjU0IiBpZD0iRmlsbC01IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTguNTIsOTAuMzc1IEw4LjUyLDQ2LjQyMSBMOC41ODMsNDYuMzg1IEw3NS44NCw3LjU1NCBMNzUuODQsNTEuNTA4IEw3NS43NzgsNTEuNTQ0IEw4LjUyLDkwLjM3NSBMOC41Miw5MC4zNzUgWiBNOC43Nyw0Ni41NjQgTDguNzcsODkuOTQ0IEw3NS41OTEsNTEuMzY1IEw3NS41OTEsNy45ODUgTDguNzcsNDYuNTY0IEw4Ljc3LDQ2LjU2NCBaIiBpZD0iRmlsbC02IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTI0Ljk4Niw4My4xODIgQzI0Ljc1Niw4My4zMzEgMjQuMzc0LDgzLjU2NiAyNC4xMzcsODMuNzA1IEwxMi42MzIsOTAuNDA2IEMxMi4zOTUsOTAuNTQ1IDEyLjQyNiw5MC42NTggMTIuNyw5MC42NTggTDEzLjI2NSw5MC42NTggQzEzLjU0LDkwLjY1OCAxMy45NTgsOTAuNTQ1IDE0LjE5NSw5MC40MDYgTDI1LjcsODMuNzA1IEMyNS45MzcsODMuNTY2IDI2LjEyOCw4My40NTIgMjYuMTI1LDgzLjQ0OSBDMjYuMTIyLDgzLjQ0NyAyNi4xMTksODMuMjIgMjYuMTE5LDgyLjk0NiBDMjYuMTE5LDgyLjY3MiAyNS45MzEsODIuNTY5IDI1LjcwMSw4Mi43MTkgTDI0Ljk4Niw4My4xODIiIGlkPSJGaWxsLTciIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTMuMjY2LDkwLjc4MiBMMTIuNyw5MC43ODIgQzEyLjUsOTAuNzgyIDEyLjM4NCw5MC43MjYgMTIuMzU0LDkwLjYxNiBDMTIuMzI0LDkwLjUwNiAxMi4zOTcsOTAuMzk5IDEyLjU2OSw5MC4yOTkgTDI0LjA3NCw4My41OTcgQzI0LjMxLDgzLjQ1OSAyNC42ODksODMuMjI2IDI0LjkxOCw4My4wNzggTDI1LjYzMyw4Mi42MTQgQzI1LjcyMyw4Mi41NTUgMjUuODEzLDgyLjUyNSAyNS44OTksODIuNTI1IEMyNi4wNzEsODIuNTI1IDI2LjI0NCw4Mi42NTUgMjYuMjQ0LDgyLjk0NiBDMjYuMjQ0LDgzLjE2IDI2LjI0NSw4My4zMDkgMjYuMjQ3LDgzLjM4MyBMMjYuMjUzLDgzLjM4NyBMMjYuMjQ5LDgzLjQ1NiBDMjYuMjQ2LDgzLjUzMSAyNi4yNDYsODMuNTMxIDI1Ljc2Myw4My44MTIgTDE0LjI1OCw5MC41MTQgQzE0LDkwLjY2NSAxMy41NjQsOTAuNzgyIDEzLjI2Niw5MC43ODIgTDEzLjI2Niw5MC43ODIgWiBNMTIuNjY2LDkwLjUzMiBMMTIuNyw5MC41MzMgTDEzLjI2Niw5MC41MzMgQzEzLjUxOCw5MC41MzMgMTMuOTE1LDkwLjQyNSAxNC4xMzIsOTAuMjk5IEwyNS42MzcsODMuNTk3IEMyNS44MDUsODMuNDk5IDI1LjkzMSw4My40MjQgMjUuOTk4LDgzLjM4MyBDMjUuOTk0LDgzLjI5OSAyNS45OTQsODMuMTY1IDI1Ljk5NCw4Mi45NDYgTDI1Ljg5OSw4Mi43NzUgTDI1Ljc2OCw4Mi44MjQgTDI1LjA1NCw4My4yODcgQzI0LjgyMiw4My40MzcgMjQuNDM4LDgzLjY3MyAyNC4yLDgzLjgxMiBMMTIuNjk1LDkwLjUxNCBMMTIuNjY2LDkwLjUzMiBMMTIuNjY2LDkwLjUzMiBaIiBpZD0iRmlsbC04IiBmaWxsPSIjNjA3RDhCIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTEzLjI2Niw4OS44NzEgTDEyLjcsODkuODcxIEMxMi41LDg5Ljg3MSAxMi4zODQsODkuODE1IDEyLjM1NCw4OS43MDUgQzEyLjMyNCw4OS41OTUgMTIuMzk3LDg5LjQ4OCAxMi41NjksODkuMzg4IEwyNC4wNzQsODIuNjg2IEMyNC4zMzIsODIuNTM1IDI0Ljc2OCw4Mi40MTggMjUuMDY3LDgyLjQxOCBMMjUuNjMyLDgyLjQxOCBDMjUuODMyLDgyLjQxOCAyNS45NDgsODIuNDc0IDI1Ljk3OCw4Mi41ODQgQzI2LjAwOCw4Mi42OTQgMjUuOTM1LDgyLjgwMSAyNS43NjMsODIuOTAxIEwxNC4yNTgsODkuNjAzIEMxNCw4OS43NTQgMTMuNTY0LDg5Ljg3MSAxMy4yNjYsODkuODcxIEwxMy4yNjYsODkuODcxIFogTTEyLjY2Niw4OS42MjEgTDEyLjcsODkuNjIyIEwxMy4yNjYsODkuNjIyIEMxMy41MTgsODkuNjIyIDEzLjkxNSw4OS41MTUgMTQuMTMyLDg5LjM4OCBMMjUuNjM3LDgyLjY4NiBMMjUuNjY3LDgyLjY2OCBMMjUuNjMyLDgyLjY2NyBMMjUuMDY3LDgyLjY2NyBDMjQuODE1LDgyLjY2NyAyNC40MTgsODIuNzc1IDI0LjIsODIuOTAxIEwxMi42OTUsODkuNjAzIEwxMi42NjYsODkuNjIxIEwxMi42NjYsODkuNjIxIFoiIGlkPSJGaWxsLTkiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTIuMzcsOTAuODAxIEwxMi4zNyw4OS41NTQgTDEyLjM3LDkwLjgwMSIgaWQ9IkZpbGwtMTAiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNi4xMyw5My45MDEgQzUuMzc5LDkzLjgwOCA0LjgxNiw5My4xNjQgNC42OTEsOTIuNTI1IEMzLjg2LDg4LjI4NyAzLjU0LDgzLjc0MyAzLjUyNiw3MS4xNzMgQzMuNTExLDU4LjM4OSA0LjQyMyw1MS40MjggNC40MjMsNTEuNDI4IEM1LjEzNCw0Ny4yODIgNy4yMSw0Ni4yMzYgNy4yMSw0Ni4yMzYgQzcuMjEsNDYuMjM2IDgxLjY2NywzLjI1IDgyLjA2OSwzLjAxNyBDODIuMjkyLDIuODg4IDg0LjU1NiwxLjQzMyA4NS4yNjQsMy45NCBDODcuMjE0LDEwLjg0IDg2Ljc1MiwzNS44MjcgODUuNTM5LDQzLjgxOCBDODUuMTUsNDYuMzgzIDg0LjI5MSw0OS4wMzMgODIuNDgzLDUwLjEwMSBMNy4yMSw5My42NTMgQzYuODI4LDkzLjg3NCA2LjQ2MSw5My45NDEgNi4xMyw5My45MDEgQzYuMTMsOTMuOTAxIDMuMzQ5LDkzLjQ2IDMuMTI5LDkxLjc3NiBDMi41NjgsODcuNDk1IDEuOTc3LDgyLjk5NSAxLjk2Miw3MC40MjUgQzEuOTQ4LDU3LjY0MSAyLjg2LDUwLjY4IDIuODYsNTAuNjggQzMuNTcsNDYuNTM0IDUuNjQ3LDQ1LjQ4OSA1LjY0Nyw0NS40ODkgQzUuNjQ2LDQ1LjQ4OSA4LjA2NSw0NC4wOTIgMTIuMjQ1LDQxLjY3OSBMMTMuMTE2LDQxLjU2IEwxOS43MTUsMzcuNzMgTDE5Ljc2MSwzNy4yNjkgTDYuMTMsOTMuOTAxIiBpZD0iRmlsbC0xMSIgZmlsbD0iI0ZBRkFGQSI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik02LjMxNyw5NC4xNjEgTDYuMTAyLDk0LjE0OCBMNi4xMDEsOTQuMTQ4IEw1Ljg1Nyw5NC4xMDEgQzUuMTM4LDkzLjk0NSAzLjA4NSw5My4zNjUgMi44ODEsOTEuODA5IEMyLjMxMyw4Ny40NjkgMS43MjcsODIuOTk2IDEuNzEzLDcwLjQyNSBDMS42OTksNTcuNzcxIDIuNjA0LDUwLjcxOCAyLjYxMyw1MC42NDggQzMuMzM4LDQ2LjQxNyA1LjQ0NSw0NS4zMSA1LjUzNSw0NS4yNjYgTDEyLjE2Myw0MS40MzkgTDEzLjAzMyw0MS4zMiBMMTkuNDc5LDM3LjU3OCBMMTkuNTEzLDM3LjI0NCBDMTkuNTI2LDM3LjEwNyAxOS42NDcsMzcuMDA4IDE5Ljc4NiwzNy4wMjEgQzE5LjkyMiwzNy4wMzQgMjAuMDIzLDM3LjE1NiAyMC4wMDksMzcuMjkzIEwxOS45NSwzNy44ODIgTDEzLjE5OCw0MS44MDEgTDEyLjMyOCw0MS45MTkgTDUuNzcyLDQ1LjcwNCBDNS43NDEsNDUuNzIgMy43ODIsNDYuNzcyIDMuMTA2LDUwLjcyMiBDMy4wOTksNTAuNzgyIDIuMTk4LDU3LjgwOCAyLjIxMiw3MC40MjQgQzIuMjI2LDgyLjk2MyAyLjgwOSw4Ny40MiAzLjM3Myw5MS43MjkgQzMuNDY0LDkyLjQyIDQuMDYyLDkyLjg4MyA0LjY4Miw5My4xODEgQzQuNTY2LDkyLjk4NCA0LjQ4Niw5Mi43NzYgNC40NDYsOTIuNTcyIEMzLjY2NSw4OC41ODggMy4yOTEsODQuMzcgMy4yNzYsNzEuMTczIEMzLjI2Miw1OC41MiA0LjE2Nyw1MS40NjYgNC4xNzYsNTEuMzk2IEM0LjkwMSw0Ny4xNjUgNy4wMDgsNDYuMDU5IDcuMDk4LDQ2LjAxNCBDNy4wOTQsNDYuMDE1IDgxLjU0MiwzLjAzNCA4MS45NDQsMi44MDIgTDgxLjk3MiwyLjc4NSBDODIuODc2LDIuMjQ3IDgzLjY5MiwyLjA5NyA4NC4zMzIsMi4zNTIgQzg0Ljg4NywyLjU3MyA4NS4yODEsMy4wODUgODUuNTA0LDMuODcyIEM4Ny41MTgsMTEgODYuOTY0LDM2LjA5MSA4NS43ODUsNDMuODU1IEM4NS4yNzgsNDcuMTk2IDg0LjIxLDQ5LjM3IDgyLjYxLDUwLjMxNyBMNy4zMzUsOTMuODY5IEM2Ljk5OSw5NC4wNjMgNi42NTgsOTQuMTYxIDYuMzE3LDk0LjE2MSBMNi4zMTcsOTQuMTYxIFogTTYuMTcsOTMuNjU0IEM2LjQ2Myw5My42OSA2Ljc3NCw5My42MTcgNy4wODUsOTMuNDM3IEw4Mi4zNTgsNDkuODg2IEM4NC4xODEsNDguODA4IDg0Ljk2LDQ1Ljk3MSA4NS4yOTIsNDMuNzggQzg2LjQ2NiwzNi4wNDkgODcuMDIzLDExLjA4NSA4NS4wMjQsNC4wMDggQzg0Ljg0NiwzLjM3NyA4NC41NTEsMi45NzYgODQuMTQ4LDIuODE2IEM4My42NjQsMi42MjMgODIuOTgyLDIuNzY0IDgyLjIyNywzLjIxMyBMODIuMTkzLDMuMjM0IEM4MS43OTEsMy40NjYgNy4zMzUsNDYuNDUyIDcuMzM1LDQ2LjQ1MiBDNy4zMDQsNDYuNDY5IDUuMzQ2LDQ3LjUyMSA0LjY2OSw1MS40NzEgQzQuNjYyLDUxLjUzIDMuNzYxLDU4LjU1NiAzLjc3NSw3MS4xNzMgQzMuNzksODQuMzI4IDQuMTYxLDg4LjUyNCA0LjkzNiw5Mi40NzYgQzUuMDI2LDkyLjkzNyA1LjQxMiw5My40NTkgNS45NzMsOTMuNjE1IEM2LjA4Nyw5My42NCA2LjE1OCw5My42NTIgNi4xNjksOTMuNjU0IEw2LjE3LDkzLjY1NCBMNi4xNyw5My42NTQgWiIgaWQ9IkZpbGwtMTIiIGZpbGw9IiM0NTVBNjQiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNy4zMTcsNjguOTgyIEM3LjgwNiw2OC43MDEgOC4yMDIsNjguOTI2IDguMjAyLDY5LjQ4NyBDOC4yMDIsNzAuMDQ3IDcuODA2LDcwLjczIDcuMzE3LDcxLjAxMiBDNi44MjksNzEuMjk0IDYuNDMzLDcxLjA2OSA2LjQzMyw3MC41MDggQzYuNDMzLDY5Ljk0OCA2LjgyOSw2OS4yNjUgNy4zMTcsNjguOTgyIiBpZD0iRmlsbC0xMyIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik02LjkyLDcxLjEzMyBDNi42MzEsNzEuMTMzIDYuNDMzLDcwLjkwNSA2LjQzMyw3MC41MDggQzYuNDMzLDY5Ljk0OCA2LjgyOSw2OS4yNjUgNy4zMTcsNjguOTgyIEM3LjQ2LDY4LjkgNy41OTUsNjguODYxIDcuNzE0LDY4Ljg2MSBDOC4wMDMsNjguODYxIDguMjAyLDY5LjA5IDguMjAyLDY5LjQ4NyBDOC4yMDIsNzAuMDQ3IDcuODA2LDcwLjczIDcuMzE3LDcxLjAxMiBDNy4xNzQsNzEuMDk0IDcuMDM5LDcxLjEzMyA2LjkyLDcxLjEzMyBNNy43MTQsNjguNjc0IEM3LjU1Nyw2OC42NzQgNy4zOTIsNjguNzIzIDcuMjI0LDY4LjgyMSBDNi42NzYsNjkuMTM4IDYuMjQ2LDY5Ljg3OSA2LjI0Niw3MC41MDggQzYuMjQ2LDcwLjk5NCA2LjUxNyw3MS4zMiA2LjkyLDcxLjMyIEM3LjA3OCw3MS4zMiA3LjI0Myw3MS4yNzEgNy40MTEsNzEuMTc0IEM3Ljk1OSw3MC44NTcgOC4zODksNzAuMTE3IDguMzg5LDY5LjQ4NyBDOC4zODksNjkuMDAxIDguMTE3LDY4LjY3NCA3LjcxNCw2OC42NzQiIGlkPSJGaWxsLTE0IiBmaWxsPSIjODA5N0EyIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTYuOTIsNzAuOTQ3IEM2LjY0OSw3MC45NDcgNi42MjEsNzAuNjQgNi42MjEsNzAuNTA4IEM2LjYyMSw3MC4wMTcgNi45ODIsNjkuMzkyIDcuNDExLDY5LjE0NSBDNy41MjEsNjkuMDgyIDcuNjI1LDY5LjA0OSA3LjcxNCw2OS4wNDkgQzcuOTg2LDY5LjA0OSA4LjAxNSw2OS4zNTUgOC4wMTUsNjkuNDg3IEM4LjAxNSw2OS45NzggNy42NTIsNzAuNjAzIDcuMjI0LDcwLjg1MSBDNy4xMTUsNzAuOTE0IDcuMDEsNzAuOTQ3IDYuOTIsNzAuOTQ3IE03LjcxNCw2OC44NjEgQzcuNTk1LDY4Ljg2MSA3LjQ2LDY4LjkgNy4zMTcsNjguOTgyIEM2LjgyOSw2OS4yNjUgNi40MzMsNjkuOTQ4IDYuNDMzLDcwLjUwOCBDNi40MzMsNzAuOTA1IDYuNjMxLDcxLjEzMyA2LjkyLDcxLjEzMyBDNy4wMzksNzEuMTMzIDcuMTc0LDcxLjA5NCA3LjMxNyw3MS4wMTIgQzcuODA2LDcwLjczIDguMjAyLDcwLjA0NyA4LjIwMiw2OS40ODcgQzguMjAyLDY5LjA5IDguMDAzLDY4Ljg2MSA3LjcxNCw2OC44NjEiIGlkPSJGaWxsLTE1IiBmaWxsPSIjODA5N0EyIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTcuNDQ0LDg1LjM1IEM3LjcwOCw4NS4xOTggNy45MjEsODUuMzE5IDcuOTIxLDg1LjYyMiBDNy45MjEsODUuOTI1IDcuNzA4LDg2LjI5MiA3LjQ0NCw4Ni40NDQgQzcuMTgxLDg2LjU5NyA2Ljk2Nyw4Ni40NzUgNi45NjcsODYuMTczIEM2Ljk2Nyw4NS44NzEgNy4xODEsODUuNTAyIDcuNDQ0LDg1LjM1IiBpZD0iRmlsbC0xNiIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik03LjIzLDg2LjUxIEM3LjA3NCw4Ni41MSA2Ljk2Nyw4Ni4zODcgNi45NjcsODYuMTczIEM2Ljk2Nyw4NS44NzEgNy4xODEsODUuNTAyIDcuNDQ0LDg1LjM1IEM3LjUyMSw4NS4zMDUgNy41OTQsODUuMjg0IDcuNjU4LDg1LjI4NCBDNy44MTQsODUuMjg0IDcuOTIxLDg1LjQwOCA3LjkyMSw4NS42MjIgQzcuOTIxLDg1LjkyNSA3LjcwOCw4Ni4yOTIgNy40NDQsODYuNDQ0IEM3LjM2Nyw4Ni40ODkgNy4yOTQsODYuNTEgNy4yMyw4Ni41MSBNNy42NTgsODUuMDk4IEM3LjU1OCw4NS4wOTggNy40NTUsODUuMTI3IDcuMzUxLDg1LjE4OCBDNy4wMzEsODUuMzczIDYuNzgxLDg1LjgwNiA2Ljc4MSw4Ni4xNzMgQzYuNzgxLDg2LjQ4MiA2Ljk2Niw4Ni42OTcgNy4yMyw4Ni42OTcgQzcuMzMsODYuNjk3IDcuNDMzLDg2LjY2NiA3LjUzOCw4Ni42MDcgQzcuODU4LDg2LjQyMiA4LjEwOCw4NS45ODkgOC4xMDgsODUuNjIyIEM4LjEwOCw4NS4zMTMgNy45MjMsODUuMDk4IDcuNjU4LDg1LjA5OCIgaWQ9IkZpbGwtMTciIGZpbGw9IiM4MDk3QTIiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNy4yMyw4Ni4zMjIgTDcuMTU0LDg2LjE3MyBDNy4xNTQsODUuOTM4IDcuMzMzLDg1LjYyOSA3LjUzOCw4NS41MTIgTDcuNjU4LDg1LjQ3MSBMNy43MzQsODUuNjIyIEM3LjczNCw4NS44NTYgNy41NTUsODYuMTY0IDcuMzUxLDg2LjI4MiBMNy4yMyw4Ni4zMjIgTTcuNjU4LDg1LjI4NCBDNy41OTQsODUuMjg0IDcuNTIxLDg1LjMwNSA3LjQ0NCw4NS4zNSBDNy4xODEsODUuNTAyIDYuOTY3LDg1Ljg3MSA2Ljk2Nyw4Ni4xNzMgQzYuOTY3LDg2LjM4NyA3LjA3NCw4Ni41MSA3LjIzLDg2LjUxIEM3LjI5NCw4Ni41MSA3LjM2Nyw4Ni40ODkgNy40NDQsODYuNDQ0IEM3LjcwOCw4Ni4yOTIgNy45MjEsODUuOTI1IDcuOTIxLDg1LjYyMiBDNy45MjEsODUuNDA4IDcuODE0LDg1LjI4NCA3LjY1OCw4NS4yODQiIGlkPSJGaWxsLTE4IiBmaWxsPSIjODA5N0EyIj48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTc3LjI3OCw3Ljc2OSBMNzcuMjc4LDUxLjQzNiBMMTAuMjA4LDkwLjE2IEwxMC4yMDgsNDYuNDkzIEw3Ny4yNzgsNy43NjkiIGlkPSJGaWxsLTE5IiBmaWxsPSIjNDU1QTY0Ij48L3BhdGg+CiAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTEwLjA4Myw5MC4zNzUgTDEwLjA4Myw0Ni40MjEgTDEwLjE0Niw0Ni4zODUgTDc3LjQwMyw3LjU1NCBMNzcuNDAzLDUxLjUwOCBMNzcuMzQxLDUxLjU0NCBMMTAuMDgzLDkwLjM3NSBMMTAuMDgzLDkwLjM3NSBaIE0xMC4zMzMsNDYuNTY0IEwxMC4zMzMsODkuOTQ0IEw3Ny4xNTQsNTEuMzY1IEw3Ny4xNTQsNy45ODUgTDEwLjMzMyw0Ni41NjQgTDEwLjMzMyw0Ni41NjQgWiIgaWQ9IkZpbGwtMjAiIGZpbGw9IiM2MDdEOEIiPjwvcGF0aD4KICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMjUuNzM3LDg4LjY0NyBMMTE4LjA5OCw5MS45ODEgTDExOC4wOTgsODQgTDEwNi42MzksODguNzEzIEwxMDYuNjM5LDk2Ljk4MiBMOTksMTAwLjMxNSBMMTEyLjM2OSwxMDMuOTYxIEwxMjUuNzM3LDg4LjY0NyIgaWQ9IkltcG9ydGVkLUxheWVycy1Db3B5LTIiIGZpbGw9IiM0NTVBNjQiIHNrZXRjaDp0eXBlPSJNU1NoYXBlR3JvdXAiPjwvcGF0aD4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+';
+
+            function RotateInstructions() {
+                this.loadIcon_();
+                var overlay = document.createElement('div');
+                var s = overlay.style;
+                s.position = 'fixed';
+                s.top = 0;
+                s.right = 0;
+                s.bottom = 0;
+                s.left = 0;
+                s.backgroundColor = 'gray';
+                s.fontFamily = 'sans-serif';
+                s.zIndex = 1000000;
+                var img = document.createElement('img');
+                img.src = this.icon;
+                var s = img.style;
+                s.marginLeft = '25%';
+                s.marginTop = '25%';
+                s.width = '50%';
+                overlay.appendChild(img);
+                var text = document.createElement('div');
+                var s = text.style;
+                s.textAlign = 'center';
+                s.fontSize = '16px';
+                s.lineHeight = '24px';
+                s.margin = '24px 25%';
+                s.width = '50%';
+                text.innerHTML = 'Place your phone into your Cardboard viewer.';
+                overlay.appendChild(text);
+                var snackbar = document.createElement('div');
+                var s = snackbar.style;
+                s.backgroundColor = '#CFD8DC';
+                s.position = 'fixed';
+                s.bottom = 0;
+                s.width = '100%';
+                s.height = '48px';
+                s.padding = '14px 24px';
+                s.boxSizing = 'border-box';
+                s.color = '#656A6B';
+                overlay.appendChild(snackbar);
+                var snackbarText = document.createElement('div');
+                snackbarText.style.float = 'left';
+                snackbarText.innerHTML = 'No Cardboard viewer?';
+                var snackbarButton = document.createElement('a');
+                snackbarButton.href = 'https://www.google.com/get/cardboard/get-cardboard/';
+                snackbarButton.innerHTML = 'get one';
+                snackbarButton.target = '_blank';
+                var s = snackbarButton.style;
+                s.float = 'right';
+                s.fontWeight = 600;
+                s.textTransform = 'uppercase';
+                s.borderLeft = '1px solid gray';
+                s.paddingLeft = '24px';
+                s.textDecoration = 'none';
+                s.color = '#656A6B';
+                snackbar.appendChild(snackbarText);
+                snackbar.appendChild(snackbarButton);
+                this.overlay = overlay;
+                this.text = text;
+                this.hide();
+            }
+
+            RotateInstructions.prototype.show = function (parent) {
+                if (!parent && !this.overlay.parentElement) {
+                    document.body.appendChild(this.overlay);
+                } else if (parent) {
+                    if (this.overlay.parentElement && this.overlay.parentElement != parent) this.overlay.parentElement.removeChild(this.overlay);
+                    parent.appendChild(this.overlay);
+                }
+                this.overlay.style.display = 'block';
+                var img = this.overlay.querySelector('img');
+                var s = img.style;
+                if (isLandscapeMode()) {
+                    s.width = '20%';
+                    s.marginLeft = '40%';
+                    s.marginTop = '3%';
+                } else {
+                    s.width = '50%';
+                    s.marginLeft = '25%';
+                    s.marginTop = '25%';
+                }
+            };
+            RotateInstructions.prototype.hide = function () {
+                this.overlay.style.display = 'none';
+            };
+            RotateInstructions.prototype.showTemporarily = function (ms, parent) {
+                this.show(parent);
+                this.timer = setTimeout(this.hide.bind(this), ms);
+            };
+            RotateInstructions.prototype.disableShowTemporarily = function () {
+                clearTimeout(this.timer);
+            };
+            RotateInstructions.prototype.update = function () {
+                this.disableShowTemporarily();
+                if (!isLandscapeMode() && isMobile()) {
+                    this.show();
+                } else {
+                    this.hide();
+                }
+            };
+            RotateInstructions.prototype.loadIcon_ = function () {
+                this.icon = base64('image/svg+xml', rotateInstructionsAsset);
+            };
+            var DEFAULT_VIEWER = 'CardboardV1';
+            var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
+            var CLASS_NAME = 'webvr-polyfill-viewer-selector';
+
+            function ViewerSelector(defaultViewer) {
+                try {
+                    this.selectedKey = localStorage.getItem(VIEWER_KEY);
+                } catch (error) {
+                    console.error('Failed to load viewer profile: %s', error);
+                }
+                if (!this.selectedKey) {
+                    this.selectedKey = defaultViewer || DEFAULT_VIEWER;
+                }
+                this.dialog = this.createDialog_(DeviceInfo.Viewers);
+                this.root = null;
+                this.onChangeCallbacks_ = [];
+            }
+
+            ViewerSelector.prototype.show = function (root) {
+                this.root = root;
+                root.appendChild(this.dialog);
+                var selected = this.dialog.querySelector('#' + this.selectedKey);
+                selected.checked = true;
+                this.dialog.style.display = 'block';
+            };
+            ViewerSelector.prototype.hide = function () {
+                if (this.root && this.root.contains(this.dialog)) {
+                    this.root.removeChild(this.dialog);
+                }
+                this.dialog.style.display = 'none';
+            };
+            ViewerSelector.prototype.getCurrentViewer = function () {
+                return DeviceInfo.Viewers[this.selectedKey];
+            };
+            ViewerSelector.prototype.getSelectedKey_ = function () {
+                var input = this.dialog.querySelector('input[name=field]:checked');
+                if (input) {
+                    return input.id;
+                }
+                return null;
+            };
+            ViewerSelector.prototype.onChange = function (cb) {
+                this.onChangeCallbacks_.push(cb);
+            };
+            ViewerSelector.prototype.fireOnChange_ = function (viewer) {
+                for (var i = 0; i < this.onChangeCallbacks_.length; i++) {
+                    this.onChangeCallbacks_[i](viewer);
+                }
+            };
+            ViewerSelector.prototype.onSave_ = function () {
+                this.selectedKey = this.getSelectedKey_();
+                if (!this.selectedKey || !DeviceInfo.Viewers[this.selectedKey]) {
+                    console.error('ViewerSelector.onSave_: this should never happen!');
+                    return;
+                }
+                this.fireOnChange_(DeviceInfo.Viewers[this.selectedKey]);
+                try {
+                    localStorage.setItem(VIEWER_KEY, this.selectedKey);
+                } catch (error) {
+                    console.error('Failed to save viewer profile: %s', error);
+                }
+                this.hide();
+            };
+            ViewerSelector.prototype.createDialog_ = function (options) {
+                var container = document.createElement('div');
+                container.classList.add(CLASS_NAME);
+                container.style.display = 'none';
+                var overlay = document.createElement('div');
+                var s = overlay.style;
+                s.position = 'fixed';
+                s.left = 0;
+                s.top = 0;
+                s.width = '100%';
+                s.height = '100%';
+                s.background = 'rgba(0, 0, 0, 0.3)';
+                overlay.addEventListener('click', this.hide.bind(this));
+                var width = 280;
+                var dialog = document.createElement('div');
+                var s = dialog.style;
+                s.boxSizing = 'border-box';
+                s.position = 'fixed';
+                s.top = '24px';
+                s.left = '50%';
+                s.marginLeft = -width / 2 + 'px';
+                s.width = width + 'px';
+                s.padding = '24px';
+                s.overflow = 'hidden';
+                s.background = '#fafafa';
+                s.fontFamily = "'Roboto', sans-serif";
+                s.boxShadow = '0px 5px 20px #666';
+                dialog.appendChild(this.createH1_('Select your viewer'));
+                for (var id in options) {
+                    dialog.appendChild(this.createChoice_(id, options[id].label));
+                }
+                dialog.appendChild(this.createButton_('Save', this.onSave_.bind(this)));
+                container.appendChild(overlay);
+                container.appendChild(dialog);
+                return container;
+            };
+            ViewerSelector.prototype.createH1_ = function (name) {
+                var h1 = document.createElement('h1');
+                var s = h1.style;
+                s.color = 'black';
+                s.fontSize = '20px';
+                s.fontWeight = 'bold';
+                s.marginTop = 0;
+                s.marginBottom = '24px';
+                h1.innerHTML = name;
+                return h1;
+            };
+            ViewerSelector.prototype.createChoice_ = function (id, name) {
+                var div = document.createElement('div');
+                div.style.marginTop = '8px';
+                div.style.color = 'black';
+                var input = document.createElement('input');
+                input.style.fontSize = '30px';
+                input.setAttribute('id', id);
+                input.setAttribute('type', 'radio');
+                input.setAttribute('value', id);
+                input.setAttribute('name', 'field');
+                var label = document.createElement('label');
+                label.style.marginLeft = '4px';
+                label.setAttribute('for', id);
+                label.innerHTML = name;
+                div.appendChild(input);
+                div.appendChild(label);
+                return div;
+            };
+            ViewerSelector.prototype.createButton_ = function (label, onclick) {
+                var button = document.createElement('button');
+                button.innerHTML = label;
+                var s = button.style;
+                s.float = 'right';
+                s.textTransform = 'uppercase';
+                s.color = '#1094f7';
+                s.fontSize = '14px';
+                s.letterSpacing = 0;
+                s.border = 0;
+                s.background = 'none';
+                s.marginTop = '16px';
+                button.addEventListener('click', onclick);
+                return button;
+            };
+            var commonjsGlobal$$1 = typeof window !== 'undefined' ? window : typeof commonjsGlobal !== 'undefined' ? commonjsGlobal : typeof self !== 'undefined' ? self : {};
+
+            function unwrapExports$$1(x) {
+                return x && x.__esModule ? x['default'] : x;
+            }
+
+            function createCommonjsModule$$1(fn, module) {
+                return module = {exports: {}}, fn(module, module.exports), module.exports;
+            }
+
+            var NoSleep = createCommonjsModule$$1(function (module, exports) {
+                (function webpackUniversalModuleDefinition(root, factory) {
+                    module.exports = factory();
+                })(commonjsGlobal$$1, function () {
+                    return (function (modules) {
+                        var installedModules = {};
+
+                        function __webpack_require__(moduleId) {
+                            if (installedModules[moduleId]) {
+                                return installedModules[moduleId].exports;
+                            }
+                            var module = installedModules[moduleId] = {
+                                i: moduleId,
+                                l: false,
+                                exports: {}
+                            };
+                            modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+                            module.l = true;
+                            return module.exports;
+                        }
+
+                        __webpack_require__.m = modules;
+                        __webpack_require__.c = installedModules;
+                        __webpack_require__.d = function (exports, name, getter) {
+                            if (!__webpack_require__.o(exports, name)) {
+                                Object.defineProperty(exports, name, {
+                                    configurable: false,
+                                    enumerable: true,
+                                    get: getter
+                                });
+                            }
+                        };
+                        __webpack_require__.n = function (module) {
+                            var getter = module && module.__esModule ?
+                                function getDefault() {
+                                    return module['default'];
+                                } :
+                                function getModuleExports() {
+                                    return module;
+                                };
+                            __webpack_require__.d(getter, 'a', getter);
+                            return getter;
+                        };
+                        __webpack_require__.o = function (object, property) {
+                            return Object.prototype.hasOwnProperty.call(object, property);
+                        };
+                        __webpack_require__.p = "";
+                        return __webpack_require__(__webpack_require__.s = 0);
+                    })
+                    ([
+                        (function (module, exports, __webpack_require__) {
+                            var _createClass = function () {
+                                function defineProperties(target, props) {
+                                    for (var i = 0; i < props.length; i++) {
+                                        var descriptor = props[i];
+                                        descriptor.enumerable = descriptor.enumerable || false;
+                                        descriptor.configurable = true;
+                                        if ("value" in descriptor) descriptor.writable = true;
+                                        Object.defineProperty(target, descriptor.key, descriptor);
+                                    }
+                                }
+
+                                return function (Constructor, protoProps, staticProps) {
+                                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+                                    if (staticProps) defineProperties(Constructor, staticProps);
+                                    return Constructor;
+                                };
+                            }();
+
+                            function _classCallCheck(instance, Constructor) {
+                                if (!(instance instanceof Constructor)) {
+                                    throw new TypeError("Cannot call a class as a function");
+                                }
+                            }
+
+                            var mediaFile = __webpack_require__(1);
+                            var oldIOS = typeof navigator !== 'undefined' && parseFloat(('' + (/CPU.*OS ([0-9_]{3,4})[0-9_]{0,1}|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1]).replace('undefined', '3_2').replace('_', '.').replace('_', '')) < 10 && !window.MSStream;
+                            var NoSleep = function () {
+                                function NoSleep() {
+                                    _classCallCheck(this, NoSleep);
+                                    if (oldIOS) {
+                                        this.noSleepTimer = null;
+                                    } else {
+                                        this.noSleepVideo = document.createElement('video');
+                                        this.noSleepVideo.setAttribute('playsinline', '');
+                                        this.noSleepVideo.setAttribute('src', mediaFile);
+                                        this.noSleepVideo.addEventListener('timeupdate', function (e) {
+                                            if (this.noSleepVideo.currentTime > 0.5) {
+                                                this.noSleepVideo.currentTime = Math.random();
+                                            }
+                                        }.bind(this));
+                                    }
+                                }
+
+                                _createClass(NoSleep, [{
+                                    key: 'enable',
+                                    value: function enable() {
+                                        if (oldIOS) {
+                                            this.disable();
+                                            this.noSleepTimer = window.setInterval(function () {
+                                                window.location.href = '/';
+                                                window.setTimeout(window.stop, 0);
+                                            }, 15000);
+                                        } else {
+                                            this.noSleepVideo.play();
+                                        }
+                                    }
+                                }, {
+                                    key: 'disable',
+                                    value: function disable() {
+                                        if (oldIOS) {
+                                            if (this.noSleepTimer) {
+                                                window.clearInterval(this.noSleepTimer);
+                                                this.noSleepTimer = null;
+                                            }
+                                        } else {
+                                            this.noSleepVideo.pause();
+                                        }
+                                    }
+                                }]);
+                                return NoSleep;
+                            }();
+                            module.exports = NoSleep;
+                        }),
+                        (function (module, exports, __webpack_require__) {
+                            module.exports = 'data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAACKBtZGF0AAAC8wYF///v3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYxIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTEgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MToweDExMSBtZT1oZXggc3VibWU9MiBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0wIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MCA4eDhkY3Q9MCBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0wIHRocmVhZHM9NiBsb29rYWhlYWRfdGhyZWFkcz0xIHNsaWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWluZWRfaW50cmE9MCBiZnJhbWVzPTMgYl9weXJhbWlkPTIgYl9hZGFwdD0xIGJfYmlhcz0wIGRpcmVjdD0xIHdlaWdodGI9MSBvcGVuX2dvcD0wIHdlaWdodHA9MSBrZXlpbnQ9MzAwIGtleWludF9taW49MzAgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD0xMCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIwLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IHZidl9tYXhyYXRlPTIwMDAwIHZidl9idWZzaXplPTI1MDAwIGNyZl9tYXg9MC4wIG5hbF9ocmQ9bm9uZSBmaWxsZXI9MCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAOWWIhAA3//p+C7v8tDDSTjf97w55i3SbRPO4ZY+hkjD5hbkAkL3zpJ6h/LR1CAABzgB1kqqzUorlhQAAAAxBmiQYhn/+qZYADLgAAAAJQZ5CQhX/AAj5IQADQGgcIQADQGgcAAAACQGeYUQn/wALKCEAA0BoHAAAAAkBnmNEJ/8ACykhAANAaBwhAANAaBwAAAANQZpoNExDP/6plgAMuSEAA0BoHAAAAAtBnoZFESwr/wAI+SEAA0BoHCEAA0BoHAAAAAkBnqVEJ/8ACykhAANAaBwAAAAJAZ6nRCf/AAsoIQADQGgcIQADQGgcAAAADUGarDRMQz/+qZYADLghAANAaBwAAAALQZ7KRRUsK/8ACPkhAANAaBwAAAAJAZ7pRCf/AAsoIQADQGgcIQADQGgcAAAACQGe60Qn/wALKCEAA0BoHAAAAA1BmvA0TEM//qmWAAy5IQADQGgcIQADQGgcAAAAC0GfDkUVLCv/AAj5IQADQGgcAAAACQGfLUQn/wALKSEAA0BoHCEAA0BoHAAAAAkBny9EJ/8ACyghAANAaBwAAAANQZs0NExDP/6plgAMuCEAA0BoHAAAAAtBn1JFFSwr/wAI+SEAA0BoHCEAA0BoHAAAAAkBn3FEJ/8ACyghAANAaBwAAAAJAZ9zRCf/AAsoIQADQGgcIQADQGgcAAAADUGbeDRMQz/+qZYADLkhAANAaBwAAAALQZ+WRRUsK/8ACPghAANAaBwhAANAaBwAAAAJAZ+1RCf/AAspIQADQGgcAAAACQGft0Qn/wALKSEAA0BoHCEAA0BoHAAAAA1Bm7w0TEM//qmWAAy4IQADQGgcAAAAC0Gf2kUVLCv/AAj5IQADQGgcAAAACQGf+UQn/wALKCEAA0BoHCEAA0BoHAAAAAkBn/tEJ/8ACykhAANAaBwAAAANQZvgNExDP/6plgAMuSEAA0BoHCEAA0BoHAAAAAtBnh5FFSwr/wAI+CEAA0BoHAAAAAkBnj1EJ/8ACyghAANAaBwhAANAaBwAAAAJAZ4/RCf/AAspIQADQGgcAAAADUGaJDRMQz/+qZYADLghAANAaBwAAAALQZ5CRRUsK/8ACPkhAANAaBwhAANAaBwAAAAJAZ5hRCf/AAsoIQADQGgcAAAACQGeY0Qn/wALKSEAA0BoHCEAA0BoHAAAAA1Bmmg0TEM//qmWAAy5IQADQGgcAAAAC0GehkUVLCv/AAj5IQADQGgcIQADQGgcAAAACQGepUQn/wALKSEAA0BoHAAAAAkBnqdEJ/8ACyghAANAaBwAAAANQZqsNExDP/6plgAMuCEAA0BoHCEAA0BoHAAAAAtBnspFFSwr/wAI+SEAA0BoHAAAAAkBnulEJ/8ACyghAANAaBwhAANAaBwAAAAJAZ7rRCf/AAsoIQADQGgcAAAADUGa8DRMQz/+qZYADLkhAANAaBwhAANAaBwAAAALQZ8ORRUsK/8ACPkhAANAaBwAAAAJAZ8tRCf/AAspIQADQGgcIQADQGgcAAAACQGfL0Qn/wALKCEAA0BoHAAAAA1BmzQ0TEM//qmWAAy4IQADQGgcAAAAC0GfUkUVLCv/AAj5IQADQGgcIQADQGgcAAAACQGfcUQn/wALKCEAA0BoHAAAAAkBn3NEJ/8ACyghAANAaBwhAANAaBwAAAANQZt4NExC//6plgAMuSEAA0BoHAAAAAtBn5ZFFSwr/wAI+CEAA0BoHCEAA0BoHAAAAAkBn7VEJ/8ACykhAANAaBwAAAAJAZ+3RCf/AAspIQADQGgcAAAADUGbuzRMQn/+nhAAYsAhAANAaBwhAANAaBwAAAAJQZ/aQhP/AAspIQADQGgcAAAACQGf+UQn/wALKCEAA0BoHCEAA0BoHCEAA0BoHCEAA0BoHCEAA0BoHCEAA0BoHAAACiFtb292AAAAbG12aGQAAAAA1YCCX9WAgl8AAAPoAAAH/AABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAGGlvZHMAAAAAEICAgAcAT////v7/AAAF+XRyYWsAAABcdGtoZAAAAAPVgIJf1YCCXwAAAAEAAAAAAAAH0AAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAygAAAMoAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAB9AAABdwAAEAAAAABXFtZGlhAAAAIG1kaGQAAAAA1YCCX9WAgl8AAV+QAAK/IFXEAAAAAAAtaGRscgAAAAAAAAAAdmlkZQAAAAAAAAAAAAAAAFZpZGVvSGFuZGxlcgAAAAUcbWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAE3HN0YmwAAACYc3RzZAAAAAAAAAABAAAAiGF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAygDKAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAyYXZjQwFNQCj/4QAbZ01AKOyho3ySTUBAQFAAAAMAEAAr8gDxgxlgAQAEaO+G8gAAABhzdHRzAAAAAAAAAAEAAAA8AAALuAAAABRzdHNzAAAAAAAAAAEAAAABAAAB8GN0dHMAAAAAAAAAPAAAAAEAABdwAAAAAQAAOpgAAAABAAAXcAAAAAEAAAAAAAAAAQAAC7gAAAABAAA6mAAAAAEAABdwAAAAAQAAAAAAAAABAAALuAAAAAEAADqYAAAAAQAAF3AAAAABAAAAAAAAAAEAAAu4AAAAAQAAOpgAAAABAAAXcAAAAAEAAAAAAAAAAQAAC7gAAAABAAA6mAAAAAEAABdwAAAAAQAAAAAAAAABAAALuAAAAAEAADqYAAAAAQAAF3AAAAABAAAAAAAAAAEAAAu4AAAAAQAAOpgAAAABAAAXcAAAAAEAAAAAAAAAAQAAC7gAAAABAAA6mAAAAAEAABdwAAAAAQAAAAAAAAABAAALuAAAAAEAADqYAAAAAQAAF3AAAAABAAAAAAAAAAEAAAu4AAAAAQAAOpgAAAABAAAXcAAAAAEAAAAAAAAAAQAAC7gAAAABAAA6mAAAAAEAABdwAAAAAQAAAAAAAAABAAALuAAAAAEAADqYAAAAAQAAF3AAAAABAAAAAAAAAAEAAAu4AAAAAQAAOpgAAAABAAAXcAAAAAEAAAAAAAAAAQAAC7gAAAABAAA6mAAAAAEAABdwAAAAAQAAAAAAAAABAAALuAAAAAEAAC7gAAAAAQAAF3AAAAABAAAAAAAAABxzdHNjAAAAAAAAAAEAAAABAAAAAQAAAAEAAAEEc3RzegAAAAAAAAAAAAAAPAAAAzQAAAAQAAAADQAAAA0AAAANAAAAEQAAAA8AAAANAAAADQAAABEAAAAPAAAADQAAAA0AAAARAAAADwAAAA0AAAANAAAAEQAAAA8AAAANAAAADQAAABEAAAAPAAAADQAAAA0AAAARAAAADwAAAA0AAAANAAAAEQAAAA8AAAANAAAADQAAABEAAAAPAAAADQAAAA0AAAARAAAADwAAAA0AAAANAAAAEQAAAA8AAAANAAAADQAAABEAAAAPAAAADQAAAA0AAAARAAAADwAAAA0AAAANAAAAEQAAAA8AAAANAAAADQAAABEAAAANAAAADQAAAQBzdGNvAAAAAAAAADwAAAAwAAADZAAAA3QAAAONAAADoAAAA7kAAAPQAAAD6wAAA/4AAAQXAAAELgAABEMAAARcAAAEbwAABIwAAAShAAAEugAABM0AAATkAAAE/wAABRIAAAUrAAAFQgAABV0AAAVwAAAFiQAABaAAAAW1AAAFzgAABeEAAAX+AAAGEwAABiwAAAY/AAAGVgAABnEAAAaEAAAGnQAABrQAAAbPAAAG4gAABvUAAAcSAAAHJwAAB0AAAAdTAAAHcAAAB4UAAAeeAAAHsQAAB8gAAAfjAAAH9gAACA8AAAgmAAAIQQAACFQAAAhnAAAIhAAACJcAAAMsdHJhawAAAFx0a2hkAAAAA9WAgl/VgIJfAAAAAgAAAAAAAAf8AAAAAAAAAAAAAAABAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAACsm1kaWEAAAAgbWRoZAAAAADVgIJf1YCCXwAArEQAAWAAVcQAAAAAACdoZGxyAAAAAAAAAABzb3VuAAAAAAAAAAAAAAAAU3RlcmVvAAAAAmNtaW5mAAAAEHNtaGQAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAidzdGJsAAAAZ3N0c2QAAAAAAAAAAQAAAFdtcDRhAAAAAAAAAAEAAAAAAAAAAAACABAAAAAArEQAAAAAADNlc2RzAAAAAAOAgIAiAAIABICAgBRAFQAAAAADDUAAAAAABYCAgAISEAaAgIABAgAAABhzdHRzAAAAAAAAAAEAAABYAAAEAAAAABxzdHNjAAAAAAAAAAEAAAABAAAAAQAAAAEAAAAUc3RzegAAAAAAAAAGAAAAWAAAAXBzdGNvAAAAAAAAAFgAAAOBAAADhwAAA5oAAAOtAAADswAAA8oAAAPfAAAD5QAAA/gAAAQLAAAEEQAABCgAAAQ9AAAEUAAABFYAAARpAAAEgAAABIYAAASbAAAErgAABLQAAATHAAAE3gAABPMAAAT5AAAFDAAABR8AAAUlAAAFPAAABVEAAAVXAAAFagAABX0AAAWDAAAFmgAABa8AAAXCAAAFyAAABdsAAAXyAAAF+AAABg0AAAYgAAAGJgAABjkAAAZQAAAGZQAABmsAAAZ+AAAGkQAABpcAAAauAAAGwwAABskAAAbcAAAG7wAABwYAAAcMAAAHIQAABzQAAAc6AAAHTQAAB2QAAAdqAAAHfwAAB5IAAAeYAAAHqwAAB8IAAAfXAAAH3QAAB/AAAAgDAAAICQAACCAAAAg1AAAIOwAACE4AAAhhAAAIeAAACH4AAAiRAAAIpAAACKoAAAiwAAAItgAACLwAAAjCAAAAFnVkdGEAAAAObmFtZVN0ZXJlbwAAAHB1ZHRhAAAAaG1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAAO2lsc3QAAAAzqXRvbwAAACtkYXRhAAAAAQAAAABIYW5kQnJha2UgMC4xMC4yIDIwMTUwNjExMDA=';
+                        })
+                    ]);
+                });
+            });
+            var NoSleep$1 = unwrapExports$$1(NoSleep);
+            var nextDisplayId = 1000;
+            var defaultLeftBounds = [0, 0, 0.5, 1];
+            var defaultRightBounds = [0.5, 0, 0.5, 1];
+            var raf = window.requestAnimationFrame;
+            var caf = window.cancelAnimationFrame;
+
+            function VRFrameData() {
+                this.leftProjectionMatrix = new Float32Array(16);
+                this.leftViewMatrix = new Float32Array(16);
+                this.rightProjectionMatrix = new Float32Array(16);
+                this.rightViewMatrix = new Float32Array(16);
+                this.pose = null;
+            }
+
+            function VRDisplayCapabilities(config) {
+                Object.defineProperties(this, {
+                    hasPosition: {
+                        writable: false, enumerable: true, value: config.hasPosition
+                    },
+                    hasExternalDisplay: {
+                        writable: false, enumerable: true, value: config.hasExternalDisplay
+                    },
+                    canPresent: {
+                        writable: false, enumerable: true, value: config.canPresent
+                    },
+                    maxLayers: {
+                        writable: false, enumerable: true, value: config.maxLayers
+                    },
+                    hasOrientation: {
+                        enumerable: true, get: function get() {
+                            deprecateWarning('VRDisplayCapabilities.prototype.hasOrientation', 'VRDisplay.prototype.getFrameData');
+                            return config.hasOrientation;
+                        }
+                    }
+                });
+            }
+
+            function VRDisplay(config) {
+                config = config || {};
+                var USE_WAKELOCK = 'wakelock' in config ? config.wakelock : true;
+                this.isPolyfilled = true;
+                this.displayId = nextDisplayId++;
+                this.displayName = '';
+                this.depthNear = 0.01;
+                this.depthFar = 10000.0;
+                this.isPresenting = false;
+                Object.defineProperty(this, 'isConnected', {
+                    get: function get() {
+                        deprecateWarning('VRDisplay.prototype.isConnected', 'VRDisplayCapabilities.prototype.hasExternalDisplay');
+                        return false;
+                    }
+                });
+                this.capabilities = new VRDisplayCapabilities({
+                    hasPosition: false,
+                    hasOrientation: false,
+                    hasExternalDisplay: false,
+                    canPresent: false,
+                    maxLayers: 1
+                });
+                this.stageParameters = null;
+                this.waitingForPresent_ = false;
+                this.layer_ = null;
+                this.originalParent_ = null;
+                this.fullscreenElement_ = null;
+                this.fullscreenWrapper_ = null;
+                this.fullscreenElementCachedStyle_ = null;
+                this.fullscreenEventTarget_ = null;
+                this.fullscreenChangeHandler_ = null;
+                this.fullscreenErrorHandler_ = null;
+                if (USE_WAKELOCK && isMobile()) {
+                    this.wakelock_ = new NoSleep$1();
+                }
+            }
+
+            VRDisplay.prototype.getFrameData = function (frameData) {
+                return frameDataFromPose(frameData, this._getPose(), this);
+            };
+            VRDisplay.prototype.getPose = function () {
+                deprecateWarning('VRDisplay.prototype.getPose', 'VRDisplay.prototype.getFrameData');
+                return this._getPose();
+            };
+            VRDisplay.prototype.resetPose = function () {
+                deprecateWarning('VRDisplay.prototype.resetPose');
+                return this._resetPose();
+            };
+            VRDisplay.prototype.getImmediatePose = function () {
+                deprecateWarning('VRDisplay.prototype.getImmediatePose', 'VRDisplay.prototype.getFrameData');
+                return this._getPose();
+            };
+            VRDisplay.prototype.requestAnimationFrame = function (callback) {
+                return raf(callback);
+            };
+            VRDisplay.prototype.cancelAnimationFrame = function (id) {
+                return caf(id);
+            };
+            VRDisplay.prototype.wrapForFullscreen = function (element) {
+                if (isIOS()) {
+                    return element;
+                }
+                if (!this.fullscreenWrapper_) {
+                    this.fullscreenWrapper_ = document.createElement('div');
+                    var cssProperties = ['height: ' + Math.min(screen.height, screen.width) + 'px !important', 'top: 0 !important', 'left: 0 !important', 'right: 0 !important', 'border: 0', 'margin: 0', 'padding: 0', 'z-index: 999999 !important', 'position: fixed'];
+                    this.fullscreenWrapper_.setAttribute('style', cssProperties.join('; ') + ';');
+                    this.fullscreenWrapper_.classList.add('webvr-polyfill-fullscreen-wrapper');
+                }
+                if (this.fullscreenElement_ == element) {
+                    return this.fullscreenWrapper_;
+                }
+                if (this.fullscreenElement_) {
+                    if (this.originalParent_) {
+                        this.originalParent_.appendChild(this.fullscreenElement_);
+                    } else {
+                        this.fullscreenElement_.parentElement.removeChild(this.fullscreenElement_);
+                    }
+                }
+                this.fullscreenElement_ = element;
+                this.originalParent_ = element.parentElement;
+                if (!this.originalParent_) {
+                    document.body.appendChild(element);
+                }
+                if (!this.fullscreenWrapper_.parentElement) {
+                    var parent = this.fullscreenElement_.parentElement;
+                    parent.insertBefore(this.fullscreenWrapper_, this.fullscreenElement_);
+                    parent.removeChild(this.fullscreenElement_);
+                }
+                this.fullscreenWrapper_.insertBefore(this.fullscreenElement_, this.fullscreenWrapper_.firstChild);
+                this.fullscreenElementCachedStyle_ = this.fullscreenElement_.getAttribute('style');
+                var self = this;
+
+                function applyFullscreenElementStyle() {
+                    if (!self.fullscreenElement_) {
+                        return;
+                    }
+                    var cssProperties = ['position: absolute', 'top: 0', 'left: 0', 'width: ' + Math.max(screen.width, screen.height) + 'px', 'height: ' + Math.min(screen.height, screen.width) + 'px', 'border: 0', 'margin: 0', 'padding: 0'];
+                    self.fullscreenElement_.setAttribute('style', cssProperties.join('; ') + ';');
+                }
+
+                applyFullscreenElementStyle();
+                return this.fullscreenWrapper_;
+            };
+            VRDisplay.prototype.removeFullscreenWrapper = function () {
+                if (!this.fullscreenElement_) {
+                    return;
+                }
+                var element = this.fullscreenElement_;
+                if (this.fullscreenElementCachedStyle_) {
+                    element.setAttribute('style', this.fullscreenElementCachedStyle_);
+                } else {
+                    element.removeAttribute('style');
+                }
+                this.fullscreenElement_ = null;
+                this.fullscreenElementCachedStyle_ = null;
+                var parent = this.fullscreenWrapper_.parentElement;
+                this.fullscreenWrapper_.removeChild(element);
+                if (this.originalParent_ === parent) {
+                    parent.insertBefore(element, this.fullscreenWrapper_);
+                }
+                else if (this.originalParent_) {
+                    this.originalParent_.appendChild(element);
+                }
+                parent.removeChild(this.fullscreenWrapper_);
+                return element;
+            };
+            VRDisplay.prototype.requestPresent = function (layers) {
+                var wasPresenting = this.isPresenting;
+                var self = this;
+                if (!(layers instanceof Array)) {
+                    deprecateWarning('VRDisplay.prototype.requestPresent with non-array argument', 'an array of VRLayers as the first argument');
+                    layers = [layers];
+                }
+                return new Promise(function (resolve, reject) {
+                    if (!self.capabilities.canPresent) {
+                        reject(new Error('VRDisplay is not capable of presenting.'));
+                        return;
+                    }
+                    if (layers.length == 0 || layers.length > self.capabilities.maxLayers) {
+                        reject(new Error('Invalid number of layers.'));
+                        return;
+                    }
+                    var incomingLayer = layers[0];
+                    if (!incomingLayer.source) {
+                        resolve();
+                        return;
+                    }
+                    var leftBounds = incomingLayer.leftBounds || defaultLeftBounds;
+                    var rightBounds = incomingLayer.rightBounds || defaultRightBounds;
+                    if (wasPresenting) {
+                        var layer = self.layer_;
+                        if (layer.source !== incomingLayer.source) {
+                            layer.source = incomingLayer.source;
+                        }
+                        for (var i = 0; i < 4; i++) {
+                            layer.leftBounds[i] = leftBounds[i];
+                            layer.rightBounds[i] = rightBounds[i];
+                        }
+                        self.wrapForFullscreen(self.layer_.source);
+                        self.updatePresent_();
+                        resolve();
+                        return;
+                    }
+                    self.layer_ = {
+                        predistorted: incomingLayer.predistorted,
+                        source: incomingLayer.source,
+                        leftBounds: leftBounds.slice(0),
+                        rightBounds: rightBounds.slice(0)
+                    };
+                    self.waitingForPresent_ = false;
+                    if (self.layer_ && self.layer_.source) {
+                        var fullscreenElement = self.wrapForFullscreen(self.layer_.source);
+                        var onFullscreenChange = function onFullscreenChange() {
+                            var actualFullscreenElement = getFullscreenElement();
+                            self.isPresenting = fullscreenElement === actualFullscreenElement;
+                            if (self.isPresenting) {
+                                if (screen.orientation && screen.orientation.lock) {
+                                    screen.orientation.lock('landscape-primary').catch(function (error) {
+                                        console.error('screen.orientation.lock() failed due to', error.message);
+                                    });
+                                }
+                                self.waitingForPresent_ = false;
+                                self.beginPresent_();
+                                resolve();
+                            } else {
+                                if (screen.orientation && screen.orientation.unlock) {
+                                    screen.orientation.unlock();
+                                }
+                                self.removeFullscreenWrapper();
+                                self.disableWakeLock();
+                                self.endPresent_();
+                                self.removeFullscreenListeners_();
+                            }
+                            self.fireVRDisplayPresentChange_();
+                        };
+                        var onFullscreenError = function onFullscreenError() {
+                            if (!self.waitingForPresent_) {
+                                return;
+                            }
+                            self.removeFullscreenWrapper();
+                            self.removeFullscreenListeners_();
+                            self.disableWakeLock();
+                            self.waitingForPresent_ = false;
+                            self.isPresenting = false;
+                            reject(new Error('Unable to present.'));
+                        };
+                        self.addFullscreenListeners_(fullscreenElement, onFullscreenChange, onFullscreenError);
+                        if (requestFullscreen(fullscreenElement)) {
+                            self.enableWakeLock();
+                            self.waitingForPresent_ = true;
+                        } else if (isIOS() || isWebViewAndroid()) {
+                            self.enableWakeLock();
+                            self.isPresenting = true;
+                            self.beginPresent_();
+                            self.fireVRDisplayPresentChange_();
+                            resolve();
+                        }
+                    }
+                    if (!self.waitingForPresent_ && !isIOS()) {
+                        exitFullscreen();
+                        reject(new Error('Unable to present.'));
+                    }
+                });
+            };
+            VRDisplay.prototype.exitPresent = function () {
+                var wasPresenting = this.isPresenting;
+                var self = this;
+                this.isPresenting = false;
+                this.layer_ = null;
+                this.disableWakeLock();
+                return new Promise(function (resolve, reject) {
+                    if (wasPresenting) {
+                        if (!exitFullscreen() && isIOS()) {
+                            self.endPresent_();
+                            self.fireVRDisplayPresentChange_();
+                        }
+                        if (isWebViewAndroid()) {
+                            self.removeFullscreenWrapper();
+                            self.removeFullscreenListeners_();
+                            self.endPresent_();
+                            self.fireVRDisplayPresentChange_();
+                        }
+                        resolve();
+                    } else {
+                        reject(new Error('Was not presenting to VRDisplay.'));
+                    }
+                });
+            };
+            VRDisplay.prototype.getLayers = function () {
+                if (this.layer_) {
+                    return [this.layer_];
+                }
+                return [];
+            };
+            VRDisplay.prototype.fireVRDisplayPresentChange_ = function () {
+                var event = new CustomEvent('vrdisplaypresentchange', {detail: {display: this}});
+                window.dispatchEvent(event);
+            };
+            VRDisplay.prototype.fireVRDisplayConnect_ = function () {
+                var event = new CustomEvent('vrdisplayconnect', {detail: {display: this}});
+                window.dispatchEvent(event);
+            };
+            VRDisplay.prototype.addFullscreenListeners_ = function (element, changeHandler, errorHandler) {
+                this.removeFullscreenListeners_();
+                this.fullscreenEventTarget_ = element;
+                this.fullscreenChangeHandler_ = changeHandler;
+                this.fullscreenErrorHandler_ = errorHandler;
+                if (changeHandler) {
+                    if (document.fullscreenEnabled) {
+                        element.addEventListener('fullscreenchange', changeHandler, false);
+                    } else if (document.webkitFullscreenEnabled) {
+                        element.addEventListener('webkitfullscreenchange', changeHandler, false);
+                    } else if (document.mozFullScreenEnabled) {
+                        document.addEventListener('mozfullscreenchange', changeHandler, false);
+                    } else if (document.msFullscreenEnabled) {
+                        element.addEventListener('msfullscreenchange', changeHandler, false);
+                    }
+                }
+                if (errorHandler) {
+                    if (document.fullscreenEnabled) {
+                        element.addEventListener('fullscreenerror', errorHandler, false);
+                    } else if (document.webkitFullscreenEnabled) {
+                        element.addEventListener('webkitfullscreenerror', errorHandler, false);
+                    } else if (document.mozFullScreenEnabled) {
+                        document.addEventListener('mozfullscreenerror', errorHandler, false);
+                    } else if (document.msFullscreenEnabled) {
+                        element.addEventListener('msfullscreenerror', errorHandler, false);
+                    }
+                }
+            };
+            VRDisplay.prototype.removeFullscreenListeners_ = function () {
+                if (!this.fullscreenEventTarget_) return;
+                var element = this.fullscreenEventTarget_;
+                if (this.fullscreenChangeHandler_) {
+                    var changeHandler = this.fullscreenChangeHandler_;
+                    element.removeEventListener('fullscreenchange', changeHandler, false);
+                    element.removeEventListener('webkitfullscreenchange', changeHandler, false);
+                    document.removeEventListener('mozfullscreenchange', changeHandler, false);
+                    element.removeEventListener('msfullscreenchange', changeHandler, false);
+                }
+                if (this.fullscreenErrorHandler_) {
+                    var errorHandler = this.fullscreenErrorHandler_;
+                    element.removeEventListener('fullscreenerror', errorHandler, false);
+                    element.removeEventListener('webkitfullscreenerror', errorHandler, false);
+                    document.removeEventListener('mozfullscreenerror', errorHandler, false);
+                    element.removeEventListener('msfullscreenerror', errorHandler, false);
+                }
+                this.fullscreenEventTarget_ = null;
+                this.fullscreenChangeHandler_ = null;
+                this.fullscreenErrorHandler_ = null;
+            };
+            VRDisplay.prototype.enableWakeLock = function () {
+                if (this.wakelock_) {
+                    this.wakelock_.enable();
+                }
+            };
+            VRDisplay.prototype.disableWakeLock = function () {
+                if (this.wakelock_) {
+                    this.wakelock_.disable();
+                }
+            };
+            VRDisplay.prototype.beginPresent_ = function () {
+            };
+            VRDisplay.prototype.endPresent_ = function () {
+            };
+            VRDisplay.prototype.submitFrame = function (pose) {
+            };
+            VRDisplay.prototype.getEyeParameters = function (whichEye) {
+                return null;
+            };
+            var config = {
+                ADDITIONAL_VIEWERS: [],
+                DEFAULT_VIEWER: '',
+                MOBILE_WAKE_LOCK: true,
+                DEBUG: false,
+                DPDB_URL: 'https://dpdb.webvr.rocks/dpdb.json',
+                K_FILTER: 0.98,
+                PREDICTION_TIME_S: 0.040,
+                CARDBOARD_UI_DISABLED: false,
+                ROTATE_INSTRUCTIONS_DISABLED: false,
+                YAW_ONLY: false,
+                BUFFER_SCALE: 0.5,
+                DIRTY_SUBMIT_FRAME_BINDINGS: false
+            };
+            var Eye = {
+                LEFT: 'left',
+                RIGHT: 'right'
+            };
+
+            function CardboardVRDisplay(config$$1) {
+                var defaults = extend({}, config);
+                config$$1 = extend(defaults, config$$1 || {});
+                VRDisplay.call(this, {
+                    wakelock: config$$1.MOBILE_WAKE_LOCK
+                });
+                this.config = config$$1;
+                this.displayName = 'Cardboard VRDisplay';
+                this.capabilities = new VRDisplayCapabilities({
+                    hasPosition: false,
+                    hasOrientation: true,
+                    hasExternalDisplay: false,
+                    canPresent: true,
+                    maxLayers: 1
+                });
+                this.stageParameters = null;
+                this.bufferScale_ = this.config.BUFFER_SCALE;
+                this.poseSensor_ = new PoseSensor(this.config);
+                this.distorter_ = null;
+                this.cardboardUI_ = null;
+                this.dpdb_ = new Dpdb(this.config.DPDB_URL, this.onDeviceParamsUpdated_.bind(this));
+                this.deviceInfo_ = new DeviceInfo(this.dpdb_.getDeviceParams(), config$$1.ADDITIONAL_VIEWERS);
+                this.viewerSelector_ = new ViewerSelector(config$$1.DEFAULT_VIEWER);
+                this.viewerSelector_.onChange(this.onViewerChanged_.bind(this));
+                this.deviceInfo_.setViewer(this.viewerSelector_.getCurrentViewer());
+                if (!this.config.ROTATE_INSTRUCTIONS_DISABLED) {
+                    this.rotateInstructions_ = new RotateInstructions();
+                }
+                if (isIOS()) {
+                    window.addEventListener('resize', this.onResize_.bind(this));
+                }
+            }
+
+            CardboardVRDisplay.prototype = Object.create(VRDisplay.prototype);
+            CardboardVRDisplay.prototype._getPose = function () {
+                return {
+                    position: null,
+                    orientation: this.poseSensor_.getOrientation(),
+                    linearVelocity: null,
+                    linearAcceleration: null,
+                    angularVelocity: null,
+                    angularAcceleration: null
+                };
+            };
+            CardboardVRDisplay.prototype._resetPose = function () {
+                if (this.poseSensor_.resetPose) {
+                    this.poseSensor_.resetPose();
+                }
+            };
+            CardboardVRDisplay.prototype._getFieldOfView = function (whichEye) {
+                var fieldOfView;
+                if (whichEye == Eye.LEFT) {
+                    fieldOfView = this.deviceInfo_.getFieldOfViewLeftEye();
+                } else if (whichEye == Eye.RIGHT) {
+                    fieldOfView = this.deviceInfo_.getFieldOfViewRightEye();
+                } else {
+                    console.error('Invalid eye provided: %s', whichEye);
+                    return null;
+                }
+                return fieldOfView;
+            };
+            CardboardVRDisplay.prototype._getEyeOffset = function (whichEye) {
+                var offset;
+                if (whichEye == Eye.LEFT) {
+                    offset = [-this.deviceInfo_.viewer.interLensDistance * 0.5, 0.0, 0.0];
+                } else if (whichEye == Eye.RIGHT) {
+                    offset = [this.deviceInfo_.viewer.interLensDistance * 0.5, 0.0, 0.0];
+                } else {
+                    console.error('Invalid eye provided: %s', whichEye);
+                    return null;
+                }
+                return offset;
+            };
+            CardboardVRDisplay.prototype.getEyeParameters = function (whichEye) {
+                var offset = this._getEyeOffset(whichEye);
+                var fieldOfView = this._getFieldOfView(whichEye);
+                var eyeParams = {
+                    offset: offset,
+                    renderWidth: this.deviceInfo_.device.width * 0.5 * this.bufferScale_,
+                    renderHeight: this.deviceInfo_.device.height * this.bufferScale_
+                };
+                Object.defineProperty(eyeParams, 'fieldOfView', {
+                    enumerable: true,
+                    get: function get() {
+                        deprecateWarning('VRFieldOfView', 'VRFrameData\'s projection matrices');
+                        return fieldOfView;
+                    }
+                });
+                return eyeParams;
+            };
+            CardboardVRDisplay.prototype.onDeviceParamsUpdated_ = function (newParams) {
+                if (this.config.DEBUG) {
+                    console.log('DPDB reported that device params were updated.');
+                }
+                this.deviceInfo_.updateDeviceParams(newParams);
+                if (this.distorter_) {
+                    this.distorter_.updateDeviceInfo(this.deviceInfo_);
+                }
+            };
+            CardboardVRDisplay.prototype.updateBounds_ = function () {
+                if (this.layer_ && this.distorter_ && (this.layer_.leftBounds || this.layer_.rightBounds)) {
+                    this.distorter_.setTextureBounds(this.layer_.leftBounds, this.layer_.rightBounds);
+                }
+            };
+            CardboardVRDisplay.prototype.beginPresent_ = function () {
+                var gl = this.layer_.source.getContext('webgl');
+                if (!gl) gl = this.layer_.source.getContext('experimental-webgl');
+                if (!gl) gl = this.layer_.source.getContext('webgl2');
+                if (!gl) return;
+                if (this.layer_.predistorted) {
+                    if (!this.config.CARDBOARD_UI_DISABLED) {
+                        gl.canvas.width = getScreenWidth() * this.bufferScale_;
+                        gl.canvas.height = getScreenHeight() * this.bufferScale_;
+                        this.cardboardUI_ = new CardboardUI(gl);
+                    }
+                } else {
+                    if (!this.config.CARDBOARD_UI_DISABLED) {
+                        this.cardboardUI_ = new CardboardUI(gl);
+                    }
+                    this.distorter_ = new CardboardDistorter(gl, this.cardboardUI_, this.config.BUFFER_SCALE, this.config.DIRTY_SUBMIT_FRAME_BINDINGS);
+                    this.distorter_.updateDeviceInfo(this.deviceInfo_);
+                }
+                if (this.cardboardUI_) {
+                    this.cardboardUI_.listen(function (e) {
+                        this.viewerSelector_.show(this.layer_.source.parentElement);
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }.bind(this), function (e) {
+                        this.exitPresent();
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }.bind(this));
+                }
+                if (this.rotateInstructions_) {
+                    if (isLandscapeMode() && isMobile()) {
+                        this.rotateInstructions_.showTemporarily(3000, this.layer_.source.parentElement);
+                    } else {
+                        this.rotateInstructions_.update();
+                    }
+                }
+                this.orientationHandler = this.onOrientationChange_.bind(this);
+                window.addEventListener('orientationchange', this.orientationHandler);
+                this.vrdisplaypresentchangeHandler = this.updateBounds_.bind(this);
+                window.addEventListener('vrdisplaypresentchange', this.vrdisplaypresentchangeHandler);
+                this.fireVRDisplayDeviceParamsChange_();
+            };
+            CardboardVRDisplay.prototype.endPresent_ = function () {
+                if (this.distorter_) {
+                    this.distorter_.destroy();
+                    this.distorter_ = null;
+                }
+                if (this.cardboardUI_) {
+                    this.cardboardUI_.destroy();
+                    this.cardboardUI_ = null;
+                }
+                if (this.rotateInstructions_) {
+                    this.rotateInstructions_.hide();
+                }
+                this.viewerSelector_.hide();
+                window.removeEventListener('orientationchange', this.orientationHandler);
+                window.removeEventListener('vrdisplaypresentchange', this.vrdisplaypresentchangeHandler);
+            };
+            CardboardVRDisplay.prototype.updatePresent_ = function () {
+                this.endPresent_();
+                this.beginPresent_();
+            };
+            CardboardVRDisplay.prototype.submitFrame = function (pose) {
+                if (this.distorter_) {
+                    this.updateBounds_();
+                    this.distorter_.submitFrame();
+                } else if (this.cardboardUI_ && this.layer_) {
+                    var canvas = this.layer_.source.getContext('webgl').canvas;
+                    if (canvas.width != this.lastWidth || canvas.height != this.lastHeight) {
+                        this.cardboardUI_.onResize();
+                    }
+                    this.lastWidth = canvas.width;
+                    this.lastHeight = canvas.height;
+                    this.cardboardUI_.render();
+                }
+            };
+            CardboardVRDisplay.prototype.onOrientationChange_ = function (e) {
+                this.viewerSelector_.hide();
+                if (this.rotateInstructions_) {
+                    this.rotateInstructions_.update();
+                }
+                this.onResize_();
+            };
+            CardboardVRDisplay.prototype.onResize_ = function (e) {
+                if (this.layer_) {
+                    var gl = this.layer_.source.getContext('webgl');
+                    var cssProperties = ['position: absolute', 'top: 0', 'left: 0',
+                        'width: 100vw', 'height: 100vh', 'border: 0', 'margin: 0',
+                        'padding: 0px', 'box-sizing: content-box'];
+                    gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
+                    safariCssSizeWorkaround(gl.canvas);
+                }
+            };
+            CardboardVRDisplay.prototype.onViewerChanged_ = function (viewer) {
+                this.deviceInfo_.setViewer(viewer);
+                if (this.distorter_) {
+                    this.distorter_.updateDeviceInfo(this.deviceInfo_);
+                }
+                this.fireVRDisplayDeviceParamsChange_();
+            };
+            CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function () {
+                var event = new CustomEvent('vrdisplaydeviceparamschange', {
+                    detail: {
+                        vrdisplay: this,
+                        deviceInfo: this.deviceInfo_
+                    }
+                });
+                window.dispatchEvent(event);
+            };
+            CardboardVRDisplay.VRFrameData = VRFrameData;
+            CardboardVRDisplay.VRDisplay = VRDisplay;
+            return CardboardVRDisplay;
+        })));
+    });
+    var CardboardVRDisplay = unwrapExports(cardboardVrDisplay);
+
+    var PolyfilledXRDevice = function (_EventTarget) {
+        inherits(PolyfilledXRDevice, _EventTarget);
+
+        function PolyfilledXRDevice(global) {
+            classCallCheck(this, PolyfilledXRDevice);
+            var _this = possibleConstructorReturn(this, (PolyfilledXRDevice.__proto__ || Object.getPrototypeOf(PolyfilledXRDevice)).call(this));
+            _this.global = global;
+            _this.onWindowResize = _this.onWindowResize.bind(_this);
+            _this.global.window.addEventListener('resize', _this.onWindowResize);
+            _this.environmentBlendMode = 'opaque';
+            return _this;
+        }
+
+        createClass(PolyfilledXRDevice, [{
+            key: 'onBaseLayerSet',
+            value: function onBaseLayerSet(sessionId, layer) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'supportsSession',
+            value: function supportsSession() {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'requestSession',
+            value: function requestSession() {
+                return new Promise(function ($return, $error) {
+                    return $error(new Error('Not implemented'));
+                }.bind(this));
+            }
+        }, {
+            key: 'requestAnimationFrame',
+            value: function requestAnimationFrame(callback) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'onFrameStart',
+            value: function onFrameStart(sessionId) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'onFrameEnd',
+            value: function onFrameEnd(sessionId) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'requestStageBounds',
+            value: function requestStageBounds() {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'requestFrameOfReferenceTransform',
+            value: function requestFrameOfReferenceTransform(type, options) {
+                return new Promise(function ($return, $error) {
+                    return $return(undefined);
+                }.bind(this));
+            }
+        }, {
+            key: 'cancelAnimationFrame',
+            value: function cancelAnimationFrame(handle) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'endSession',
+            value: function endSession(sessionId) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getViewport',
+            value: function getViewport(sessionId, eye, layer, target) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getProjectionMatrix',
+            value: function getProjectionMatrix(eye) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getBasePoseMatrix',
+            value: function getBasePoseMatrix() {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getBaseViewMatrix',
+            value: function getBaseViewMatrix(eye) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getInputSources',
+            value: function getInputSources() {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'getInputPose',
+            value: function getInputPose(inputSource, coordinateSystem) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'onWindowResize',
+            value: function onWindowResize() {
+                this.onWindowResize();
+            }
+        }, {
+            key: 'depthNear',
+            get: function get$$1() {
+                throw new Error('Not implemented');
+            }
+            ,
+            set: function set$$1(val) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'depthFar',
+            get: function get$$1() {
+                throw new Error('Not implemented');
+            }
+            ,
+            set: function set$$1(val) {
+                throw new Error('Not implemented');
+            }
+        }]);
+        return PolyfilledXRDevice;
+    }(EventTarget);
+
+    function create$2() {
+        var out = new ARRAY_TYPE(9);
+        out[0] = 1;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 1;
+        out[5] = 0;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 1;
+        return out;
+    }
+
+    function create$3() {
+        var out = new ARRAY_TYPE(4);
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        return out;
+    }
+
+    function clone$3(a) {
+        var out = new ARRAY_TYPE(4);
+        out[0] = a[0];
+        out[1] = a[1];
+        out[2] = a[2];
+        out[3] = a[3];
+        return out;
+    }
+
+    function copy$3(out, a) {
+        out[0] = a[0];
+        out[1] = a[1];
+        out[2] = a[2];
+        out[3] = a[3];
+        return out;
+    }
+
+
+    function normalize$1(out, a) {
+        var x = a[0];
+        var y = a[1];
+        var z = a[2];
+        var w = a[3];
+        var len = x * x + y * y + z * z + w * w;
+        if (len > 0) {
+            len = 1 / Math.sqrt(len);
+            out[0] = x * len;
+            out[1] = y * len;
+            out[2] = z * len;
+            out[3] = w * len;
+        }
+        return out;
+    }
+
+
+    var forEach$1 = function () {
+        var vec = create$3();
+        return function (a, stride, offset, count, fn, arg) {
+            var i = void 0,
+                l = void 0;
+            if (!stride) {
+                stride = 4;
+            }
+            if (!offset) {
+                offset = 0;
+            }
+            if (count) {
+                l = Math.min(count * stride + offset, a.length);
+            } else {
+                l = a.length;
+            }
+            for (i = offset; i < l; i += stride) {
+                vec[0] = a[i];
+                vec[1] = a[i + 1];
+                vec[2] = a[i + 2];
+                vec[3] = a[i + 3];
+                fn(vec, vec, arg);
+                a[i] = vec[0];
+                a[i + 1] = vec[1];
+                a[i + 2] = vec[2];
+                a[i + 3] = vec[3];
+            }
+            return a;
+        };
+    }();
+
+    function create$4() {
+        var out = new ARRAY_TYPE(4);
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 1;
+        return out;
+    }
+
+    function setAxisAngle(out, axis, rad) {
+        rad = rad * 0.5;
+        var s = Math.sin(rad);
+        out[0] = s * axis[0];
+        out[1] = s * axis[1];
+        out[2] = s * axis[2];
+        out[3] = Math.cos(rad);
+        return out;
+    }
+
+    function multiply$4(out, a, b) {
+        var ax = a[0],
+            ay = a[1],
+            az = a[2],
+            aw = a[3];
+        var bx = b[0],
+            by = b[1],
+            bz = b[2],
+            bw = b[3];
+        out[0] = ax * bw + aw * bx + ay * bz - az * by;
+        out[1] = ay * bw + aw * by + az * bx - ax * bz;
+        out[2] = az * bw + aw * bz + ax * by - ay * bx;
+        out[3] = aw * bw - ax * bx - ay * by - az * bz;
+        return out;
+    }
+
+
+    function slerp(out, a, b, t) {
+        var ax = a[0],
+            ay = a[1],
+            az = a[2],
+            aw = a[3];
+        var bx = b[0],
+            by = b[1],
+            bz = b[2],
+            bw = b[3];
+        var omega = void 0,
+            cosom = void 0,
+            sinom = void 0,
+            scale0 = void 0,
+            scale1 = void 0;
+        cosom = ax * bx + ay * by + az * bz + aw * bw;
+        if (cosom < 0.0) {
+            cosom = -cosom;
+            bx = -bx;
+            by = -by;
+            bz = -bz;
+            bw = -bw;
+        }
+        if (1.0 - cosom > 0.000001) {
+            omega = Math.acos(cosom);
+            sinom = Math.sin(omega);
+            scale0 = Math.sin((1.0 - t) * omega) / sinom;
+            scale1 = Math.sin(t * omega) / sinom;
+        } else {
+            scale0 = 1.0 - t;
+            scale1 = t;
+        }
+        out[0] = scale0 * ax + scale1 * bx;
+        out[1] = scale0 * ay + scale1 * by;
+        out[2] = scale0 * az + scale1 * bz;
+        out[3] = scale0 * aw + scale1 * bw;
+        return out;
+    }
+
+    function invert$2(out, a) {
+        var a0 = a[0],
+            a1 = a[1],
+            a2 = a[2],
+            a3 = a[3];
+        var dot$$1 = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
+        var invDot = dot$$1 ? 1.0 / dot$$1 : 0;
+        out[0] = -a0 * invDot;
+        out[1] = -a1 * invDot;
+        out[2] = -a2 * invDot;
+        out[3] = a3 * invDot;
+        return out;
+    }
+
+    function fromMat3(out, m) {
+        var fTrace = m[0] + m[4] + m[8];
+        var fRoot = void 0;
+        if (fTrace > 0.0) {
+            fRoot = Math.sqrt(fTrace + 1.0);
+            out[3] = 0.5 * fRoot;
+            fRoot = 0.5 / fRoot;
+            out[0] = (m[5] - m[7]) * fRoot;
+            out[1] = (m[6] - m[2]) * fRoot;
+            out[2] = (m[1] - m[3]) * fRoot;
+        } else {
+            var i = 0;
+            if (m[4] > m[0]) i = 1;
+            if (m[8] > m[i * 3 + i]) i = 2;
+            var j = (i + 1) % 3;
+            var k = (i + 2) % 3;
+            fRoot = Math.sqrt(m[i * 3 + i] - m[j * 3 + j] - m[k * 3 + k] + 1.0);
+            out[i] = 0.5 * fRoot;
+            fRoot = 0.5 / fRoot;
+            out[3] = (m[j * 3 + k] - m[k * 3 + j]) * fRoot;
+            out[j] = (m[j * 3 + i] + m[i * 3 + j]) * fRoot;
+            out[k] = (m[k * 3 + i] + m[i * 3 + k]) * fRoot;
+        }
+        return out;
+    }
+
+    function fromEuler(out, x, y, z) {
+        var halfToRad = 0.5 * Math.PI / 180.0;
+        x *= halfToRad;
+        y *= halfToRad;
+        z *= halfToRad;
+        var sx = Math.sin(x);
+        var cx = Math.cos(x);
+        var sy = Math.sin(y);
+        var cy = Math.cos(y);
+        var sz = Math.sin(z);
+        var cz = Math.cos(z);
+        out[0] = sx * cy * cz - cx * sy * sz;
+        out[1] = cx * sy * cz + sx * cy * sz;
+        out[2] = cx * cy * sz - sx * sy * cz;
+        out[3] = cx * cy * cz + sx * sy * sz;
+        return out;
+    }
+
+    var clone$4 = clone$3;
+
+    var copy$4 = copy$3;
+
+
+    var normalize$2 = normalize$1;
+
+
+    var rotationTo = function () {
+        var tmpvec3 = create$1();
+        var xUnitVec3 = fromValues$1(1, 0, 0);
+        var yUnitVec3 = fromValues$1(0, 1, 0);
+        return function (out, a, b) {
+            var dot$$1 = dot(a, b);
+            if (dot$$1 < -0.999999) {
+                cross(tmpvec3, xUnitVec3, a);
+                if (len(tmpvec3) < 0.000001) cross(tmpvec3, yUnitVec3, a);
+                normalize(tmpvec3, tmpvec3);
+                setAxisAngle(out, tmpvec3, Math.PI);
+                return out;
+            } else if (dot$$1 > 0.999999) {
+                out[0] = 0;
+                out[1] = 0;
+                out[2] = 0;
+                out[3] = 1;
+                return out;
+            } else {
+                cross(tmpvec3, a, b);
+                out[0] = tmpvec3[0];
+                out[1] = tmpvec3[1];
+                out[2] = tmpvec3[2];
+                out[3] = 1 + dot$$1;
+                return normalize$2(out, out);
+            }
+        };
+    }();
+    var sqlerp = function () {
+        var temp1 = create$4();
+        var temp2 = create$4();
+        return function (out, a, b, c, d, t) {
+            slerp(temp1, a, d, t);
+            slerp(temp2, b, c, t);
+            slerp(out, temp1, temp2, 2 * t * (1 - t));
+            return out;
+        };
+    }();
+    var setAxes = function () {
+        var matr = create$2();
+        return function (out, view, right, up) {
+            matr[0] = right[0];
+            matr[3] = right[1];
+            matr[6] = right[2];
+            matr[1] = up[0];
+            matr[4] = up[1];
+            matr[7] = up[2];
+            matr[2] = -view[0];
+            matr[5] = -view[1];
+            matr[8] = -view[2];
+            return normalize$2(out, fromMat3(out, matr));
+        };
+    }();
+
+    var HEAD_ELBOW_OFFSET_RIGHTHANDED = fromValues$1(0.155, -0.465, -0.15);
+    var HEAD_ELBOW_OFFSET_LEFTHANDED = fromValues$1(-0.155, -0.465, -0.15);
+    var ELBOW_WRIST_OFFSET = fromValues$1(0, 0, -0.25);
+    var WRIST_CONTROLLER_OFFSET = fromValues$1(0, 0, 0.05);
+    var ARM_EXTENSION_OFFSET = fromValues$1(-0.08, 0.14, 0.08);
+    var ELBOW_BEND_RATIO = 0.4;
+    var EXTENSION_RATIO_WEIGHT = 0.4;
+    var MIN_ANGULAR_SPEED = 0.61;
+    var MIN_ANGLE_DELTA = 0.175;
+    var MIN_EXTENSION_COS = 0.12;
+    var MAX_EXTENSION_COS = 0.87;
+    var RAD_TO_DEG = 180 / Math.PI;
+
+    function eulerFromQuaternion(out, q, order) {
+        function clamp(value, min$$1, max$$1) {
+            return value < min$$1 ? min$$1 : value > max$$1 ? max$$1 : value;
+        }
+
+        var sqx = q[0] * q[0];
+        var sqy = q[1] * q[1];
+        var sqz = q[2] * q[2];
+        var sqw = q[3] * q[3];
+        if (order === 'XYZ') {
+            out[0] = Math.atan2(2 * (q[0] * q[3] - q[1] * q[2]), sqw - sqx - sqy + sqz);
+            out[1] = Math.asin(clamp(2 * (q[0] * q[2] + q[1] * q[3]), -1, 1));
+            out[2] = Math.atan2(2 * (q[2] * q[3] - q[0] * q[1]), sqw + sqx - sqy - sqz);
+        } else if (order === 'YXZ') {
+            out[0] = Math.asin(clamp(2 * (q[0] * q[3] - q[1] * q[2]), -1, 1));
+            out[1] = Math.atan2(2 * (q[0] * q[2] + q[1] * q[3]), sqw - sqx - sqy + sqz);
+            out[2] = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), sqw - sqx + sqy - sqz);
+        } else if (order === 'ZXY') {
+            out[0] = Math.asin(clamp(2 * (q[0] * q[3] + q[1] * q[2]), -1, 1));
+            out[1] = Math.atan2(2 * (q[1] * q[3] - q[2] * q[0]), sqw - sqx - sqy + sqz);
+            out[2] = Math.atan2(2 * (q[2] * q[3] - q[0] * q[1]), sqw - sqx + sqy - sqz);
+        } else if (order === 'ZYX') {
+            out[0] = Math.atan2(2 * (q[0] * q[3] + q[2] * q[1]), sqw - sqx - sqy + sqz);
+            out[1] = Math.asin(clamp(2 * (q[1] * q[3] - q[0] * q[2]), -1, 1));
+            out[2] = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), sqw + sqx - sqy - sqz);
+        } else if (order === 'YZX') {
+            out[0] = Math.atan2(2 * (q[0] * q[3] - q[2] * q[1]), sqw - sqx + sqy - sqz);
+            out[1] = Math.atan2(2 * (q[1] * q[3] - q[0] * q[2]), sqw + sqx - sqy - sqz);
+            out[2] = Math.asin(clamp(2 * (q[0] * q[1] + q[2] * q[3]), -1, 1));
+        } else if (order === 'XZY') {
+            out[0] = Math.atan2(2 * (q[0] * q[3] + q[1] * q[2]), sqw - sqx + sqy - sqz);
+            out[1] = Math.atan2(2 * (q[0] * q[2] + q[1] * q[3]), sqw + sqx - sqy - sqz);
+            out[2] = Math.asin(clamp(2 * (q[2] * q[3] - q[0] * q[1]), -1, 1));
+        } else {
+            console.log('No order given for quaternion to euler conversion.');
+            return;
+        }
+    }
+
+    var OrientationArmModel = function () {
+        function OrientationArmModel() {
+            classCallCheck(this, OrientationArmModel);
+            this.hand = 'right';
+            this.headElbowOffset = HEAD_ELBOW_OFFSET_RIGHTHANDED;
+            this.controllerQ = create$4();
+            this.lastControllerQ = create$4();
+            this.headQ = create$4();
+            this.headPos = create$1();
+            this.elbowPos = create$1();
+            this.wristPos = create$1();
+            this.time = null;
+            this.lastTime = null;
+            this.rootQ = create$4();
+            this.position = create$1();
+        }
+
+        createClass(OrientationArmModel, [{
+            key: 'setHandedness',
+            value: function setHandedness(hand) {
+                if (this.hand != hand) {
+                    this.hand = hand;
+                    if (this.hand == 'left') {
+                        this.headElbowOffset = HEAD_ELBOW_OFFSET_LEFTHANDED;
+                    } else {
+                        this.headElbowOffset = HEAD_ELBOW_OFFSET_RIGHTHANDED;
+                    }
+                }
+            }
+        }, {
+            key: 'update',
+            value: function update(controllerOrientation, headPoseMatrix) {
+                this.time = now$1();
+                if (controllerOrientation) {
+                    copy$4(this.lastControllerQ, this.controllerQ);
+                    copy$4(this.controllerQ, controllerOrientation);
+                }
+                if (headPoseMatrix) {
+                    getTranslation(this.headPos, headPoseMatrix);
+                    getRotation(this.headQ, headPoseMatrix);
+                }
+                var headYawQ = this.getHeadYawOrientation_();
+                var angleDelta = this.quatAngle_(this.lastControllerQ, this.controllerQ);
+                var timeDelta = (this.time - this.lastTime) / 1000;
+                var controllerAngularSpeed = angleDelta / timeDelta;
+                if (controllerAngularSpeed > MIN_ANGULAR_SPEED) {
+                    slerp(this.rootQ, this.rootQ, headYawQ, Math.min(angleDelta / MIN_ANGLE_DELTA, 1.0));
+                } else {
+                    copy$4(this.rootQ, headYawQ);
+                }
+                var controllerForward = fromValues$1(0, 0, -1.0);
+                transformQuat(controllerForward, controllerForward, this.controllerQ);
+                var controllerDotY = dot(controllerForward, [0, 1, 0]);
+                var extensionRatio = this.clamp_((controllerDotY - MIN_EXTENSION_COS) / MAX_EXTENSION_COS, 0.0, 1.0);
+                var controllerCameraQ = clone$4(this.rootQ);
+                invert$2(controllerCameraQ, controllerCameraQ);
+                multiply$4(controllerCameraQ, controllerCameraQ, this.controllerQ);
+                var elbowPos = this.elbowPos;
+                copy$1(elbowPos, this.headPos);
+                add$1(elbowPos, elbowPos, this.headElbowOffset);
+                var elbowOffset = clone$1(ARM_EXTENSION_OFFSET);
+                scale$1(elbowOffset, elbowOffset, extensionRatio);
+                add$1(elbowPos, elbowPos, elbowOffset);
+                var totalAngle = this.quatAngle_(controllerCameraQ, create$4());
+                var totalAngleDeg = totalAngle * RAD_TO_DEG;
+                var lerpSuppression = 1 - Math.pow(totalAngleDeg / 180, 4);
+                var elbowRatio = ELBOW_BEND_RATIO;
+                var wristRatio = 1 - ELBOW_BEND_RATIO;
+                var lerpValue = lerpSuppression * (elbowRatio + wristRatio * extensionRatio * EXTENSION_RATIO_WEIGHT);
+                var wristQ = create$4();
+                slerp(wristQ, wristQ, controllerCameraQ, lerpValue);
+                var invWristQ = invert$2(create$4(), wristQ);
+                var elbowQ = clone$4(controllerCameraQ);
+                multiply$4(elbowQ, elbowQ, invWristQ);
+                var wristPos = this.wristPos;
+                copy$1(wristPos, WRIST_CONTROLLER_OFFSET);
+                transformQuat(wristPos, wristPos, wristQ);
+                add$1(wristPos, wristPos, ELBOW_WRIST_OFFSET);
+                transformQuat(wristPos, wristPos, elbowQ);
+                add$1(wristPos, wristPos, elbowPos);
+                var offset = clone$1(ARM_EXTENSION_OFFSET);
+                scale$1(offset, offset, extensionRatio);
+                add$1(this.position, this.wristPos, offset);
+                transformQuat(this.position, this.position, this.rootQ);
+                this.lastTime = this.time;
+            }
+        }, {
+            key: 'getPosition',
+            value: function getPosition() {
+                return this.position;
+            }
+        }, {
+            key: 'getHeadYawOrientation_',
+            value: function getHeadYawOrientation_() {
+                var headEuler = create$1();
+                eulerFromQuaternion(headEuler, this.headQ, 'YXZ');
+                var destinationQ = fromEuler(create$4(), 0, headEuler[1] * RAD_TO_DEG, 0);
+                return destinationQ;
+            }
+        }, {
+            key: 'clamp_',
+            value: function clamp_(value, min$$1, max$$1) {
+                return Math.min(Math.max(value, min$$1), max$$1);
+            }
+        }, {
+            key: 'quatAngle_',
+            value: function quatAngle_(q1, q2) {
+                var vec1 = [0, 0, -1];
+                var vec2 = [0, 0, -1];
+                transformQuat(vec1, vec1, q1);
+                transformQuat(vec2, vec2, q2);
+                return angle(vec1, vec2);
+            }
+        }]);
+        return OrientationArmModel;
+    }();
+
+    var GamepadXRInputSource = function () {
+        function GamepadXRInputSource(polyfill) {
+            var primaryButtonIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+            classCallCheck(this, GamepadXRInputSource);
+            this.polyfill = polyfill;
+            this.gamepad = null;
+            this.inputSource = new XRInputSource(this);
+            this.lastPosition = create$1();
+            this.emulatedPosition = false;
+            this.basePoseMatrix = create();
+            this.inputPoses = new WeakMap();
+            this.primaryButtonIndex = primaryButtonIndex;
+            this.primaryActionPressed = false;
+            this.handedness = '';
+            this.targetRayMode = 'gaze';
+            this.armModel = null;
+        }
+
+        createClass(GamepadXRInputSource, [{
+            key: 'updateFromGamepad',
+            value: function updateFromGamepad(gamepad) {
+                this.gamepad = gamepad;
+                this.handedness = gamepad.hand;
+                if (gamepad.pose) {
+                    this.targetRayMode = 'tracked-pointer';
+                    this.emulatedPosition = !gamepad.pose.hasPosition;
+                } else if (gamepad.hand === '') {
+                    this.targetRayMode = 'gaze';
+                    this.emulatedPosition = false;
+                }
+            }
+        }, {
+            key: 'updateBasePoseMatrix',
+            value: function updateBasePoseMatrix() {
+                if (this.gamepad && this.gamepad.pose) {
+                    var pose = this.gamepad.pose;
+                    var position = pose.position;
+                    var orientation = pose.orientation;
+                    if (!position && !orientation) {
+                        return;
+                    }
+                    if (!position) {
+                        if (!pose.hasPosition) {
+                            if (!this.armModel) {
+                                this.armModel = new OrientationArmModel();
+                            }
+                            this.armModel.setHandedness(this.gamepad.hand);
+                            this.armModel.update(orientation, this.polyfill.getBasePoseMatrix());
+                            position = this.armModel.getPosition();
+                        } else {
+                            position = this.lastPosition;
+                        }
+                    } else {
+                        this.lastPosition[0] = position[0];
+                        this.lastPosition[1] = position[1];
+                        this.lastPosition[2] = position[2];
+                    }
+                    fromRotationTranslation(this.basePoseMatrix, orientation, position);
+                } else {
+                    copy(this.basePoseMatrix, this.polyfill.getBasePoseMatrix());
+                }
+                return this.basePoseMatrix;
+            }
+        }, {
+            key: 'getXRInputPose',
+            value: function getXRInputPose(coordinateSystem) {
+                this.updateBasePoseMatrix();
+                var inputPose = this.inputPoses.get(coordinateSystem);
+                if (!inputPose) {
+                    inputPose = new XRInputPose(this, this.gamepad && this.gamepad.pose);
+                    this.inputPoses.set(coordinateSystem, inputPose);
+                }
+                var rayTransformMatrix = new Float32Array(16);
+                coordinateSystem.transformBasePoseMatrix(rayTransformMatrix, this.basePoseMatrix);
+                inputPose.targetRay = poseMatrixToXRRay(rayTransformMatrix);
+                if (inputPose.gripMatrix) {
+                    coordinateSystem.transformBasePoseMatrix(inputPose.gripMatrix, this.basePoseMatrix);
+                }
+                return inputPose;
+            }
+        }]);
+        return GamepadXRInputSource;
+    }();
+
+    var EXTRA_PRESENTATION_ATTRIBUTES = {
+        highRefreshRate: true
+    };
+    var PRIMARY_BUTTON_MAP = {
+        oculus: 1,
+        openvr: 1
+    };
+    var CAN_USE_GAMEPAD = _global.navigator && 'getGamepads' in _global.navigator;
+    var SESSION_ID = 0;
+    var Session = function Session(sessionOptions) {
+        classCallCheck(this, Session);
+        this.outputContext = sessionOptions.outputContext;
+        this.immersive = sessionOptions.immersive;
+        this.ended = null;
+        this.baseLayer = null;
+        this.id = ++SESSION_ID;
+        this.modifiedCanvasLayer = false;
+    };
+
+    var WebVRDevice = function (_PolyfilledXRDevice) {
+        inherits(WebVRDevice, _PolyfilledXRDevice);
+
+        function WebVRDevice(global, display) {
+            classCallCheck(this, WebVRDevice);
+            var canPresent = display.capabilities.canPresent;
+            var _this = possibleConstructorReturn(this, (WebVRDevice.__proto__ || Object.getPrototypeOf(WebVRDevice)).call(this, global));
+            _this.display = display;
+            _this.frame = new global.VRFrameData();
+            _this.sessions = new Map();
+            _this.immersiveSession = null;
+            _this.canPresent = canPresent;
+            _this.baseModelMatrix = create();
+            _this.gamepadInputSources = {};
+            _this.tempVec3 = new Float32Array(3);
+            _this.onVRDisplayPresentChange = _this.onVRDisplayPresentChange.bind(_this);
+            global.window.addEventListener('vrdisplaypresentchange', _this.onVRDisplayPresentChange);
+            return _this;
+        }
+
+        createClass(WebVRDevice, [{
+            key: 'onBaseLayerSet',
+            value: function onBaseLayerSet(sessionId, layer) {
+                var _this2 = this;
+                var session = this.sessions.get(sessionId);
+                var canvas = layer.context.canvas;
+                if (session.immersive) {
+                    var left = this.display.getEyeParameters('left');
+                    var right = this.display.getEyeParameters('right');
+                    canvas.width = Math.max(left.renderWidth, right.renderWidth) * 2;
+                    canvas.height = Math.max(left.renderHeight, right.renderHeight);
+                    this.display.requestPresent([{
+                        source: canvas, attributes: EXTRA_PRESENTATION_ATTRIBUTES
+                    }]).then(function () {
+                        if ("production" !== 'test' && !_this2.global.document.body.contains(canvas)) {
+                            session.modifiedCanvasLayer = true;
+                            _this2.global.document.body.appendChild(canvas);
+                            applyCanvasStylesForMinimalRendering(canvas);
+                        }
+                        session.baseLayer = layer;
+                    });
+                }
+                else if (session.outputContext) {
+                    session.baseLayer = layer;
+                }
+            }
+        }, {
+            key: 'supportsSession',
+            value: function supportsSession() {
+                var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                if (options.immersive === true && this.canPresent === false) {
+                    return false;
+                }
+                return true;
+            }
+        }, {
+            key: 'requestSession',
+            value: function requestSession() {
+                var $args = arguments;
+                return new Promise(function ($return, $error) {
+                    var options, canvas, ctx, session;
+                    options = $args.length > 0 && $args[0] !== undefined ? $args[0] : {};
+                    if (!this.supportsSession(options)) {
+                        return $return(Promise.reject());
+                    }
+                    if (options.immersive) {
+                        canvas = this.global.document.createElement('canvas');
+                        {
+                            ctx = canvas.getContext('webgl');
+                        }
+                        return Promise.resolve(this.display.requestPresent([{
+                            source: canvas, attributes: EXTRA_PRESENTATION_ATTRIBUTES
+                        }])).then(function ($await_2) {
+                            try {
+                                return $If_1.call(this);
+                            } catch ($boundEx) {
+                                return $error($boundEx);
+                            }
+                        }.bind(this), $error);
+                    }
+
+                    function $If_1() {
+                        session = new Session(options);
+                        this.sessions.set(session.id, session);
+                        if (options.immersive) {
+                            this.immersiveSession = session;
+                            this.dispatchEvent('@@webxr-polyfill/vr-present-start', session.id);
+                        }
+                        return $return(Promise.resolve(session.id));
+                    }
+
+                    return $If_1.call(this);
+                }.bind(this));
+            }
+        }, {
+            key: 'requestAnimationFrame',
+            value: function requestAnimationFrame(callback) {
+                return this.display.requestAnimationFrame(callback);
+            }
+        }, {
+            key: 'getPrimaryButtonIndex',
+            value: function getPrimaryButtonIndex(gamepad) {
+                var primaryButton = 0;
+                var name = gamepad.id.toLowerCase();
+                for (var key in PRIMARY_BUTTON_MAP) {
+                    if (name.includes(key)) {
+                        primaryButton = PRIMARY_BUTTON_MAP[key];
+                        break;
+                    }
+                }
+                return Math.min(primaryButton, gamepad.buttons.length - 1);
+            }
+        }, {
+            key: 'onFrameStart',
+            value: function onFrameStart(sessionId) {
+                this.display.getFrameData(this.frame);
+                var session = this.sessions.get(sessionId);
+                if (session.immersive && CAN_USE_GAMEPAD) {
+                    var prevInputSources = this.gamepadInputSources;
+                    this.gamepadInputSources = {};
+                    var gamepads = _global.navigator.getGamepads();
+                    for (var i = 0; i < gamepads.length; ++i) {
+                        var gamepad = gamepads[i];
+                        if (gamepad && gamepad.displayId === this.display.displayId) {
+                            var inputSourceImpl = prevInputSources[i];
+                            if (!inputSourceImpl) {
+                                inputSourceImpl = new GamepadXRInputSource(this, this.getPrimaryButtonIndex(gamepad));
+                            }
+                            inputSourceImpl.updateFromGamepad(gamepad);
+                            this.gamepadInputSources[i] = inputSourceImpl;
+                            if (inputSourceImpl.primaryButtonIndex != -1) {
+                                var primaryActionPressed = gamepad.buttons[inputSourceImpl.primaryButtonIndex].pressed;
+                                if (primaryActionPressed && !inputSourceImpl.primaryActionPressed) {
+                                    this.dispatchEvent('@@webxr-polyfill/input-select-start', {
+                                        sessionId: session.id,
+                                        inputSource: inputSourceImpl.inputSource
+                                    });
+                                } else if (!primaryActionPressed && inputSourceImpl.primaryActionPressed) {
+                                    this.dispatchEvent('@@webxr-polyfill/input-select-end', {
+                                        sessionId: session.id,
+                                        inputSource: inputSourceImpl.inputSource
+                                    });
+                                }
+                                inputSourceImpl.primaryActionPressed = primaryActionPressed;
+                            }
+                        }
+                    }
+                }
+                if (session.outputContext && !session.immersive) {
+                    var outputCanvas = session.outputContext.canvas;
+                    var oWidth = outputCanvas.offsetWidth;
+                    var oHeight = outputCanvas.offsetHeight;
+                    if (outputCanvas.width != oWidth) {
+                        outputCanvas.width = oWidth;
+                    }
+                    if (outputCanvas.height != oHeight) {
+                        outputCanvas.height = oHeight;
+                    }
+                    var canvas = session.baseLayer.context.canvas;
+                    if (!this.immersiveSession || canvas !== this.immersiveSession.baseLayer.context.canvas) {
+                        if (canvas.width != oWidth) {
+                            canvas.width = oWidth;
+                        }
+                        if (canvas.height != oHeight) {
+                            canvas.height = oHeight;
+                        }
+                        perspective(this.frame.leftProjectionMatrix, Math.PI * 0.4, oWidth / oHeight, this.depthNear, this.depthFar);
+                    }
+                }
+            }
+        }, {
+            key: 'onFrameEnd',
+            value: function onFrameEnd(sessionId) {
+                var session = this.sessions.get(sessionId);
+                if (session.ended || !session.baseLayer) {
+                    return;
+                }
+                if (session.outputContext && !(session.immersive && !this.display.capabilities.hasExternalDisplay)) {
+                    var mirroring = session.immersive && this.display.capabilities.hasExternalDisplay;
+                    var canvas = session.baseLayer.context.canvas;
+                    var iWidth = mirroring ? canvas.width / 2 : canvas.width;
+                    var iHeight = canvas.height;
+                    {
+                        var outputCanvas = session.outputContext.canvas;
+                        var outputContext = outputCanvas.getContext('2d');
+                        var oWidth = outputCanvas.width;
+                        var oHeight = outputCanvas.height;
+                        outputContext.drawImage(canvas, 0, 0, iWidth, iHeight, 0, 0, oWidth, oHeight);
+                    }
+                }
+                if (session.immersive && session.baseLayer) {
+                    this.display.submitFrame();
+                }
+            }
+        }, {
+            key: 'cancelAnimationFrame',
+            value: function cancelAnimationFrame(handle) {
+                this.display.cancelAnimationFrame(handle);
+            }
+        }, {
+            key: 'endSession',
+            value: function endSession(sessionId) {
+                return new Promise(function ($return, $error) {
+                    var session = this.sessions.get(sessionId);
+                    if (session.ended) {
+                        return $return();
+                    }
+                    if (session.immersive) {
+                        return $return(this.display.exitPresent());
+                    } else {
+                        session.ended = true;
+                    }
+                    return $return();
+                }.bind(this));
+            }
+        }, {
+            key: 'requestStageBounds',
+            value: function requestStageBounds() {
+                if (this.display.stageParameters) {
+                    var width = this.display.stageParameters.sizeX;
+                    var depth = this.display.stageParameters.sizeZ;
+                    var data = [];
+                    data.push(-width / 2);
+                    data.push(-depth / 2);
+                    data.push(width / 2);
+                    data.push(-depth / 2);
+                    data.push(width / 2);
+                    data.push(depth / 2);
+                    data.push(-width / 2);
+                    data.push(depth / 2);
+                    return data;
+                }
+                return null;
+            }
+        }, {
+            key: 'requestFrameOfReferenceTransform',
+            value: function requestFrameOfReferenceTransform(type, options) {
+                return new Promise(function ($return, $error) {
+                    if (type === 'stage' && this.display.stageParameters && this.display.stageParameters.sittingToStandingTransform) {
+                        return $return(this.display.stageParameters.sittingToStandingTransform);
+                    }
+                    return $return();
+                }.bind(this));
+            }
+        }, {
+            key: 'getProjectionMatrix',
+            value: function getProjectionMatrix(eye) {
+                if (eye === 'left') {
+                    return this.frame.leftProjectionMatrix;
+                } else if (eye === 'right') {
+                    return this.frame.rightProjectionMatrix;
+                } else {
+                    throw new Error('eye must be of type \'left\' or \'right\'');
+                }
+            }
+        }, {
+            key: 'getViewport',
+            value: function getViewport(sessionId, eye, layer, target) {
+                var session = this.sessions.get(sessionId);
+                var _layer$context$canvas = layer.context.canvas,
+                    width = _layer$context$canvas.width,
+                    height = _layer$context$canvas.height;
+                if (!session.immersive) {
+                    target.x = target.y = 0;
+                    target.width = width;
+                    target.height = height;
+                    return true;
+                }
+                if (eye === 'left') {
+                    target.x = 0;
+                } else if (eye === 'right') {
+                    target.x = width / 2;
+                } else {
+                    return false;
+                }
+                target.y = 0;
+                target.width = width / 2;
+                target.height = height;
+                return true;
+            }
+        }, {
+            key: 'getBasePoseMatrix',
+            value: function getBasePoseMatrix() {
+                var _frame$pose = this.frame.pose,
+                    position = _frame$pose.position,
+                    orientation = _frame$pose.orientation;
+                if (!position && !orientation) {
+                    return this.baseModelMatrix;
+                }
+                if (!position) {
+                    position = this.tempVec3;
+                    position[0] = position[1] = position[2] = 0;
+                }
+                fromRotationTranslation(this.baseModelMatrix, orientation, position);
+                return this.baseModelMatrix;
+            }
+        }, {
+            key: 'getBaseViewMatrix',
+            value: function getBaseViewMatrix(eye) {
+                if (eye === 'left') {
+                    return this.frame.leftViewMatrix;
+                } else if (eye === 'right') {
+                    return this.frame.rightViewMatrix;
+                } else {
+                    throw new Error('eye must be of type \'left\' or \'right\'');
+                }
+            }
+        }, {
+            key: 'getInputSources',
+            value: function getInputSources() {
+                var inputSources = [];
+                for (var i in this.gamepadInputSources) {
+                    inputSources.push(this.gamepadInputSources[i].inputSource);
+                }
+                return inputSources;
+            }
+        }, {
+            key: 'getInputPose',
+            value: function getInputPose(inputSource, coordinateSystem) {
+                if (!coordinateSystem) {
+                    return null;
+                }
+                for (var i in this.gamepadInputSources) {
+                    var inputSourceImpl = this.gamepadInputSources[i];
+                    if (inputSourceImpl.inputSource === inputSource) {
+                        return inputSourceImpl.getXRInputPose(coordinateSystem);
+                    }
+                }
+                return null;
+            }
+        }, {
+            key: 'onWindowResize',
+            value: function onWindowResize() {
+            }
+        }, {
+            key: 'onVRDisplayPresentChange',
+            value: function onVRDisplayPresentChange(e) {
+                var _this3 = this;
+                if (!this.display.isPresenting) {
+                    this.sessions.forEach(function (session) {
+                        if (session.immersive && !session.ended) {
+                            if (session.modifiedCanvasLayer) {
+                                var canvas = session.baseLayer.context.canvas;
+                                document.body.removeChild(canvas);
+                                canvas.setAttribute('style', '');
+                            }
+                            if (_this3.immersiveSession === session) {
+                                _this3.immersiveSession = null;
+                            }
+                            _this3.dispatchEvent('@@webxr-polyfill/vr-present-end', session.id);
+                        }
+                    });
+                }
+            }
+        }, {
+            key: 'depthNear',
+            get: function get$$1() {
+                return this.display.depthNear;
+            }
+            ,
+            set: function set$$1(val) {
+                this.display.depthNear = val;
+            }
+        }, {
+            key: 'depthFar',
+            get: function get$$1() {
+                return this.display.depthFar;
+            }
+            ,
+            set: function set$$1(val) {
+                this.display.depthFar = val;
+            }
+        }]);
+        return WebVRDevice;
+    }(PolyfilledXRDevice);
+
+    var CardboardXRDevice = function (_WebVRDevice) {
+        inherits(CardboardXRDevice, _WebVRDevice);
+
+        function CardboardXRDevice(global) {
+            classCallCheck(this, CardboardXRDevice);
+            var display = new CardboardVRDisplay();
+            var _this = possibleConstructorReturn(this, (CardboardXRDevice.__proto__ || Object.getPrototypeOf(CardboardXRDevice)).call(this, global, display));
+            _this.display = display;
+            _this.frame = {
+                rightViewMatrix: new Float32Array(16),
+                leftViewMatrix: new Float32Array(16),
+                rightProjectionMatrix: new Float32Array(16),
+                leftProjectionMatrix: new Float32Array(16),
+                pose: null,
+                timestamp: null
+            };
+            return _this;
+        }
+
+        return CardboardXRDevice;
+    }(WebVRDevice);
+
+    var getXRDevice = function getXRDevice(global) {
+        return new Promise(function ($return, $error) {
+            var device;
+            device = null;
+            if ('xr' in global.navigator) {
+                var $Try_1_Post = function () {
+                    try {
+                        return $If_3.call(this);
+                    } catch ($boundEx) {
+                        return $error($boundEx);
+                    }
+                }.bind(this);
+                var $Try_1_Catch = function (e) {
+                    try {
+                        return $Try_1_Post();
+                    } catch ($boundEx) {
+                        return $error($boundEx);
+                    }
+                }.bind(this);
+                try {
+                    return Promise.resolve(global.navigator.xr.requestDevice()).then(function ($await_6) {
+                        try {
+                            device = $await_6;
+                            return $Try_1_Post();
+                        } catch ($boundEx) {
+                            return $Try_1_Catch($boundEx);
+                        }
+                    }.bind(this), $Try_1_Catch);
+                } catch (e) {
+                    $Try_1_Catch(e);
+                }
+            }
+
+            function $If_3() {
+                return $return(device);
+            }
+
+            return $If_3.call(this);
+        }.bind(this));
+    };
+    var getVRDisplay = function getVRDisplay(global) {
+        return new Promise(function ($return, $error) {
+            var device, displays;
+            device = null;
+            if ('getVRDisplays' in global.navigator) {
+                var $Try_2_Post = function () {
+                    try {
+                        return $If_4.call(this);
+                    } catch ($boundEx) {
+                        return $error($boundEx);
+                    }
+                }.bind(this);
+                var $Try_2_Catch = function (e) {
+                    try {
+                        return $Try_2_Post();
+                    } catch ($boundEx) {
+                        return $error($boundEx);
+                    }
+                }.bind(this);
+                try {
+                    return Promise.resolve(global.navigator.getVRDisplays()).then(function ($await_7) {
+                        try {
+                            displays = $await_7;
+                            if (displays && displays.length) {
+                                device = new WebVRDevice(global, displays[0]);
+                            }
+                            return $Try_2_Post();
+                        } catch ($boundEx) {
+                            return $Try_2_Catch($boundEx);
+                        }
+                    }.bind(this), $Try_2_Catch);
+                } catch (e) {
+                    $Try_2_Catch(e);
+                }
+            }
+
+            function $If_4() {
+                return $return(device);
+            }
+
+            return $If_4.call(this);
+        }.bind(this));
+    };
+    var requestDevice = function requestDevice(global, config) {
+        return new Promise(function ($return, $error) {
+            var device;
+            return Promise.resolve(getXRDevice(global)).then(function ($await_8) {
+                try {
+                    device = $await_8;
+                    if (device) {
+                        return $return(device);
+                    }
+                    if (config.webvr) {
+                        return Promise.resolve(getVRDisplay(global)).then(function ($await_9) {
+                            try {
+                                device = $await_9;
+                                if (device) {
+                                    return $return(new XRDevice(device));
+                                }
+                                return $If_5.call(this);
+                            } catch ($boundEx) {
+                                return $error($boundEx);
+                            }
+                        }.bind(this), $error);
+                    }
+
+                    function $If_5() {
+                        if (config.cardboard && isMobile(global)) {
+                            if (!global.VRFrameData) {
+                                global.VRFrameData = function () {
+                                    this.rightViewMatrix = new Float32Array(16);
+                                    this.leftViewMatrix = new Float32Array(16);
+                                    this.rightProjectionMatrix = new Float32Array(16);
+                                    this.leftProjectionMatrix = new Float32Array(16);
+                                    this.pose = null;
+                                };
+                            }
+                            return $return(new XRDevice(new CardboardXRDevice(global)));
+                        }
+                        return $return(null);
+                    }
+
+                    return $If_5.call(this);
+                } catch ($boundEx) {
+                    return $error($boundEx);
+                }
+            }.bind(this), $error);
+        }.bind(this));
+    };
+
+    var CONFIG_DEFAULTS = {
+        webvr: true,
+        cardboard: true
+    };
+    var partials = ['navigator', 'HTMLCanvasElement', 'WebGLRenderingContext'];
+    var WebXRPolyfill = function () {
+        function WebXRPolyfill(global) {
+            var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+            classCallCheck(this, WebXRPolyfill);
+            this.global = global || _global;
+            this.config = Object.freeze(Object.assign({}, CONFIG_DEFAULTS, config));
+            this.nativeWebXR = 'xr' in this.global.navigator;
+            this.injected = false;
+            if (!this.nativeWebXR) {
+                this._injectPolyfill(this.global);
+            }
+            else if (this.config.cardboard && isMobile(this.global)) {
+                this._patchRequestDevice();
+            }
+        }
+
+        createClass(WebXRPolyfill, [{
+            key: '_injectPolyfill',
+            value: function _injectPolyfill(global) {
+                if (!partials.every(function (iface) {
+                    return !!global[iface];
+                })) {
+                    throw new Error('Global must have the following attributes : ' + partials);
+                }
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+                try {
+                    for (var _iterator = Object.keys(API)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var className = _step.value;
+                        if (global[className] !== undefined) {
+                            console.warn(className + ' already defined on global.');
+                        } else {
+                            global[className] = API[className];
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+                {
+                    var polyfilledCtx = extendContextCompatibleXRDevice(global.WebGLRenderingContext);
+                    if (polyfilledCtx) {
+                        extendGetContext(global.HTMLCanvasElement);
+                        if (global.WebGL2RenderingContext) {
+                            extendContextCompatibleXRDevice(global.WebGL2RenderingContext);
+                        }
+                    }
+                }
+                this.injected = true;
+                this._patchRequestDevice();
+            }
+        }, {
+            key: '_patchRequestDevice',
+            value: function _patchRequestDevice() {
+                var device = requestDevice(this.global, this.config);
+                this.xr = new XR(device);
+                Object.defineProperty(this.global.navigator, 'xr', {
+                    value: this.xr,
+                    configurable: true
+                });
+            }
+        }]);
+        return WebXRPolyfill;
+    }();
+
+    return WebXRPolyfill;
+
+})));
