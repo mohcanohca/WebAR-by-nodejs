@@ -12,11 +12,13 @@ define(['io'], function (io) {
 
     //图像识别定位
     class Recognizer {
-        constructor(video) {
+        constructor(video, canvas) {
             this.socket = null;
-            this.serverPath = 'https://10.28.201.198:8081';
+            this.serverPath = 'https://10.28.161.133:8081';
+            // this.serverPath = 'https://10.208.25.196:8081';
+            // this.serverPath = 'https://10.28.201.198:8081';
             this.timer = null;
-            this.canvas = document.createElement('canvas');
+            this.canvas = canvas;
             this.corners = null;
             this.video = video;
             this.start()
@@ -45,15 +47,24 @@ define(['io'], function (io) {
 
             //发送视频帧
             function sendVideoData(socket, video) {
-                let width = video.videoWidth;
-                let height = video.videoHeight;
-                _self.canvas.width = video.videoWidth;
-                _self.canvas.height = video.videoHeight;
+                let videoWidth = video.videoWidth;
+                let videoHeight = video.videoHeight;
+
+                let width = _self.canvas.width;
+                let height = _self.canvas.height;
+                /*let windowWidth = window.innerWidth;
+                let windowHeight = window.innerHeight;*/
+
+                /*_self.canvas.width = windowWidth;
+                _self.canvas.height = windowHeight;*/
 
                 let context = _self.canvas.getContext('2d');
 
+                let startPosX = Math.floor((videoWidth - width) / 2);
+                let startPosY = Math.floor((videoHeight - height) / 2);
+
                 //绘制当前视频帧
-                context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
+                context.drawImage(video, startPosX, startPosY, width, height, 0, 0, width, height);
 
                 let jpgQuality = 0.6;
                 let theDataURL = _self.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
@@ -75,18 +86,14 @@ define(['io'], function (io) {
     }
 
     class ImageController {
-        constructor(sessionEls, renderer, scene, camera, model, video, modelSize) {
+        constructor(sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas) {
             // 绘制视频帧
             this.sessionEls = sessionEls;
-            this.canvas = document.createElement('canvas');
+            this.canvas = videoFrameCanvas;
 
             //three.js
             this.scene = scene;
             this.camera = camera;
-            this.camera.position.x = 0;
-            this.camera.position.y = 0;
-            this.camera.position.z = 10;
-            camera.lookAt(scene.position);
             this.renderer = renderer;
             this.model = model;
             this.modelSize = modelSize;
@@ -95,12 +102,14 @@ define(['io'], function (io) {
             this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
             this.video = video;
 
+
             this.onFrame = this.onFrame.bind(this);
+            this.update = this.update.bind(this);
             this.init();
         }
 
         init() {
-            this.recognizer = new Recognizer(this.video);
+            this.recognizer = new Recognizer(this.video, this.canvas);
         }
 
         setRendererProps(props) {
@@ -116,8 +125,9 @@ define(['io'], function (io) {
         }
 
         update() {
-            this.renderer.setSize(this.video.videoWidth, this.video.videoHeight);
-            let curposition = recognitionCenter.corners;
+            // this.camera.aspect = this.canvas.width / this.canvas.height;
+            // this.renderer.setSize(this.canvas.width, this.canvas.height);
+            let curposition = this.recognizer.corners;
             if (curposition && this.preposition !== curposition) {
                 this.locateModel(curposition);
                 this.preposition = curposition;
@@ -180,9 +190,8 @@ define(['io'], function (io) {
             requestAnimationFrame(this.onFrame);
             this.update();
             // this.renderer.autoClear = false;
-            this.renderer.clear();
+            // this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
-
         }
     }
 

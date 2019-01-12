@@ -145,7 +145,7 @@ define(['ARController'], function (ARControllerBase) {
             const MODEL_SCALE = 0.1;
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-
+                this.modelSize = MODEL_SCALE;
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
@@ -177,8 +177,34 @@ define(['ARController'], function (ARControllerBase) {
     </div>
 </div>
 `
+
+    class EarthExample extends ARControllerBase {
+        constructor() {
+            super(true);
+        }
+
+        initScene() {
+            this.scene = createLitScene();
+            let object = new THREE.Object3D(),
+                geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
+                loader = new THREE.TextureLoader();
+            loader.load("../../js/textures/earth.jpg", function (texture) {
+                let material = new THREE.MeshBasicMaterial({map: texture});
+                let mesh = new THREE.Mesh(geometry, material);
+                object.add(mesh);
+            });
+            //场景添加模型，实际添加以地图图像为贴图的球体
+            this.model = object;
+            this.modelSize = 35;
+            this.scene.add(this.model);
+        }
+
+
+    }
+
     // window.app = new ARSea();
-    window.app = new ModelExample();
+    // window.app = new ModelExample();
+    window.app = new EarthExample();
 })
 
 

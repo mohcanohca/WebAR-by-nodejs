@@ -151,7 +151,7 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
             this.onXRFrame = this.onXRFrame.bind(this);
             this.enterAR = this.enterAR.bind(this);
             // this.init();
-            //若要请求XRSession，必须是用户手动触发，例如按钮点击
+            // 若要请求XRSession，必须是用户手动触发，例如按钮点击
             document.querySelector('#enter-ar').addEventListener('click', this.init.bind(this));
 
         }
@@ -262,7 +262,6 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
             } else {
                 // 使用基础类型控制
                 this._openCamera();
-
             }
 
         }
@@ -279,55 +278,90 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
             this._session = session;
 
-            // 创建一个WebGLRenderer，其包含要使用的第二个canvas
-            this.renderer = new THREE.WebGLRenderer({
-                alpha: true,
-                preserveDrawingBuffer: true,
-            });
-            this.renderer.autoClear = false;
-
-            this.camera = new THREE.PerspectiveCamera();
-            this.camera.matrixAutoUpdate = false;
 
             if (!this._session) {
-                //如果没有请求到session，或者是基础控制类型
+                //如果没有请求到session，或者当前是基础控制类型
                 // TODO 基础控制类型
+                // 创建一个WebGLRenderer，其包含要使用的第二个canvas
+                this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setClearColor(0xEEEEEE, 0.0);
+                this.renderer.autoClear = false;
 
-                return;
+                this.camera = new THREE.PerspectiveCamera();
+                this.camera.matrixAutoUpdate = false;
+
+                this.camera.fov = 40;
+                // this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.near = 1;
+                this.camera.far = 1000;
+
+
+                this.camera.position.x = 0;
+                this.camera.position.y = 0;
+                this.camera.position.z = 10;
+                this.camera.lookAt(this.scene.position);
+
+                this._adjustWindowsSize();
+
+                requestAnimationFrame(this.onXRFrame)
+
+                window.addEventListener('resize', function () {
+                    if (this._videoEl) {
+                        this._adjustVideoSize();
+                    }
+
+                    if (this.camera && this.renderer) {
+                        this._adjustWindowsSize();
+                    }
+                }, false);
+            }
+            else {
+                // 创建一个WebGLRenderer，其包含要使用的第二个canvas
+                this.renderer = new THREE.WebGLRenderer({
+                    alpha: true,
+                    preserveDrawingBuffer: true,
+                });
+                this.renderer.autoClear = false;
+
+                this.camera = new THREE.PerspectiveCamera();
+                this.camera.matrixAutoUpdate = false;
+
+                // 从three.js获取的上下文
+                this._gl = this.renderer.getContext();
+
+                // 设置WebGLRenderingContext上下文与XRDevice的兼容性
+                await this._gl.setCompatibleXRDevice(this._session.device);
+
+                // 兼容处理后，创建XRWebGLLayer，并将其设备为session的baseLayer。
+                // 告诉session，使用上下文gl（来自three.js）绘制scene，显示在用于创建XRPresentationContext的canvas（显示视频流）上层，
+                this._session.baseLayer = new XRWebGLLayer(this._session, this._gl);
+
+
+                //TODO 应该由具体类创建场景
+                // this.scene = createCubeScene();
+
+                // 若进行平面检测
+                if (this.findSurface) {
+                    this._reticle = new Reticle(this._session, this.camera);
+                    this.scene.add(this._reticle);
+                }
+
+                // 在开始渲染循环之前，请求eye-level类型的XRFrameOfReference，表明设备正在跟踪位置（而不是像Daydream或Gear VR那样的仅包含方向的VR体验）
+                this._frameOfRef = await this._session.requestFrameOfReference('eye-level');
+
+                // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
+                this._session.requestAnimationFrame(this.onXRFrame);
+
+                if (this.findSurface) {
+                    let reticleContainer = document.createElement('div');
+                    reticleContainer.setAttribute('id', 'stabilization');
+                    document.body.appendChild(reticleContainer);
+                    window.addEventListener('click', this.hitTest.bind(this));
+                }
             }
 
-            // 从three.js获取的上下文
-            this._gl = this.renderer.getContext();
 
-            // 设置WebGLRenderingContext上下文与XRDevice的兼容性
-            await this._gl.setCompatibleXRDevice(this._session.device);
-
-            // 兼容处理后，创建XRWebGLLayer，并将其设备为session的baseLayer。
-            // 告诉session，使用上下文gl（来自three.js）绘制scene，显示在用于创建XRPresentationContext的canvas（显示视频流）上层，
-            this._session.baseLayer = new XRWebGLLayer(this._session, this._gl);
-
-
-            //TODO 应该由具体类创建场景
-            // this.scene = createCubeScene();
-
-            // 若进行平面检测
-            if (this.findSurface) {
-                this._reticle = new Reticle(this._session, this.camera);
-                this.scene.add(this._reticle);
-            }
-
-            // 在开始渲染循环之前，请求eye-level类型的XRFrameOfReference，表明设备正在跟踪位置（而不是像Daydream或Gear VR那样的仅包含方向的VR体验）
-            this._frameOfRef = await this._session.requestFrameOfReference('eye-level');
-
-            // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
-            this._session.requestAnimationFrame(this.onXRFrame);
-
-            if (this.findSurface) {
-                let reticleContainer = document.createElement('div');
-                reticleContainer.setAttribute('id', 'stabilization');
-                document.body.appendChild(reticleContainer);
-                window.addEventListener('click', this.hitTest.bind(this));
-            }
         }
 
         /**
@@ -336,6 +370,16 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
          * @param frame：可从frame中获取设备在空间中的姿态（位置+方向），还可获取一组XRView（描述渲染场景的视角）
          */
         onXRFrame(time, frame) {
+
+            if (!this._session) {
+                //若是基础控制类型
+                this._baseController.update();
+                requestAnimationFrame(this.onXRFrame);
+
+                this.renderer.clear();
+                this.renderer.render(this.scene, this.camera);
+                return;
+            }
 
             const session = frame.session;
             const pose = frame.getDevicePose(this._frameOfRef);
@@ -511,13 +555,13 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
             }
 
             this._videoEl.play()
-            // this._setupWebRTC()
-            this._videoEl.addEventListener('loadedmetadata', this.handleVideoReady.bind(this))
+            this._setupWebRTC()
         }
 
         // 视频加载完成后，创建基础控制实例
         handleVideoReady() {
             this.onSessionStarted();
+
             let baseControlType = this._baseControlType || ARControllerBase.ORBITCONTROLLER;
 
             switch (baseControlType) {
@@ -525,7 +569,7 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                     console.log('IMAGECONTROLLER');
                     this._sessionEls.appendChild(this.renderer.domElement);
                     debugger
-                    this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, 35/*this.modelSize*/);
+                    this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, this.modelSize, this._videoFrameCanvas);
                     break;
                 case ARControllerBase.ORBITCONTROLLER:
                     console.log('ORBITCONTROLLER')
@@ -544,7 +588,7 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
         }
 
-        // 建立WebRTC
+        // 建立WebRTC，
         _setupWebRTC(parameters) {
 
             // this._sendingVideo = true;
@@ -554,23 +598,133 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                 var height = this._videoEl.videoHeight;
 
                 // let's pick a size such that the video is below 512 in size in both dimensions
-                while (width > 256 || height > 256) {
-                    width = width / 2
-                    height = height / 2
-                }
+                /*           while (width > 256 || height > 256) {
+                               width = width / 2
+                               height = height / 2
+                           }*/
 
                 this._videoRenderWidth = width;
                 this._videoRenderHeight = height;
+
                 this._videoFrameCanvas = document.createElement('canvas');
                 this._videoFrameCanvas.width = width;
                 this._videoFrameCanvas.height = height;
-                this._videoCtx = this._videoFrameCanvas.getContext('2d');
+                // this._videoCtx = this._videoFrameCanvas.getContext('2d');
 
-                // this._adjustVideoSize();
+                this._adjustVideoSize();
 
-                // this._sendVideoFrame = true;
+                this.handleVideoReady();
             });
 
+        }
+
+        // 调整renderer的size和相机广角
+        _adjustWindowsSize() {
+           /* let canvasWidth = this._videoRenderWidth;
+            let canvasHeight = this._videoRenderHeight;*/
+            let canvasWidth = window.innerWidth;
+            let canvasHeight = window.innerHeight;
+            let cameraAspect = canvasWidth / canvasHeight;
+            let width = this._videoEl.videoWidth;
+            let height = this._videoEl.videoHeight;
+
+            let videoSourceAspect = width / height;
+            if (videoSourceAspect != cameraAspect) {
+                // let's pick a size such that the video is below 512 in size in both dimensions
+                // 选择一个尺寸，使视频在两个维度上都小于512
+                /*               while (width > 512 || height > 512) {
+                                   width = width / 2
+                                   height = height / 2
+                               }*/
+
+                // canvasWidth = this._videoRenderWidth = width;
+                // canvasHeight = this._videoRenderHeight = height;
+
+                // cameraAspect = canvasWidth / canvasHeight;
+
+            }
+
+            this._videoFrameCanvas.width=canvasWidth;
+            this._videoFrameCanvas.height=canvasHeight;
+
+            if (this.camera) {
+                this.camera.aspect = cameraAspect;
+                this.camera.updateProjectionMatrix();
+                // debugger
+                this.renderer.setSize(canvasWidth, canvasHeight);
+            }
+
+
+        }
+
+        // 调整视频大小（ARCore或WebRTC获取视频流）
+        _adjustVideoSize() {
+            var canvasWidth = this._videoRenderWidth;
+            var canvasHeight = this._videoRenderHeight;
+            var cameraAspect = canvasWidth / canvasHeight;
+
+            var width = this._videoEl.videoWidth;
+            var height = this._videoEl.videoHeight;
+
+            var videoSourceAspect = width / height;
+            if (videoSourceAspect != cameraAspect) {
+                // let's pick a size such that the video is below 512 in size in both dimensions
+                // 选择一个尺寸，使视频在两个维度上都小于512
+                /*               while (width > 512 || height > 512) {
+                                   width = width / 2
+                                   height = height / 2
+                               }*/
+
+                canvasWidth = this._videoRenderWidth = width;
+                canvasHeight = this._videoRenderHeight = height;
+
+                cameraAspect = canvasWidth / canvasHeight;
+
+            }
+
+            // 设置焦距
+            // this._setFovy(this._cameraFov / (Math.PI / 180))
+
+            // 显示捕捉视频的窗口的尺寸
+            var windowWidth = this._realityEls.clientWidth;
+            var windowHeight = this._realityEls.clientHeight;
+            var windowAspect = windowWidth / windowHeight;
+
+            var translateX = 0;
+            var translateY = 0;
+            if (cameraAspect > windowAspect) {
+                canvasWidth = canvasHeight * windowAspect;
+                windowWidth = windowHeight * cameraAspect;
+                translateX = -(windowWidth - this._realityEls.clientWidth) / 2;
+            } else {
+                canvasHeight = canvasWidth / windowAspect;
+                windowHeight = windowWidth / cameraAspect;
+                translateY = -(windowHeight - this._realityEls.clientHeight) / 2;
+            }
+
+            this._videoEl.style.width = windowWidth.toFixed(2) + 'px'
+            this._videoEl.style.height = windowHeight.toFixed(2) + 'px'
+            this._videoEl.style.transform = "translate(" + translateX.toFixed(2) + "px, " + translateY.toFixed(2) + "px)"
+
+
+        }
+
+        //设置焦距
+        _setFovy(fovy) {
+            this._cameraFov = fovy * Math.PI / 180
+            if (!this._videoEl) {
+                this._focalLength = 0
+                return
+            }
+
+            if (this._videoRenderWidth > this._videoRenderHeight) {
+                this._focalLength = (this._videoRenderWidth / 2) / Math.tan(this._cameraFov / 2)
+            } else {
+                this._focalLength = (this._videoRenderHeight / 2) / Math.tan(this._cameraFov / 2)
+            }
+            this._cameraIntrinsics = [this._focalLength, 0, 0,
+                0, this._focalLength, 0,
+                (this._videoRenderWidth / 2), (this._videoRenderHeight / 2), 1]
         }
     }
 
@@ -583,6 +737,7 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
     ARControllerBase.ORBITCONTROLLER = 'orbit';
     ARControllerBase.ORIENTATIONCONTROLLER = 'orientation';
     ARControllerBase.GPSCONTROLLER = 'GPS';
+    ARControllerBase.WINDOW_RESIZE_EVENT = 'window-resize';
 
     return ARControllerBase;
 });
