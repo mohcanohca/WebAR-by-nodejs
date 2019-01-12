@@ -1,7 +1,6 @@
 require.config({
     paths: {
         io: '../../js/libs/socket.io/socket.io',
-        // posit: '../../js/libs/posit',
         eventHandlerBase: './eventHandlerBase',
     }
 });
@@ -92,16 +91,23 @@ define(['io'], function (io) {
             this.canvas = videoFrameCanvas;
 
             //three.js
+            this.renderer = renderer;
             this.scene = scene;
             this.camera = camera;
-            this.renderer = renderer;
+            this.camera.fov = 40;
+            this.camera.near = 1;
+            this.camera.far = 1000;
+
+            this.camera.position.set(0, 0, 10);
+            this.camera.lookAt(this.scene.position);
+
+
             this.model = model;
             this.modelSize = modelSize;
             this.prePos = null;
 
             this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
             this.video = video;
-
 
             this.onFrame = this.onFrame.bind(this);
             this.update = this.update.bind(this);
@@ -112,21 +118,7 @@ define(['io'], function (io) {
             this.recognizer = new Recognizer(this.video, this.canvas);
         }
 
-        setRendererProps(props) {
-            for (let i in props) {
-                this.renderer[i] = props[i];
-            }
-        }
-
-        setCameraProps(props) {
-            for (let i in props) {
-                this.camera[i] = props[i];
-            }
-        }
-
         update() {
-            // this.camera.aspect = this.canvas.width / this.canvas.height;
-            // this.renderer.setSize(this.canvas.width, this.canvas.height);
             let curposition = this.recognizer.corners;
             if (curposition && this.preposition !== curposition) {
                 this.locateModel(curposition);
@@ -134,7 +126,6 @@ define(['io'], function (io) {
             }
 
         }
-
 
         //定位模型
         locateModel(position) {
@@ -190,11 +181,11 @@ define(['io'], function (io) {
             requestAnimationFrame(this.onFrame);
             this.update();
             // this.renderer.autoClear = false;
-            // this.renderer.clear();
+            this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
         }
     }
 
     return ImageController;
 
-})
+});

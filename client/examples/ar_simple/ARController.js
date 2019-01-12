@@ -277,46 +277,30 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
             document.body.classList.add('ar');
 
             this._session = session;
-
+            this.renderer = new THREE.WebGLRenderer({alpha: true});
+            this.renderer.autoClear = false;
+            this.camera = new THREE.PerspectiveCamera();
+            this.camera.matrixAutoUpdate = false;
 
             if (!this._session) {
                 //如果没有请求到session，或者当前是基础控制类型
                 // TODO 基础控制类型
-                // 创建一个WebGLRenderer，其包含要使用的第二个canvas
-                this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+
+                this.createBaseController()
+
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setClearColor(0xEEEEEE, 0.0);
-                this.renderer.autoClear = false;
-
-                this.camera = new THREE.PerspectiveCamera();
-                this.camera.matrixAutoUpdate = false;
-
-                this.camera.fov = 40;
-                // this.camera.aspect = window.innerWidth / window.innerHeight;
-                this.camera.near = 1;
-                this.camera.far = 1000;
-
-
-                this.camera.position.x = 0;
-                this.camera.position.y = 0;
-                this.camera.position.z = 10;
-                this.camera.lookAt(this.scene.position);
 
                 this._adjustWindowsSize();
+                this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
 
                 requestAnimationFrame(this.onXRFrame)
 
                 window.addEventListener('resize', function () {
-                    if (this._videoEl) {
-                        this._adjustVideoSize();
-                    }
-
-                    if (this.camera && this.renderer) {
-                        this._adjustWindowsSize();
-                    }
+                    this.dispatchEvent(ARControllerBase.WINDOW_RESIZE_EVENT)
                 }, false);
-            }
-            else {
+
+            } else {
                 // 创建一个WebGLRenderer，其包含要使用的第二个canvas
                 this.renderer = new THREE.WebGLRenderer({
                     alpha: true,
@@ -324,8 +308,8 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                 });
                 this.renderer.autoClear = false;
 
-                this.camera = new THREE.PerspectiveCamera();
-                this.camera.matrixAutoUpdate = false;
+                // this.camera = new THREE.PerspectiveCamera();
+                // this.camera.matrixAutoUpdate = false;
 
                 // 从three.js获取的上下文
                 this._gl = this.renderer.getContext();
@@ -364,6 +348,34 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
         }
 
+        // 创建基础控制器
+        createBaseController() {
+            this._sessionEls.appendChild(this.renderer.domElement);
+
+            let baseControlType = this._baseControlType || ARControllerBase.ORBITCONTROLLER;
+            switch (baseControlType) {
+
+                case ARControllerBase.IMAGECONTROLLER:
+                    console.log('IMAGECONTROLLER');
+                    // debugger
+                    this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, this.modelSize, this._videoFrameCanvas);
+                    break;
+                case ARControllerBase.ORBITCONTROLLER:
+                    console.log('ORBITCONTROLLER')
+                    break;
+                case ARControllerBase.ORIENTATIONCONTROLLER:
+                    console.log('ORIENTATIONCONTROLLER')
+                    break;
+                case ARControllerBase.GPSCONTROLLER:
+                    console.log('GPSCONTROLLER');
+                    break;
+                default:
+                    console.log('no basecontroller')
+                    break;
+
+            }
+        }
+
         /**
          * 在每一帧调用
          * @param time
@@ -373,11 +385,11 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
             if (!this._session) {
                 //若是基础控制类型
-                this._baseController.update();
-                requestAnimationFrame(this.onXRFrame);
+                this._baseController.onFrame();
+                // requestAnimationFrame(this.onXRFrame);
 
-                this.renderer.clear();
-                this.renderer.render(this.scene, this.camera);
+                // this.renderer.clear();
+                // this.renderer.render(this.scene, this.camera);
                 return;
             }
 
@@ -561,38 +573,10 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
         // 视频加载完成后，创建基础控制实例
         handleVideoReady() {
             this.onSessionStarted();
-
-            let baseControlType = this._baseControlType || ARControllerBase.ORBITCONTROLLER;
-
-            switch (baseControlType) {
-                case ARControllerBase.IMAGECONTROLLER:
-                    console.log('IMAGECONTROLLER');
-                    this._sessionEls.appendChild(this.renderer.domElement);
-                    debugger
-                    this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, this.modelSize, this._videoFrameCanvas);
-                    break;
-                case ARControllerBase.ORBITCONTROLLER:
-                    console.log('ORBITCONTROLLER')
-                    break;
-                case ARControllerBase.ORIENTATIONCONTROLLER:
-                    console.log('ORIENTATIONCONTROLLER')
-                    break;
-                case ARControllerBase.GPSCONTROLLER:
-                    console.log('GPSCONTROLLER');
-                    break;
-                default:
-                    console.log('no basecontroller')
-                    break;
-
-            }
-
         }
 
         // 建立WebRTC，
         _setupWebRTC(parameters) {
-
-            // this._sendingVideo = true;
-
             this._videoEl.addEventListener('loadedmetadata', () => {
                 var width = this._videoEl.videoWidth;
                 var height = this._videoEl.videoHeight;
@@ -609,10 +593,9 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                 this._videoFrameCanvas = document.createElement('canvas');
                 this._videoFrameCanvas.width = width;
                 this._videoFrameCanvas.height = height;
-                // this._videoCtx = this._videoFrameCanvas.getContext('2d');
-
                 this._adjustVideoSize();
 
+                this.addListeners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
                 this.handleVideoReady();
             });
 
@@ -620,8 +603,8 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
         // 调整renderer的size和相机广角
         _adjustWindowsSize() {
-           /* let canvasWidth = this._videoRenderWidth;
-            let canvasHeight = this._videoRenderHeight;*/
+            /* let canvasWidth = this._videoRenderWidth;
+             let canvasHeight = this._videoRenderHeight;*/
             let canvasWidth = window.innerWidth;
             let canvasHeight = window.innerHeight;
             let cameraAspect = canvasWidth / canvasHeight;
@@ -644,8 +627,8 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
             }
 
-            this._videoFrameCanvas.width=canvasWidth;
-            this._videoFrameCanvas.height=canvasHeight;
+            this._videoFrameCanvas.width = canvasWidth;
+            this._videoFrameCanvas.height = canvasHeight;
 
             if (this.camera) {
                 this.camera.aspect = cameraAspect;
@@ -682,9 +665,6 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
 
             }
 
-            // 设置焦距
-            // this._setFovy(this._cameraFov / (Math.PI / 180))
-
             // 显示捕捉视频的窗口的尺寸
             var windowWidth = this._realityEls.clientWidth;
             var windowHeight = this._realityEls.clientHeight;
@@ -705,26 +685,6 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
             this._videoEl.style.width = windowWidth.toFixed(2) + 'px'
             this._videoEl.style.height = windowHeight.toFixed(2) + 'px'
             this._videoEl.style.transform = "translate(" + translateX.toFixed(2) + "px, " + translateY.toFixed(2) + "px)"
-
-
-        }
-
-        //设置焦距
-        _setFovy(fovy) {
-            this._cameraFov = fovy * Math.PI / 180
-            if (!this._videoEl) {
-                this._focalLength = 0
-                return
-            }
-
-            if (this._videoRenderWidth > this._videoRenderHeight) {
-                this._focalLength = (this._videoRenderWidth / 2) / Math.tan(this._cameraFov / 2)
-            } else {
-                this._focalLength = (this._videoRenderHeight / 2) / Math.tan(this._cameraFov / 2)
-            }
-            this._cameraIntrinsics = [this._focalLength, 0, 0,
-                0, this._focalLength, 0,
-                (this._videoRenderWidth / 2), (this._videoRenderHeight / 2), 1]
         }
     }
 
