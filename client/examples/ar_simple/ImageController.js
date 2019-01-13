@@ -1,7 +1,6 @@
 require.config({
     paths: {
         io: '../../js/libs/socket.io/socket.io',
-        eventHandlerBase: './eventHandlerBase',
     }
 });
 define(['io'], function (io) {
@@ -94,17 +93,14 @@ define(['io'], function (io) {
             this.renderer = renderer;
             this.scene = scene;
             this.camera = camera;
+            this.camera.matrixAutoUpdate = true;
             this.camera.fov = 40;
             this.camera.near = 1;
             this.camera.far = 1000;
-
             this.camera.position.set(0, 0, 10);
             this.camera.lookAt(this.scene.position);
-
-
             this.model = model;
             this.modelSize = modelSize;
-            this.prePos = null;
 
             this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
             this.video = video;

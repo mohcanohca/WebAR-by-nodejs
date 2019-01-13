@@ -1,14 +1,16 @@
 require.config({
     paths: {
         io: '../../js/libs/socket.io/socket.io',
-        orbitController: '../../js/utils/OrbitControls',
+        // orbitController: '../../js/utils/OrbitControls',
         mediaDevices: '../../js/utils/webrtc',
         posit: '../../js/libs/posit',
         eventHandlerBase: './eventHandlerBase',
         ImageController: './ImageController',
+        OrientationController: './OrientationController',
+        OrbitController: './OrbitController',
     }
 });
-define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], function (POS, EventHandlerBase, mediaDevices, ImageController) {
+define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController','OrbitController'], function (POS, EventHandlerBase, mediaDevices, ImageController, OrientationController,OrbitController) {
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only
      * want to rotate on the Y axis. In our AR use case, we don't want
@@ -119,10 +121,10 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
     }
 
     class ARControllerBase extends EventHandlerBase {
-        constructor(findSurface = false, _fireEl, baseControlType = ARControllerBase.IMAGECONTROLLER) {
+        constructor(findSurface = false, baseControlType = ARControllerBase.IMAGECONTROLLER) {
             super();
 
-            this._fireEl = _fireEl;
+            // this._fireEl = _fireEl;
             // three.js
             this.renderer = null;
             this.scene = null;
@@ -286,10 +288,13 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                 //如果没有请求到session，或者当前是基础控制类型
                 // TODO 基础控制类型
 
-                this.createBaseController()
 
+                // this.renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+                // this.renderer.autoClear = false;
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setClearColor(0xEEEEEE, 0.0);
+
+                this.createBaseController();
 
                 this._adjustWindowsSize();
                 this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
@@ -308,8 +313,8 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                 });
                 this.renderer.autoClear = false;
 
-                // this.camera = new THREE.PerspectiveCamera();
-                // this.camera.matrixAutoUpdate = false;
+                this.camera = new THREE.PerspectiveCamera();
+                this.camera.matrixAutoUpdate = false;
 
                 // 从three.js获取的上下文
                 this._gl = this.renderer.getContext();
@@ -361,9 +366,11 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController'], functio
                     this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, this.modelSize, this._videoFrameCanvas);
                     break;
                 case ARControllerBase.ORBITCONTROLLER:
+                    this._baseController = new OrbitController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
                     console.log('ORBITCONTROLLER')
                     break;
                 case ARControllerBase.ORIENTATIONCONTROLLER:
+                    this._baseController = new OrientationController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
                     console.log('ORIENTATIONCONTROLLER')
                     break;
                 case ARControllerBase.GPSCONTROLLER:

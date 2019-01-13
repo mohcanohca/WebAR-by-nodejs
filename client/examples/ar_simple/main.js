@@ -74,6 +74,22 @@ define(['ARController'], function (ARControllerBase) {
         return scene;
     }
 
+    function createCube(width, height, deep) {
+        //正方体
+        const materials = [
+            new THREE.MeshBasicMaterial({color: 0xff0000}),
+            new THREE.MeshBasicMaterial({color: 0x0000ff}),
+            new THREE.MeshBasicMaterial({color: 0x00ff00}),
+            new THREE.MeshBasicMaterial({color: 0xff00ff}),
+            new THREE.MeshBasicMaterial({color: 0x00ffff}),
+            new THREE.MeshBasicMaterial({color: 0xffff00})
+        ];
+        let cubegeo = new THREE.BoxGeometry(width, height, deep);
+
+        const cube = new THREE.Mesh(cubegeo, materials);
+        return cube;
+    }
+
     const opacityRemap = mat => {
         if (mat.opacity === 0) {
             mat.opacity = 1;
@@ -153,6 +169,60 @@ define(['ARController'], function (ARControllerBase) {
         }
     }
 
+    class EarthExample extends ARControllerBase {
+        constructor() {
+            super(true);
+        }
+
+        initScene() {
+            this.scene = createLitScene();
+            let object = new THREE.Object3D(),
+                geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
+                loader = new THREE.TextureLoader();
+            loader.load("../../js/textures/earth.jpg", function (texture) {
+                let material = new THREE.MeshBasicMaterial({map: texture});
+                let mesh = new THREE.Mesh(geometry, material);
+                object.add(mesh);
+            });
+            //场景添加模型，实际添加以地图图像为贴图的球体
+            this.model = object;
+            this.modelSize = 35;
+            this.scene.add(this.model);
+        }
+
+    }
+
+    class OrientationExample extends ARControllerBase {
+        constructor() {
+            super(true, ARControllerBase.ORIENTATIONCONTROLLER);
+        }
+
+        initScene() {
+            this.scene = new THREE.Scene();
+            this.model = createCube(2, 2, 2);
+            this.model.position.set(0, 0, 0);
+            this.model.position.multiplyScalar(1);
+            this.modelSize = 10;
+            this.scene.add(this.model);
+        }
+    }
+
+    class OrbitExample extends ARControllerBase {
+        constructor() {
+            super(true, ARControllerBase.ORBITCONTROLLER)
+        }
+
+        initScene() {
+            this.scene = new THREE.Scene();
+            this.model = createCube(2, 2, 2);
+            this.model.position.set(0, 0, 0);
+            this.model.position.multiplyScalar(1);
+            this.modelSize = 10;
+            this.scene.add(this.model);
+        }
+    }
+
+
     document.body.innerHTML = `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
     <div class="mdl-card__title">
         <h2 class="mdl-card__title-text">Augmented Reality with the WebXR Device API</h2>
@@ -178,33 +248,13 @@ define(['ARController'], function (ARControllerBase) {
 </div>
 `
 
-    class EarthExample extends ARControllerBase {
-        constructor() {
-            super(true);
-        }
-
-        initScene() {
-            this.scene = createLitScene();
-            let object = new THREE.Object3D(),
-                geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
-                loader = new THREE.TextureLoader();
-            loader.load("../../js/textures/earth.jpg", function (texture) {
-                let material = new THREE.MeshBasicMaterial({map: texture});
-                let mesh = new THREE.Mesh(geometry, material);
-                object.add(mesh);
-            });
-            //场景添加模型，实际添加以地图图像为贴图的球体
-            this.model = object;
-            this.modelSize = 35;
-            this.scene.add(this.model);
-        }
-
-
-    }
 
     // window.app = new ARSea();
     // window.app = new ModelExample();
-    window.app = new EarthExample();
+    // window.app = new EarthExample();
+    // window.app = new OrientationExample();
+    window.app = new OrbitExample();
+
 })
 
 
