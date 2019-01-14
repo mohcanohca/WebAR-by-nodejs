@@ -1,10 +1,11 @@
 require.config({
     paths: {
-        ARController: './ARController'
+        ARController: './utils/ARController'
     }
 });
 
 define(['ARController'], function (ARControllerBase) {
+
     function createCubeScene() {
         const scene = new THREE.Scene();
 
@@ -34,6 +35,7 @@ define(['ARController'], function (ARControllerBase) {
         return scene;
     }
 
+    // 创建一个包含光源的场景
     function createLitScene() {
         const scene = new THREE.Scene();
 
@@ -74,6 +76,7 @@ define(['ARController'], function (ARControllerBase) {
         return scene;
     }
 
+    // 创建一个正方体
     function createCube(width, height, deep) {
         //正方体
         const materials = [
@@ -96,6 +99,7 @@ define(['ARController'], function (ARControllerBase) {
         }
     };
 
+    // 加载模型
     function loadModel(objURL, mtlURL) {
         // OBJLoader and MTLLoader are not a part of three.js core, and
         // must be included as separate scripts.
@@ -137,6 +141,7 @@ define(['ARController'], function (ARControllerBase) {
         });
     }
 
+
     class ARSea extends ARControllerBase {
         constructor() {
             super(/*ARControllerBase.IMAGECONTROLLER*/);
@@ -171,7 +176,7 @@ define(['ARController'], function (ARControllerBase) {
 
     class EarthExample extends ARControllerBase {
         constructor() {
-            super(true);
+            super(true, ARControllerBase.IMAGECONTROLLER,/* {method: 'front'}*/);
         }
 
         initScene() {
@@ -179,7 +184,7 @@ define(['ARController'], function (ARControllerBase) {
             let object = new THREE.Object3D(),
                 geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
                 loader = new THREE.TextureLoader();
-            loader.load("../../js/textures/earth.jpg", function (texture) {
+            loader.load("./assets/earth.jpg", function (texture) {
                 let material = new THREE.MeshBasicMaterial({map: texture});
                 let mesh = new THREE.Mesh(geometry, material);
                 object.add(mesh);
@@ -297,7 +302,6 @@ define(['ARController'], function (ARControllerBase) {
     </div>
 </div>
 `
-
 
     // window.app = new ARSea();
     // window.app = new ModelExample();

@@ -2,8 +2,8 @@ const cv = require('opencv4nodejs'),
     async = require('async'),
     fs = require('fs');
 
-require('../processor/sylvester.src');
-require('../processor/kalman');
+// require('../processor/sylvester.src');
+// require('../processor/kalman');
 
 const imgcodecs = require('../processor/imgcodecs');
 const imgDescriber = require('../processor/imgDescriber');
