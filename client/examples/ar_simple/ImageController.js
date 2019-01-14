@@ -1,12 +1,36 @@
 require.config({
     paths: {
         io: '../../js/libs/socket.io/socket.io',
+        CV: '../../js/libs/cv',
+        jsfeat: './jsfeat',
+        FeatTrainer: './FeatTrainer',
+    },
+    shim: {
+        jsfeat: {exports: 'jsfeat'},
+        FeatTrainer: {exports: 'FeatTrainer'},
+        CV: {exports: 'CV'},
     }
 });
-define(['io'], function (io) {
+
+define(['io', /*'OPENCV',*/ 'CV', 'jsfeat', 'FeatTrainer'], function (io, CV, jsfeat, featTrainer) {
 
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
+
+    function warp_perspective_zp(src, dst, transform) {
+        var td = transform.data;
+        var m00 = td[0], m01 = td[1], m02 = td[2],
+            m10 = td[3], m11 = td[4], m12 = td[5],
+            m20 = td[6], m21 = td[7], m22 = td[8];
+
+        for (var i = 0; i < 4; i++) {
+            var ws = m20 * src[i][0] + m21 * src[i][1] + m22;
+            dst[i][0] = (m00 * src[i][0] + m01 * src[i][1]
+                + m02) / ws;
+            dst[i][1] = (m10 * src[i][0] + m11 * src[i][1]
+                + m12) / ws;
+        }
+    }
 
     //图像识别定位
     class Recognizer {
@@ -83,12 +107,103 @@ define(['io'], function (io) {
 
     }
 
+    class Recognizer2 {
+        constructor(video, canvas, patternImg) {
+            this.timer = null;
+            this.canvas = canvas;
+            this.corners = null;
+            this.video = video;
+            this.patternImg = patternImg;
+            this.pattern_features = null;
+            this.pattern_pos = []; //模板图上选取的四个点（此处为图像的四个角点）
+            this.frame_pos = [];//模板图在当前帧中四个点的位置
+            this.featTrainer = new FeatTrainer();
+            this.screen_features = null;
+
+            this._train();
+            this.start = this.start.bind(this);
+            this._describeFrame = this._describeFrame.bind(this);
+            this._match = this._match.bind(this);
+        }
+
+        //训练模板图
+        _train() {
+            // 模板图四个角点
+            this.pattern_pos = [[0, 0], [this.patternImg.width, 0], [this.patternImg.width, this.patternImg.height], [0, this.patternImg.height]];
+
+            this.frame_pos = [[0, 0], [0, 0], [0, 0], [0, 0]];
+
+            //灰度处理
+            let pattern_img_u8 = this.featTrainer.getGrayScaleMat(this.patternImg);
+
+            //获取到训练好的数据
+            this.pattern_features = this.featTrainer.trainPattern(pattern_img_u8);
+        }
+
+        // 描述当前视频帧，得到当前帧的特征点
+        _describeFrame() {
+            let videoWidth = this.video.videoWidth;
+            let videoHeight = this.video.videoHeight;
+
+            let width = this.canvas.width;
+            let height = this.canvas.height;
+
+            let context = this.canvas.getContext('2d');
+
+            let startPosX = Math.floor((videoWidth - width) / 2);
+            let startPosY = Math.floor((videoHeight - height) / 2);
+
+            //绘制当前视频帧
+            context.drawImage(this.video, startPosX, startPosY, width, height, 0, 0, width, height);
+
+            let imageData = context.getImageData(0, 0, width, height);
+            //得到灰度图矩阵
+            let img_u8 = this.featTrainer.getGrayScaleMat(imageData);
+
+            this.screen_features = this.featTrainer.describeFeatures(img_u8);
+        }
+
+        // 图像匹配，得出在当前帧模板图角点的位置
+        _match() {
+            let matches = this.featTrainer.matchPattern(this.screen_features.descriptors, this.pattern_features.descriptors)
+            //根据匹配的特征点，找到当前帧与模板的转换矩阵
+            let transform_result = this.featTrainer.findTransform(matches, this.screen_features.keyPoints, this.pattern_features.keyPoints);
+
+            if (!matches || !transform_result) {
+                return;
+            }
+
+            let num_matches = matches.length;
+            let good_matches = transform_result.goodMatch;
+
+
+            if (num_matches && good_matches > 8) {
+                //得到模板图的四个点在当前帧中的坐标
+                let hom3x3 = transform_result.transform;
+                warp_perspective_zp(this.pattern_pos, this.frame_pos, hom3x3);
+                let corners = [], pos;
+                for (let i = 0; i < 4; i++) {
+                    pos = this.frame_pos[i];
+                    corners.push({x: pos[0], y: pos[1]});
+                }
+                this.corners = corners;
+            } else {
+                this.corners = null;
+            }
+        }
+
+        // 图像识别
+        start() {
+            this._describeFrame();
+            this._match();
+        }
+    }
+
     class ImageController {
-        constructor(sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas) {
+        constructor(sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas, patternImg) {
             // 绘制视频帧
             this.sessionEls = sessionEls;
             this.canvas = videoFrameCanvas;
-
             //three.js
             this.renderer = renderer;
             this.scene = scene;
@@ -105,21 +220,34 @@ define(['io'], function (io) {
             this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
             this.video = video;
 
+            this.patternImg = patternImg;
+
             this.onFrame = this.onFrame.bind(this);
             this.update = this.update.bind(this);
             this.init();
         }
 
         init() {
-            this.recognizer = new Recognizer(this.video, this.canvas);
-        }
+            let _self = this;
+            let patternImg = new Image();
+            patternImg.src = './assets/pattern.jpg';
+            patternImg.onload = function () {
+                _self.patternImg = patternImg;
+                _self.startr = new Recognizer2(_self.video, _self.canvas, _self.patternImg);
 
-        update() {
-            let curposition = this.recognizer.corners;
-            if (curposition && this.preposition !== curposition) {
-                this.locateModel(curposition);
-                this.preposition = curposition;
             }
+        }
+        
+        update() {
+            if (this.startr) {
+                this.startr.start();
+                let curposition = this.startr.corners;
+                if (curposition && this.preposition !== curposition) {
+                    this.locateModel(curposition);
+                    this.preposition = curposition;
+                }
+            }
+
 
         }
 
@@ -176,7 +304,6 @@ define(['io'], function (io) {
         onFrame() {
             requestAnimationFrame(this.onFrame);
             this.update();
-            // this.renderer.autoClear = false;
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
         }

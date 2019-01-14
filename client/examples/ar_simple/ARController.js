@@ -8,9 +8,10 @@ require.config({
         ImageController: './ImageController',
         OrientationController: './OrientationController',
         OrbitController: './OrbitController',
+        GPSController: './GPSController',
     }
 });
-define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController','OrbitController'], function (POS, EventHandlerBase, mediaDevices, ImageController, OrientationController,OrbitController) {
+define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController','OrbitController','GPSController'], function (POS, EventHandlerBase, mediaDevices, ImageController, OrientationController,OrbitController,GPSController) {
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only
      * want to rotate on the Y axis. In our AR use case, we don't want
@@ -287,8 +288,6 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController', 'Orienta
             if (!this._session) {
                 //如果没有请求到session，或者当前是基础控制类型
                 // TODO 基础控制类型
-
-
                 // this.renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
                 // this.renderer.autoClear = false;
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -374,6 +373,7 @@ define(['posit', 'eventHandlerBase', 'mediaDevices', 'ImageController', 'Orienta
                     console.log('ORIENTATIONCONTROLLER')
                     break;
                 case ARControllerBase.GPSCONTROLLER:
+                    this._baseController = new GPSController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
                     console.log('GPSCONTROLLER');
                     break;
                 default:

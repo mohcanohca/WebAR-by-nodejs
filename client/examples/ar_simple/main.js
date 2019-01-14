@@ -222,8 +222,58 @@ define(['ARController'], function (ARControllerBase) {
         }
     }
 
+    class GPSExample extends ARControllerBase {
+        constructor() {
+            super(true, ARControllerBase.GPSCONTROLLER)
+        }
 
-    document.body.innerHTML = `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
+        initScene() {
+            this.scene = new THREE.Scene();
+            let texture = new THREE.TextureLoader().load('../../js/textures/snow-32.png');
+
+            //场景中的内容
+            function initWeatherContent(texture) {
+                let geometry = new THREE.Geometry();
+                let pointsMaterial = new THREE.PointsMaterial({
+                    size: 2,
+                    transparent: true,
+                    opacity: 0.8,
+                    map: texture,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true,
+                    depthTest: false
+                });
+
+                let range = 100;
+                for (let i = 0; i < 1500; i++) {
+
+                    let vertice = new THREE.Vector3(
+                        Math.random() * range - range / 2,
+                        Math.random() * range * 1.5,
+                        Math.random() * range - range / 2);
+                    /* 纵向移动速度 */
+                    vertice.velocityY = 0.1 + Math.random() / 3;
+                    /* 横向移动速度 */
+                    vertice.velocityX = (Math.random() - 0.5) / 3;
+
+                    /* 将顶点加入几何 */
+                    geometry.vertices.push(vertice);
+                }
+
+                geometry.center();
+
+                let points = new THREE.Points(geometry, pointsMaterial);
+                points.position.y = -30;
+
+                return points;
+            }
+
+            this.model = initWeatherContent(texture);
+        }
+    }
+
+
+    document.body.innerHTML = document.body.innerHTML + `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
     <div class="mdl-card__title">
         <h2 class="mdl-card__title-text">Augmented Reality with the WebXR Device API</h2>
     </div>
@@ -251,9 +301,10 @@ define(['ARController'], function (ARControllerBase) {
 
     // window.app = new ARSea();
     // window.app = new ModelExample();
-    // window.app = new EarthExample();
+    window.app = new EarthExample();
     // window.app = new OrientationExample();
-    window.app = new OrbitExample();
+    // window.app = new OrbitExample();
+    // window.app = new GPSExample();
 
 })
 
