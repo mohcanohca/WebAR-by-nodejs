@@ -176,7 +176,7 @@ define(['ARController'], function (ARControllerBase) {
 
     class EarthExample extends ARControllerBase {
         constructor() {
-            super(true, ARControllerBase.IMAGECONTROLLER,/* {method: 'front'}*/);
+            super(true, ARControllerBase.IMAGECONTROLLER, /* {method: 'front'}*/);
         }
 
         initScene() {
@@ -192,7 +192,7 @@ define(['ARController'], function (ARControllerBase) {
             //场景添加模型，实际添加以地图图像为贴图的球体
             this.model = object;
             this.modelSize = 35;
-            this.scene.add(this.model);
+            // this.scene.add(this.model);
         }
 
     }
@@ -207,8 +207,18 @@ define(['ARController'], function (ARControllerBase) {
             this.model = createCube(2, 2, 2);
             this.model.position.set(0, 0, 0);
             this.model.position.multiplyScalar(1);
-            this.modelSize = 10;
-            this.scene.add(this.model);
+            this.modelSize = 2;
+            // this.scene.add(this.model);
+        }
+    }
+
+    class OrientationCubeSea extends ARControllerBase {
+        constructor() {
+            super(true, ARControllerBase.ORIENTATIONCONTROLLER);
+        }
+
+        initScene() {
+            this.scene = createCubeScene()
         }
     }
 
@@ -223,7 +233,7 @@ define(['ARController'], function (ARControllerBase) {
             this.model.position.set(0, 0, 0);
             this.model.position.multiplyScalar(1);
             this.modelSize = 10;
-            this.scene.add(this.model);
+            // this.scene.add(this.model);
         }
     }
 
@@ -305,8 +315,9 @@ define(['ARController'], function (ARControllerBase) {
 
     // window.app = new ARSea();
     // window.app = new ModelExample();
-    window.app = new EarthExample();
-    // window.app = new OrientationExample();
+    // window.app = new EarthExample();//图像识别控制
+    window.app = new OrientationExample();//orientation控制模型
+    // window.app = new OrientationCubeSea();//orientation控制相机
     // window.app = new OrbitExample();
     // window.app = new GPSExample();
 

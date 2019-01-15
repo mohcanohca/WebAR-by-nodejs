@@ -38,7 +38,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
     }
 
     //图像识别定位
-    class Recognizer {
+    class ServerRecognizer {
         constructor(video, canvas) {
             this.socket = null;
             this.serverPath = 'https://10.28.161.133:8081';
@@ -117,7 +117,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
 
     }
 
-    class Recognizer2 {
+    class FrontRecognizer {
         constructor(video, canvas, patternImg) {
             this.timer = null;
             this.canvas = canvas;
@@ -230,7 +230,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             this.modelSize = modelSize;
 
             this.recognizer = null;
-            this.posit = new POS.Posit(modelSize, Math.max(defaultWidth, defaultHeight));
+            this.posit = new POS.Posit(modelSize || 35, Math.max(defaultWidth, defaultHeight));
             this.video = video;
 
             this.param = param;
@@ -250,10 +250,10 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
 
                 patternImg.onload = function () {
                     _self.patternImg = patternImg;
-                    _self.recognizer = new Recognizer2(_self.video, _self.canvas, _self.patternImg);
+                    _self.recognizer = new FrontRecognizer(_self.video, _self.canvas, _self.patternImg);
                 }
             } else {
-                _self.recognizer = new Recognizer(_self.video, _self.canvas)
+                _self.recognizer = new ServerRecognizer(_self.video, _self.canvas)
             }
 
         }
@@ -263,6 +263,9 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
                 this.recognizer.recognize();
                 // 检查corners是否发生了变化，若是变化，则重新定位模型
                 let curposition = this.recognizer.corners;
+                if (curposition && !this.preposition) {
+                    this.scene.add(this.model);
+                }
                 if (curposition && this.preposition !== curposition) {
                     this.locateModel(curposition);
                     this.preposition = curposition;

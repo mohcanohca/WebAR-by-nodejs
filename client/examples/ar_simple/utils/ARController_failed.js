@@ -11,6 +11,7 @@ require.config({
     }
 });
 define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'OrbitController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, OrbitController, GPSController) {
+
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only
      * want to rotate on the Y axis. In our AR use case, we don't want
@@ -98,8 +99,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
+
             this._session.requestHitTest(origin, direction, frameOfRef).then(hits => {
-                console.log(hits)
                 if (hits && hits.length) {
                     const hit = hits[0];
                     const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
@@ -120,6 +121,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
     }
 
+    /**
+     * ARControllerBase是AR交互控制的基础类，可通过覆写initScene等方法自定义要渲染的场景和动画
+     * 在创建继承类时，需要说明是否使用平面检测功能，并为不支持XR的浏览器事先指定基础控制类
+     *
+     * 基础控制类：图像注册（ImageController）、触控（OrbitController）、方向控制（OrientationController）、地理位置信息控制（GPSControl）
+     */
     class ARControllerBase extends EventHandlerBase {
         constructor(findSurface = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
             super();
@@ -139,9 +146,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._videoEl = null;//承载WebRTC获取的视频流的video
 
             // XR
+            this._xr = null;
             this._device = null;//请求的XRDevice
             this._session = null;//请求的XRSession
             this._frameOfRef = null;//参考坐标系
+            this._xrPresentCanvas = document.createElement('canvas');
 
             this._sessionEls = null;//放置session的DOM
             this._realityEls = null;//放置捕捉的视频流的DOM
@@ -149,65 +158,38 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._baseControlType = baseControlType;//若不支持webxr，采用的基础控制类型
             this._baseControlParam = baseControlParam;//若采用基础控制类，设定的参数
 
+            // this.handleAREnable = this.handleAREnable.bind(this);
             this.handleARUnable = this.handleARUnable.bind(this);
             this.onXRFrame = this.onXRFrame.bind(this);
-            this.enterAR = this.enterAR.bind(this);
+
+            // this.enterAR = this.enterAR.bind(this);
             // this.init();
-            // 若要请求XRSession，必须是用户手动触发，例如按钮点击
+            // 用户点击按钮开始体验AR
             document.querySelector('#enter-ar').addEventListener('click', this.init.bind(this));
 
         }
 
-        async init() {
+        init() {
             this.addListeners();
             this.initScene();
 
-            // 检查navigator.xr是否存在，其实WebXR Device API的入口 XRSession.prototype.requestHitTest需要浏览器开启webxr-hit-test标志保证AR功能可用
             if (navigator.xr && XRSession.prototype.requestHitTest) {
-                try {
-                    let device = await navigator.xr.requestDevice();
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE, {detail: device}))
-                } catch (e) {
-                    // this.onNoXRDevice();
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                    return;
-                }
+                this._xr = navigator.xr;
+                this.requestXRDevice();
             } else {
-                // this.onNoXRDevice();
-                this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                return;
+                this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE));
             }
-            // this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE));
+
         }
 
-
-        //若检测到xr设备，准备渲染session的容器
-        handleAREnable(event) {
-            this._device = event.detail;
-            this._sessionEls = document.createElement('div')
-            this._sessionEls.setAttribute('class', 'webxr-sessions')
-
-            for (let el of [this._sessionEls/*, this._realityEls*/]) {
-                el.style.position = 'absolute'
-                el.style.width = '100%'
-                el.style.height = '100%'
-            }
-
-            // 向body开头插入元素
-            let prependElements = () => {
-                document.body.style.width = '100%';
-                document.body.style.height = '100%';
-                // 通过先添加Session的DOM，再添加现实的DOM，保证Session位于现实的上层
-                document.body.prepend(this._sessionEls);
-            }
-
-            if (document.readyState !== 'loading') {
-                prependElements();
-            } else {
-                document.addEventListener('DOMContentLoaded', prependElements);
-            }
-            this.enterAR()
-
+        // 请求XRDevice
+        requestXRDevice() {
+            this._xr.requestDevice().then(device => {
+                this._device = device;
+                this.dispatchEvent(new CustomEvent(ARControllerBase.XRDEVICE))
+            }).catch(e => {
+                this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE));
+            });
         }
 
         // 当不支持AR时，进入基本控制模式
@@ -240,32 +222,13 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 document.addEventListener('DOMContentLoaded', prependElements);
             }
 
-            this.enterAR();
-        }
+            // 开始获取现实世界
+            this.requestReality();
 
-        async enterAR() {
-            // 如果检测到XRDevice，继续请求XRSession
-            if (this._device) {
-                // 创建渲染会话的XRPresentationContext上下文，类似于创建WebGLRenderingContext
-                const outputCanvas = document.createElement('canvas');
-                const ctx = outputCanvas.getContext('xrpresent');//创建XRPresentationContext，在XRDevice上展示
+            // 使用基础类型控制
+            // this._openCamera();
 
-                try {
-                    // 请求XRSession，XRSession暴露设备姿态、用户环境，并处理到设备的渲染
-                    let session = await this._device.requestSession({
-                        outputContext: ctx,
-                        environmentIntegration: true,//表示使用AR模式
-                    });
-                    this._sessionEls.appendChild(outputCanvas);
-                    this.onSessionStarted(session);
-                } catch (e) {
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                }
-            } else {
-                // 使用基础类型控制
-                this._openCamera();
-            }
-
+            // this.enterAR();
         }
 
         /**
@@ -275,7 +238,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          * 将XRWebGLLayer与XRSession关联
          * 启动循环渲染（render loop）
          */
-        async onSessionStarted(session) {
+        /*async onSessionStarted(session) {
             document.body.classList.add('ar');
 
             this._session = session;
@@ -303,7 +266,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     this.dispatchEvent(ARControllerBase.WINDOW_RESIZE_EVENT)
                 }, false);
 
-            } else {
+            }
+            else {
                 // 创建一个WebGLRenderer，其包含要使用的第二个canvas
                 this.renderer = new THREE.WebGLRenderer({
                     alpha: true,
@@ -349,7 +313,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             }
 
 
-        }
+        }*/
 
         // 创建基础控制器
         createBaseController() {
@@ -357,7 +321,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             let baseControlType = this._baseControlType || ARControllerBase.ORBITCONTROLLER;
             switch (baseControlType) {
-
                 case ARControllerBase.IMAGECONTROLLER:
                     console.log('IMAGECONTROLLER');
                     // debugger
@@ -368,7 +331,9 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     console.log('ORBITCONTROLLER')
                     break;
                 case ARControllerBase.ORIENTATIONCONTROLLER:
+                    // debugger
                     this._baseController = new OrientationController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
+
                     console.log('ORIENTATIONCONTROLLER')
                     break;
                 case ARControllerBase.GPSCONTROLLER:
@@ -376,7 +341,9 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     console.log('GPSCONTROLLER');
                     break;
                 default:
-                    console.log('no basecontroller')
+                    //
+                    console.log('no basecontroller. OrientationController is created')
+                    this._baseController = new OrientationController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
                     break;
 
             }
@@ -391,11 +358,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             if (!this._session) {
                 //若是基础控制类型
+                // debugger
                 this._baseController.onFrame();
-                // requestAnimationFrame(this.onXRFrame);
-
-                // this.renderer.clear();
-                // this.renderer.render(this.scene, this.camera);
                 return;
             }
 
@@ -445,12 +409,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 return;
             }
 
-            // 缩放模型大小使其能被观察到全貌
-            if (this.modelSize && this.modelSize > 1) {
-                this.modelSize = this.modelSize % 10 / 10;
-                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
-            }
-
             // We're going to be firing a ray from the center of the screen.
             // The requestHitTest function takes an x and y coordinate in
             // Normalized Device Coordinates, where the upper left is (-1, 1)
@@ -459,7 +417,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             const y = 0;
 
             // Create a THREE.Raycaster if one doesn't already exist,
-            // and use it to generate an origin and direction from
             // and use it to generate an origin and direction from
             // our camera (device) using the tap coordinates.
             // Learn more about THREE.Raycaster:
@@ -475,9 +432,10 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             // https://github.com/immersive-web/hit-test
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
-            const hits = await this._session.requestHitTest(origin,
-                direction,
-                this._frameOfRef);
+            const hits = await
+                this._session.requestHitTest(origin,
+                    direction,
+                    this._frameOfRef);
 
             // If we found at least one hit...
             if (hits.length) {
@@ -505,11 +463,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             }
         }
 
-
-        onNoXRDevice() {
-            document.body.classList.add('unsupported');
-        }
-
         // 初始化场景
         initScene() {
             //TODO 应该由具体类创建场景
@@ -523,17 +476,157 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
         addListeners() {
-            this.addEventListener(ARControllerBase.ARENABLE, this.handleAREnable.bind(this));
+            // this.addEventListener(ARControllerBase.ARENABLE, this.handleAREnable.bind(this));
             this.addEventListener(ARControllerBase.ARUNABLE, this.handleARUnable.bind(this));
-            this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetDevice.bind(this));
-            this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
-            this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
+            this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetXRDevice.bind(this));
+            this.addEventListener(ARControllerBase.XRSESSION, this.handleGetXRSession.bind(this));
+            // this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
+            // this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
         }
 
 
-        // 获取XR设备
-        handleGetDevice(event) {
-            this._device = event.detail;
+        // 获取XR设备后请求XRSession
+        handleGetXRDevice(/*device*/) {
+            // this._device = device;
+            this.requestXRSession();
+        }
+
+        // 请求XRSession
+        requestXRSession() {
+            // 创建渲染会话的XRPresentationContext上下文，类似于创建WebGLRenderingContext
+            const outputCanvas = document.createElement('canvas');
+            // const ctx = this._xrPresentCanvas.getContext('xrpresent');//创建XRPresentationContext，在XRDevice上展示
+            const ctx = outputCanvas.getContext('xrpresent');//创建XRPresentationContext，在XRDevice上展示
+
+            this._xrPresentCanvas = outputCanvas;
+            try {
+                // 请求XRSession，XRSession暴露设备姿态、用户环境，并处理到设备的渲染
+                this._device.requestSession({
+                    outputContext: ctx,
+                    environmentIntegration: true,//表示使用AR模式
+                }).then((session) => {
+                    this.dispatchEvent(new CustomEvent(ARControllerBase.XRSESSION, {detail: session}));
+                }).catch(e => {
+                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
+                });
+            } catch (e) {
+                this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
+            }
+        }
+
+        // 获取XRSession后，准备展示Session的DOM，并开始XRSession
+        handleGetXRSession(event) {
+            this._session = event.detail;
+            this._sessionEls = document.createElement('div');
+            this._sessionEls.setAttribute('class', 'webxr-sessions');
+
+            for (let el of [this._sessionEls]) {
+                el.style.position = 'absolute';
+                el.style.width = '100%';
+                el.style.height = '100%';
+            }
+
+            // 向body开头插入元素
+            let prependElements = () => {
+                document.body.style.width = '100%';
+                document.body.style.height = '100%';
+                // 通过先添加Session的DOM，再添加现实的DOM，保证Session位于现实的上层
+                document.body.prepend(this._sessionEls);
+            }
+
+            if (document.readyState !== 'loading') {
+                prependElements();
+            } else {
+                document.addEventListener('DOMContentLoaded', prependElements);
+            }
+
+            this._sessionEls.appendChild(this._xrPresentCanvas);
+
+            this.startXRSession();
+        }
+
+        // 开始XRSession，准备three.js的基本要素renderer和camera
+        startXRSession() {
+            document.body.classList.add('ar');
+            this.addEventListener(ARControllerBase.XRENV_READY, this.handleXREnvReady.bind(this));
+            this.prepareXREnv();
+
+            //TODO 应该由具体类创建场景
+            // this.scene = createCubeScene();
+        }
+
+        // 准备渲染环境
+        prepareXREnv() {
+            // 创建一个WebGLRenderer，其包含要使用的第二个canvas
+            this.renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                preserveDrawingBuffer: true,
+            });
+
+            this.renderer.autoClear = false;
+
+            this.camera = new THREE.PerspectiveCamera();
+            this.camera.matrixAutoUpdate = false;
+
+            // 从three.js获取的上下文
+            this._gl = this.renderer.getContext();
+
+            // 设置WebGLRenderingContext上下文与XRDevice的兼容性
+            // await this._gl.setCompatibleXRDevice(this._session.device);
+            this._gl.setCompatibleXRDevice(this._session.device).then(() => {
+                this.dispatchEvent(new CustomEvent(ARControllerBase.XRDEVICE_COMPATIBLE));
+            });
+        }
+
+        // 兼容处理后
+        handleCompatible() {
+            // 兼容处理后，创建XRWebGLLayer，并将其设备为session的baseLayer。
+            // 告诉session，使用上下文gl（来自three.js）绘制scene，显示在用于创建XRPresentationContext的canvas（显示视频流）上层，
+            this._session.baseLayer = new XRWebGLLayer(this._session, this._gl);
+            this.requestFrameOfRef();
+        }
+
+        // 请求参考坐标系
+        requestFrameOfRef() {
+            this._session.requestFrameOfReference('eye-level').then(frameOfRef => {
+                this._frameOfRef = frameOfRef;
+                this.dispatchEvent(new CustomEvent(ARControllerBase.XRENV_READY));
+            })
+        }
+
+        // three.js与XRSession关联元素准备完毕，开始渲染循环
+        handleXREnvReady() {
+            // 若进行平面检测
+            if (this.findSurface) {
+                this._reticle = new Reticle(this._session, this.camera);
+                this.scene.add(this._reticle);
+            }
+
+            // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
+            this._session.requestAnimationFrame(this.onXRFrame);
+
+            if (this.findSurface) {
+                let reticleContainer = document.createElement('div');
+                reticleContainer.setAttribute('id', 'stabilization');
+                document.body.appendChild(reticleContainer);
+                window.addEventListener('click', this.hitTest.bind(this));
+            }
+        }
+
+
+        /**
+         * 请求现实世界视频流
+         */
+        requestReality() {
+            this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
+            this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
+            this.addEventListener(ARControllerBase.VIDEOFAILED, this.handleVideoFailed.bind(this));
+            // 开启摄像头
+            this._openCamera();
+        }
+
+        handleVideoFailed() {
+            alert('打开摄像头失败，请授权或连接外置摄像头')
         }
 
         // 打开摄像头
@@ -559,6 +652,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 return mediaDevices.getUserMedia(constraints).then(stream => {
                     _self.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOSTREAM, {detail: stream}));
                 })
+            }).catch(e => {
+                this.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOFAILED));
             });
         }
 
@@ -584,8 +679,43 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
         // 视频加载完成后，创建基础控制实例
         handleVideoReady() {
-            this.onSessionStarted();
+            this.addEventListener(ARControllerBase.REALITY_ENV_READY, this.handleCommonEnvReady.bind(this));
+            this.prepareCommonEv();
         }
+
+        handleCommonEnvReady() {
+            this.createBaseController();
+            requestAnimationFrame(this.onXRFrame)
+        }
+
+        prepareCommonEv() {
+            document.body.classList.add('ar');
+
+            this.renderer = new THREE.WebGLRenderer({alpha: true});
+            this.renderer.autoClear = false;
+
+            this.camera = new THREE.PerspectiveCamera();
+            this.camera.matrixAutoUpdate = false;
+
+            // TODO 基础控制类型
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.setClearColor(0xEEEEEE, 0.0);
+
+            // this.createBaseController();
+
+            this._adjustWindowsSize();
+
+            this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
+
+            // requestAnimationFrame(this.onXRFrame)
+
+            window.addEventListener('resize', function () {
+                this.dispatchEvent(ARControllerBase.WINDOW_RESIZE_EVENT)
+            }, false);
+
+            this.dispatchEvent(new CustomEvent(ARControllerBase.REALITY_ENV_READY));
+        }
+
 
         // 建立WebRTC，
         _setupWebRTC(parameters) {
@@ -608,7 +738,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._adjustVideoSize();
 
                 this.addListeners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
-                this.handleVideoReady();
+                this.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOREADY));
+                // this.handleVideoReady();
             });
 
         }
@@ -703,8 +834,13 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
     ARControllerBase.ARUNABLE = 'unsupportXR';
     ARControllerBase.ARENABLE = 'supportXR';
     ARControllerBase.XRDEVICE = 'xrdevice';
-    ARControllerBase.VIDEOSTREAM = 'video';
+    ARControllerBase.XRSESSION = 'xrsession';
+    ARControllerBase.XRDEVICE_COMPATIBLE = 'XRDEVICE_COMPATIBLE';
+    ARControllerBase.XRENV_READY = 'XRENV_READY';//表示three.js与XRSession相关联的元素准备完毕
+    ARControllerBase.REALITY_ENV_READY = 'REALITY_ENV_READY';//表示three.js与XRSession相关联的元素准备完毕
+    ARControllerBase.VIDEOSTREAM = 'video_stream';
     ARControllerBase.VIDEOREADY = 'video_ready';
+    ARControllerBase.VIDEOFAILED = 'video_failed';
     ARControllerBase.IMAGECONTROLLER = 'image';
     ARControllerBase.ORBITCONTROLLER = 'orbit';
     ARControllerBase.ORIENTATIONCONTROLLER = 'orientation';

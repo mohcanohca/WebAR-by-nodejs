@@ -33,7 +33,10 @@ define(['orbitControl'], function (orbitController) {
         }
 
         init() {
-            let controller = new orbitController(this.camera, this.renderer.domElement)
+            let controller = new orbitController(this.camera, this.renderer.domElement);
+            if (this.model) {
+                this.scene.add(this.model)
+            }
         }
 
         onFrame() {
