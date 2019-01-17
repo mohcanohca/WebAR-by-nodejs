@@ -11,6 +11,7 @@ require.config({
     }
 });
 define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'OrbitController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, OrbitController, GPSController) {
+
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only
      * want to rotate on the Y axis. In our AR use case, we don't want
@@ -41,45 +42,52 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         /**
          * @param {XRSession} xrSession
          * @param {THREE.Camera} camera
+         * @param {THREE.Object} content
          */
-        constructor(xrSession, camera) {
+        constructor(xrSession, camera, content) {
             super();
 
-            this.loader = new THREE.TextureLoader();
+            // 若是开发者传入了自定义的reticle样式，使用该样式
+            if (content) {
+                this.add(content)
+            } else {
+                // 否则使用默认样式，即圆环+箭头的标定板
+                this.loader = new THREE.TextureLoader();
 
-            let geometry = new THREE.RingGeometry(0.1, 0.11, 24, 1);
-            let material = new THREE.MeshBasicMaterial({color: 0xffffff});
-            // Orient the geometry so its position is flat on a horizontal surface
-            //  确定几何图形的方向，使其在水平面上
-            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
+                let geometry = new THREE.RingGeometry(0.1, 0.11, 24, 1);
+                let material = new THREE.MeshBasicMaterial({color: 0xffffff});
+                // Orient the geometry so its position is flat on a horizontal surface
+                //  确定几何图形的方向，使其在水平面上
+                geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
 
-            this.ring = new THREE.Mesh(geometry, material);
+                this.ring = new THREE.Mesh(geometry, material);
 
-            geometry = new THREE.PlaneBufferGeometry(0.15, 0.15);
-            // Orient the geometry so its position is flat on a horizontal surface,
-            // as well as rotate the image so the anchor is facing the user
-            //确定几何图形的方向，使其在水平面，同时旋转图像，使锚面向用户
-            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
-            geometry.applyMatrix(new THREE.Matrix4().makeRotationY(THREE.Math.degToRad(0)));
-            material = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0
-            });
-            this.icon = new THREE.Mesh(geometry, material);
+                geometry = new THREE.PlaneBufferGeometry(0.15, 0.15);
+                // Orient the geometry so its position is flat on a horizontal surface,
+                // as well as rotate the image so the anchor is facing the user
+                //确定几何图形的方向，使其在水平面，同时旋转图像，使锚面向用户
+                geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
+                geometry.applyMatrix(new THREE.Matrix4().makeRotationY(THREE.Math.degToRad(0)));
+                material = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0
+                });
+                this.icon = new THREE.Mesh(geometry, material);
 
-            // Load the anchor texture and apply it to our material
-            // once loaded
-            this.loader.load('./assets/Anchor.png', texture => {
-                this.icon.material.opacity = 1;
-                this.icon.material.map = texture;
-            });
+                // Load the anchor texture and apply it to our material
+                // once loaded
+                this.loader.load('./assets/Anchor.png', texture => {
+                    this.icon.material.opacity = 1;
+                    this.icon.material.map = texture;
+                });
 
-            this.add(this.ring);
-            this.add(this.icon);
+                this.add(this.ring);
+                this.add(this.icon);
+            }
 
             this._session = xrSession;
-            this.visible = false;
+            this.visible = false;//设置其是否可见
             this.camera = camera;
         }
 
@@ -99,13 +107,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
             this._session.requestHitTest(origin, direction, frameOfRef).then(hits => {
-                console.log(hits)
                 if (hits && hits.length) {
                     const hit = hits[0];
                     const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 
                     // Now apply the position from the hitMatrix onto our model
-                    // 使用hitMatrix设置模型位置
+                    // 使用hitMatrix设置模型位置，即标定板的位置
                     //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
                     this.position.setFromMatrixPosition(hitMatrix);
 
@@ -120,6 +127,14 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
     }
 
+    /**
+     * AR控制器基类。
+     * 对支持XR的浏览器提供XRSession，支持平面检测；
+     * 对于不支持XR的浏览器提供图像控制、方向控制、OrbitControl、GPSControl等几种AR交互方式
+     * @param {Boolean} useReticle：表示是否使用平面标定板
+     * @param {String} baseControlType： 表示对于不支持AR的浏览器提供的AR体验方案，默认是图像控制
+     * @param {Object} baseControlParam：表示基础控制类型的参数，例如对于图像控制，可选择前端识别和后端识别
+     */
     class ARControllerBase extends EventHandlerBase {
         constructor(findSurface = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
             super();
@@ -161,6 +176,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         async init() {
             this.addListeners();
             this.initScene();
+            this.initModel();
 
             // 检查navigator.xr是否存在，其实WebXR Device API的入口 XRSession.prototype.requestHitTest需要浏览器开启webxr-hit-test标志保证AR功能可用
             if (navigator.xr && XRSession.prototype.requestHitTest) {
@@ -259,6 +275,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     this._sessionEls.appendChild(outputCanvas);
                     this.onSessionStarted(session);
                 } catch (e) {
+                    console.log(e.message);
                     this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
                 }
             } else {
@@ -348,6 +365,16 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 }
             }
 
+
+        }
+
+        // TODO 由子类覆写
+        handleSelectStart(ev) {
+
+        }
+
+        // TODO 由子类覆写
+        handleSelectEnd(ev) {
 
         }
 
@@ -506,17 +533,19 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
+
         onNoXRDevice() {
             document.body.classList.add('unsupported');
         }
 
-        // 初始化场景
+        // 初始化three.js中的场景
         initScene() {
             //TODO 应该由具体类创建场景
             // this.scene = createCubeScene();
             console.log('developer need overwritten this method')
         }
 
+        // 初始化three.js中的模型
         initModel() {
             //TODO 应该由具体类创建模型
             console.log('developer need overwritten this method')
