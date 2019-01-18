@@ -136,7 +136,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
      * @param {Object} baseControlParam：表示基础控制类型的参数，例如对于图像控制，可选择前端识别和后端识别
      */
     class ARControllerBase extends EventHandlerBase {
-        constructor(findSurface = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
+        constructor(useReticle = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
             super();
 
             // three.js
@@ -146,7 +146,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.model = null;
             this._gl = null;
 
-            this.findSurface = findSurface;
+            this.useReticle = useReticle;
 
             this._videoFrameCanvas = null;//用于绘制视频帧
 
@@ -321,6 +321,10 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 }, false);
 
             } else {
+                session.addEventListener('select', this.handleSelect.bind(this));
+                session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+
                 // 创建一个WebGLRenderer，其包含要使用的第二个canvas
                 this.renderer = new THREE.WebGLRenderer({
                     alpha: true,
@@ -346,7 +350,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // this.scene = createCubeScene();
 
                 // 若进行平面检测
-                if (this.findSurface) {
+                if (this.useReticle) {
                     this._reticle = new Reticle(this._session, this.camera);
                     this.scene.add(this._reticle);
                 }
@@ -357,15 +361,82 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
                 this._session.requestAnimationFrame(this.onXRFrame);
 
-                if (this.findSurface) {
+                if (this.useReticle) {
                     let reticleContainer = document.createElement('div');
                     reticleContainer.setAttribute('id', 'stabilization');
                     document.body.appendChild(reticleContainer);
-                    window.addEventListener('click', this.hitTest.bind(this));
+                    // window.addEventListener('click', this.hitTest.bind(this));
                 }
             }
 
 
+        }
+
+        // TODO 可由子类覆写
+        async handleSelect(ev) {
+            let inputPose = ev.frame.getInputPose(ev.inputSource, this._frameOfRef);
+            if (!inputPose) {
+                return;
+            }
+            // If our model is not yet loaded, abort
+            if (!this.model) {
+                return;
+            }
+
+            // 缩放模型大小使其能被观察到全貌
+            if (this.modelSize && this.modelSize > 1) {
+                this.modelSize = this.modelSize % 4 / 10;
+                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
+            }
+
+            // We're going to be firing a ray from the center of the screen.
+            // The requestHitTest function takes an x and y coordinate in
+            // Normalized Device Coordinates, where the upper left is (-1, 1)
+            // and the bottom right is (1, -1). This makes (0, 0) our center.
+            const x = 0;
+            const y = 0;
+
+            if (inputPose.targetRay) {
+                // this.raycaster = this.raycaster || new THREE.Raycaster();
+                // this.raycaster.setFromCamera({x, y}, this.camera);
+                // const origin = new Float32Array(ray.origin.toArray());
+                // const direction = new Float32Array(ray.direction.toArray());
+                const ray = inputPose.targetRay;
+                const origin = Float32Array.from((new THREE.Vector3(ray.origin.x, ray.origin.y, ray.origin.z)).toArray());
+                const direction = Float32Array.from((new THREE.Vector3(ray.direction.x, ray.direction.y, ray.direction.z)).toArray());
+
+                if(this.useReticle){
+                    try {
+                        let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef)
+
+                        // If we found at least one hit...
+                        if (hits.length) {
+                            // We can have multiple collisions per hit test. Let's just take the
+                            // first hit, the nearest, for now.
+                            const hit = hits[0];
+
+                            const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+
+                            // Now apply the position from the hitMatrix onto our model.
+                            this.model.position.setFromMatrixPosition(hitMatrix);
+
+                            // Rather than using the rotation encoded by the `modelMatrix`,
+                            // rotate the model to face the camera. Use this utility to
+                            // rotate the model only on the Y axis.
+                            lookAtOnY(this.model, this.camera);
+
+                            // Ensure our model has been added to the scene.
+                            this.scene.add(this.model);
+                        }else{
+                            console.log('没有击中物体')
+                        }
+                    }catch (e) {
+                        console.log('hit test failed')
+                    }
+                }else{
+                    console.log('没有开启击中选项')
+                }
+            }
         }
 
         // TODO 由子类覆写
@@ -429,7 +500,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             const session = frame.session;
             const pose = frame.getDevicePose(this._frameOfRef);
 
-            if (this.findSurface) {
+            if (this.useReticle) {
                 // Update the _reticle's position
                 this._reticle.update(this._frameOfRef);
 
