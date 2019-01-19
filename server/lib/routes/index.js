@@ -33,4 +33,9 @@ exports.serveIndex = function (app, staticFolder) {
         res.sendFile('/examples/ar_simple/test/hit_test/index.html', {root: staticFolder});
     });
 
+
+    app.get('/examples/ar_simple/select_test', function (req, res) {
+        res.sendFile('/examples/ar_simple/test/select_test/index.html', {root: staticFolder});
+    });
+
 };

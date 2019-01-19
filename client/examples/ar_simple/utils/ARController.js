@@ -44,7 +44,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          * @param {THREE.Camera} camera
          * @param {THREE.Object} content
          */
-        constructor(xrSession, camera, content) {
+        constructor(xrSession, camera, frameOfRef, content) {
             super();
 
             // 若是开发者传入了自定义的reticle样式，使用该样式
@@ -87,6 +87,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             }
 
             this._session = xrSession;
+            this.frameOfRef = frameOfRef;
             this.visible = false;//设置其是否可见
             this.camera = camera;
         }
@@ -94,34 +95,38 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         /**
          * Fires a hit test in the middle of the screen and places the _reticle
          * upon the surface if found.
-         *在屏幕中心执行击中检测，如果检测到平面，就在上面放置圆环
+         * 在屏幕中心执行击中检测，如果检测到平面，就在上面放置圆环
          * 利用three.js的Raycaster
          *
          * @param {XRCoordinateSystem} frameOfRef
          */
-        async update(frameOfRef) {
+        async update(/*frameOfRef*/) {
             this.raycaster = this.raycaster || new THREE.Raycaster();
+
+            // 在屏幕中心执行检测
             this.raycaster.setFromCamera({x: 0, y: 0}, this.camera);
             const ray = this.raycaster.ray;
 
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
-            this._session.requestHitTest(origin, direction, frameOfRef).then(hits => {
-                if (hits && hits.length) {
-                    const hit = hits[0];
-                    const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 
-                    // Now apply the position from the hitMatrix onto our model
-                    // 使用hitMatrix设置模型位置，即标定板的位置
-                    //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
-                    this.position.setFromMatrixPosition(hitMatrix);
+            this._session.requestHitTest(origin, direction, this.frameOfRef)
+                .then(hits => {
+                    if (hits && hits.length) {
+                        const hit = hits[0];
+                        const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 
-                    lookAtOnY(this, this.camera);
+                        // Now apply the position from the hitMatrix onto our model
+                        // 使用hitMatrix设置模型位置，即标定板的位置
+                        //setFromMatrixPosition()将返回从矩阵中的元素得到的新的向量值的向量。设置了this.position.x|y|z的值
+                        this.position.setFromMatrixPosition(hitMatrix);
 
-                    this.visible = true;
-                }
-            }).catch(e => {
-                console.log(e)
+                        lookAtOnY(this, this.camera);
+
+                        this.visible = true;
+                    }
+                }).catch(e => {
+                console.log(e.message)
             })
 
         }
@@ -136,7 +141,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
      * @param {Object} baseControlParam：表示基础控制类型的参数，例如对于图像控制，可选择前端识别和后端识别
      */
     class ARControllerBase extends EventHandlerBase {
-        constructor(useReticle = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
+        constructor(useReticle = false, useSelect = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
             super();
 
             // three.js
@@ -145,8 +150,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.camera = null;
             this.model = null;
             this._gl = null;
-
-            this.useReticle = useReticle;
 
             this._videoFrameCanvas = null;//用于绘制视频帧
 
@@ -157,6 +160,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._device = null;//请求的XRDevice
             this._session = null;//请求的XRSession
             this._frameOfRef = null;//参考坐标系
+            this.useReticle = useReticle;//是否使用标定板标识平面
+            this.useSelect = useSelect;//是否开启XRSession的select事件监听
 
             this._sessionEls = null;//放置session的DOM
             this._realityEls = null;//放置捕捉的视频流的DOM
@@ -280,7 +285,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 }
             } else {
                 // 使用基础类型控制
-                this._openCamera();
+                // this._openCamera();
+                this.requestReality();
             }
 
         }
@@ -321,9 +327,13 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 }, false);
 
             } else {
-                session.addEventListener('select', this.handleSelect.bind(this));
-                session.addEventListener('selectstart', this.handleSelectStart.bind(this));
-                session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
+                if (this.useSelect) {
+                    session.addEventListener('select', this._handleSelect.bind(this));
+                    session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                    session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                }
+
 
                 // 创建一个WebGLRenderer，其包含要使用的第二个canvas
                 this.renderer = new THREE.WebGLRenderer({
@@ -349,11 +359,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 //TODO 应该由具体类创建场景
                 // this.scene = createCubeScene();
 
-                // 若进行平面检测
+                /*// 若进行平面检测
                 if (this.useReticle) {
                     this._reticle = new Reticle(this._session, this.camera);
                     this.scene.add(this._reticle);
-                }
+                }*/
 
                 // 在开始渲染循环之前，请求eye-level类型的XRFrameOfReference，表明设备正在跟踪位置（而不是像Daydream或Gear VR那样的仅包含方向的VR体验）
                 this._frameOfRef = await this._session.requestFrameOfReference('eye-level');
@@ -362,6 +372,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._session.requestAnimationFrame(this.onXRFrame);
 
                 if (this.useReticle) {
+                    this._reticle = new Reticle(this._session, this.camera, this._frameOfRef);
+                    this.scene.add(this._reticle)
                     let reticleContainer = document.createElement('div');
                     reticleContainer.setAttribute('id', 'stabilization');
                     document.body.appendChild(reticleContainer);
@@ -372,22 +384,27 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
         }
 
-        // TODO 可由子类覆写
-        async handleSelect(ev) {
+        /**
+         *  响应XRSession的select事件
+         * @param ev
+         * @returns {Promise<void>}
+         * @private
+         */
+        async _handleSelect(ev) {
             let inputPose = ev.frame.getInputPose(ev.inputSource, this._frameOfRef);
             if (!inputPose) {
                 return;
             }
-            // If our model is not yet loaded, abort
-            if (!this.model) {
-                return;
-            }
+            /*            // If our model is not yet loaded, abort
+                        if (!this.model) {
+                            return;
+                        }*/
 
-            // 缩放模型大小使其能被观察到全貌
-            if (this.modelSize && this.modelSize > 1) {
-                this.modelSize = this.modelSize % 4 / 10;
-                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
-            }
+            /*            // 缩放模型大小使其能被观察到全貌
+                        if (this.modelSize && this.modelSize > 1) {
+                            this.modelSize = this.modelSize % 4 / 10;
+                            this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
+                        }*/
 
             // We're going to be firing a ray from the center of the screen.
             // The requestHitTest function takes an x and y coordinate in
@@ -405,17 +422,32 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 const origin = Float32Array.from((new THREE.Vector3(ray.origin.x, ray.origin.y, ray.origin.z)).toArray());
                 const direction = Float32Array.from((new THREE.Vector3(ray.direction.x, ray.direction.y, ray.direction.z)).toArray());
 
-                if(this.useReticle){
+                if (this.useReticle) {
+                    // 若是使用了平面检测，就在检测到的平面上添加物体
                     try {
                         let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef)
 
                         // If we found at least one hit...
-                        if (hits.length) {
+                        this.handleSelect(hits);
+
+                        // 响应击中检测结果，添加模型
+                        /*if (hits.length) {
                             // We can have multiple collisions per hit test. Let's just take the
                             // first hit, the nearest, for now.
                             const hit = hits[0];
 
                             const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+
+                            // If our model is not yet loaded, abort
+                            if (!this.model) {
+                                return;
+                            }
+
+                            // 缩放模型大小使其能被观察到全貌
+                            if (this.modelSize && this.modelSize > 1) {
+                                this.modelSize = this.modelSize % 4 / 10;
+                                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
+                            }
 
                             // Now apply the position from the hitMatrix onto our model.
                             this.model.position.setFromMatrixPosition(hitMatrix);
@@ -427,16 +459,52 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
                             // Ensure our model has been added to the scene.
                             this.scene.add(this.model);
-                        }else{
+                        } else {
                             console.log('没有击中物体')
-                        }
-                    }catch (e) {
+                        }*/
+                    } catch (e) {
                         console.log('hit test failed')
                     }
-                }else{
-                    console.log('没有开启击中选项')
+                } else {
+                    window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                    window.addEventListener('click', this._handleMouseClick.bind(this), false);
                 }
             }
+        }
+
+        _handleTouchStart(ev) {
+            let touch = ev.touches[0];
+            let raycaster = new THREE.Raycaster();
+            let origin = new THREE.Vector2();
+            origin.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            origin.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+            // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+            raycaster.setFromCamera(origin, this.camera);
+            let intersects = raycaster.intersectObjects(this.scene.children);
+            this.handleSelect(intersects);
+        }
+
+        _handleMouseClick(ev) {
+            let raycaster = new THREE.Raycaster();
+            let mouse = new THREE.Vector2();
+            mouse.x = (ev.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(ev.clientY / window.innerHeight) * 2 + 1;
+
+            // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+            raycaster.setFromCamera(mouse, this.camera);
+            let intersects = raycaster.intersectObjects(this.scene.children);
+
+            this.handleSelect(intersects);
+        }
+
+
+        /**
+         * 提供给子类的对选中虚拟空间物体的处理事件接口
+         * @param intersects raycaster击中结果集合
+         */
+        handleSelect(intersects) {
+
         }
 
         // TODO 由子类覆写
@@ -502,7 +570,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             if (this.useReticle) {
                 // Update the _reticle's position
-                this._reticle.update(this._frameOfRef);
+                this._reticle.update(/*this._frameOfRef*/);
 
                 if (this._reticle.visible && !this.stabilized) {
                     this.stabilized = true;
@@ -537,6 +605,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
+        /**
+         * 射线raycast击中测试
+         * 利用相机的当前姿态，设置raycast的射线方向
+         * 使用XRSession.requestHitTest(origin,direction,XRFrameOfRef)发出射线，检测是否击中虚拟空间，即three.js的scene中的物体
+         * @returns {Promise<void>}
+         */
         async hitTest() {
             // If our model is not yet loaded, abort
             if (!this.model) {
@@ -604,7 +678,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
-
         onNoXRDevice() {
             document.body.classList.add('unsupported');
         }
@@ -622,18 +695,34 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             console.log('developer need overwritten this method')
         }
 
+
         addListeners() {
             this.addEventListener(ARControllerBase.ARENABLE, this.handleAREnable.bind(this));
             this.addEventListener(ARControllerBase.ARUNABLE, this.handleARUnable.bind(this));
             this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetDevice.bind(this));
-            this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
-            this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
+            // this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
+            // this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
         }
 
 
         // 获取XR设备
         handleGetDevice(event) {
             this._device = event.detail;
+        }
+
+        /**
+         * 请求现实世界视频流
+         */
+        requestReality() {
+            this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
+            this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
+            this.addEventListener(ARControllerBase.VIDEOFAILED, this.handleVideoFailed.bind(this));
+            // 开启摄像头
+            this._openCamera();
+        }
+
+        handleVideoFailed() {
+            alert('打开摄像头失败，请授权或连接外置摄像头')
         }
 
         // 打开摄像头
@@ -656,9 +745,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 };
 
                 let constraints = {audio: false, video: defaultVideoConstraints};
-                return mediaDevices.getUserMedia(constraints).then(stream => {
-                    _self.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOSTREAM, {detail: stream}));
-                })
+                return mediaDevices.getUserMedia(constraints)
+                    .then(stream => {
+                        _self.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOSTREAM, {detail: stream}));
+                    }).catch(e => {
+                        _self.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOFAILED))
+                    })
             });
         }
 
@@ -708,7 +800,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._adjustVideoSize();
 
                 this.addListeners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
-                this.handleVideoReady();
+                this.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOREADY, {detail: this._videoEl}));
+                // this.handleVideoReady();
             });
 
         }
@@ -798,6 +891,24 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._videoEl.style.height = windowHeight.toFixed(2) + 'px'
             this._videoEl.style.transform = "translate(" + translateX.toFixed(2) + "px, " + translateY.toFixed(2) + "px)"
         }
+
+        /**
+         * 获取XRSession
+         * @returns {null}
+         */
+        getSession() {
+            return this._session;
+        }
+
+        /**
+         * 返回参考坐标系
+         * @returns {null}
+         */
+        getFrameOfRef() {
+            return this._frameOfRef;
+        }
+
+
     }
 
     ARControllerBase.ARUNABLE = 'unsupportXR';
@@ -805,6 +916,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
     ARControllerBase.XRDEVICE = 'xrdevice';
     ARControllerBase.VIDEOSTREAM = 'video';
     ARControllerBase.VIDEOREADY = 'video_ready';
+    ARControllerBase.VIDEOFAILED = 'video_failed';
     ARControllerBase.IMAGECONTROLLER = 'image';
     ARControllerBase.ORBITCONTROLLER = 'orbit';
     ARControllerBase.ORIENTATIONCONTROLLER = 'orientation';
