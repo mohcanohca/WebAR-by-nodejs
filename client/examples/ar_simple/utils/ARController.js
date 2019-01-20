@@ -172,17 +172,26 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.handleARUnable = this.handleARUnable.bind(this);
             this.onXRFrame = this.onXRFrame.bind(this);
             this.enterAR = this.enterAR.bind(this);
-            // this.init();
-            // 若要请求XRSession，必须是用户手动触发，例如按钮点击
-            document.querySelector('#enter-ar').addEventListener('click', this.init.bind(this));
+            this.init();
 
         }
 
-        async init() {
+        // 初始化，添加用户配置
+        init() {
+            this._addlisteners();
+            this.setAREntrance();
             this.addListeners();
             this.initScene();
             this.initModel();
+            // this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE));
+        }
 
+
+        /**
+         * 检查AR支持性
+         * @returns {Promise<void>}
+         */
+        async detectARFeatures() {
             // 检查navigator.xr是否存在，其实WebXR Device API的入口 XRSession.prototype.requestHitTest需要浏览器开启webxr-hit-test标志保证AR功能可用
             if (navigator.xr && XRSession.prototype.requestHitTest) {
                 try {
@@ -191,14 +200,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 } catch (e) {
                     // this.onNoXRDevice();
                     this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                    return;
                 }
             } else {
                 // this.onNoXRDevice();
                 this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                return;
             }
-            // this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE));
         }
 
 
@@ -303,9 +309,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          * 启动循环渲染（render loop）
          */
         async onSessionStarted(session) {
-
-            // 将页面样式切换至ar会话状态
-            document.body.classList.add('ar');
+            this.dispatchEvent(new CustomEvent(ARControllerBase.SESSIONSTART));
 
             this._session = session;
 
@@ -668,6 +672,24 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             document.body.classList.add('unsupported');
         }
 
+        // 设置AR入口，即如何开始AR流程，例如点击按钮
+        setAREntrance() {
+            //TODO 应该由具体类设置
+            // 若要请求XRSession，必须是用户手动触发，例如按钮点击
+            document.querySelector('#enter-ar').addEventListener('click', this.detectARFeatures.bind(this));
+        }
+
+        // 开发者设定的监听器
+        addListeners() {
+            //TODO 应该由具体类设置监听
+
+            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                // 将页面样式切换至ar会话状态
+                document.body.classList.add('ar');
+            });
+
+        }
+
         // 初始化three.js中的场景
         initScene() {
             //TODO 应该由具体类创建场景
@@ -682,7 +704,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
-        addListeners() {
+        _addlisteners() {
             this.addEventListener(ARControllerBase.ARENABLE, this.handleAREnable.bind(this));
             this.addEventListener(ARControllerBase.ARUNABLE, this.handleARUnable.bind(this));
             this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetDevice.bind(this));
@@ -785,7 +807,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._videoFrameCanvas.height = height;
                 this._adjustVideoSize();
 
-                this.addListeners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
+                this._addlisteners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
                 this.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOREADY, {detail: this._videoEl}));
                 // this.handleVideoReady();
             });
@@ -900,6 +922,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
     ARControllerBase.ARUNABLE = 'unsupportXR';
     ARControllerBase.ARENABLE = 'supportXR';
     ARControllerBase.XRDEVICE = 'xrdevice';
+    ARControllerBase.SESSIONSTART = 'SESSIONSTART';
     ARControllerBase.VIDEOSTREAM = 'video';
     ARControllerBase.VIDEOREADY = 'video_ready';
     ARControllerBase.VIDEOFAILED = 'video_failed';
