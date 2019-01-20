@@ -140,7 +140,7 @@ define(['ARController'], function (ARControllerBase) {
      */
     function initModel(scene) {
 
-        var s = 25;
+        var s = 15;
 
         var cube = new THREE.CubeGeometry(s, s, s);
 
@@ -176,8 +176,8 @@ define(['ARController'], function (ARControllerBase) {
         initScene() {
             this.scene = new THREE.Scene();
             initModel(this.scene);
-            this.model = createCube(1, 1, 1);
-            this.modelSize = 10;
+            //this.model = createCube(1, 1, 1);
+            // this.modelSize = 10;
         }
 
         /**
@@ -210,7 +210,6 @@ define(['ARController'], function (ARControllerBase) {
          *
          *
          */
-
         handleSelect(intersects) {
 
             if (intersects.length) {
@@ -218,13 +217,14 @@ define(['ARController'], function (ARControllerBase) {
                 // first hit, the nearest, for now.
                 const hit = intersects[0];
 
+
+                // 如果是非XRSession模式，获取到的是击中物体
                 if (!hit.hitMatrix) {
                     for (let i = 0; i < intersects.length; i++) {
                         intersects[i].object.material.color.set(0xff0000);
                     }
                     return;
                 }
-
 
                 const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
 

@@ -209,12 +209,12 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             } else {
                 this.corners = null;
             }
-            console.log('get corners:'+(new Date()).getTime())
+            console.log('get corners:' + (new Date()).getTime())
         }
 
         // 图像识别
         recognize() {
-            console.log('start:'+(new Date()).getTime())
+            console.log('start:' + (new Date()).getTime())
             this._describeFrame();
             this._match();
         }
@@ -222,7 +222,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
     }
 
     class ImageController {
-        constructor(sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas, param) {
+        constructor({sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas, param}) {
             // 绘制视频帧
             this.sessionEls = sessionEls;
             this.canvas = videoFrameCanvas;
@@ -245,6 +245,8 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             this.video = video;
 
             this.param = param;
+
+            this.stopFrame = null;
 
             // this.patternImg = param.patternImg;
 
@@ -336,7 +338,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
         }
 
         onFrame() {
-            requestAnimationFrame(this.onFrame);
+            this.stopFrame = requestAnimationFrame(this.onFrame);
             this.update();
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);

@@ -8,7 +8,7 @@ require.config({
 });
 define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, EventHandlerBase) {
     class GPSController extends EventHandlerBase {
-        constructor(renderer, scene, camera, model, modelSize) {
+        constructor({renderer, scene, camera, model, modelSize}) {
             super()
             //three.js
             this.renderer = renderer;
@@ -23,6 +23,7 @@ define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, E
             this.model = model;
             this.modelSize = modelSize;
 
+            this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
             this.init();
         }
@@ -39,7 +40,7 @@ define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, E
             try {
                 this._geoFindMe();
             } catch (e) {
-                console.log('请求地理位置信息失败')
+                console.log('请求地理位置信息失败');
                 return;
             }
         }
@@ -48,7 +49,7 @@ define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, E
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
             this.update();
-            requestAnimationFrame(this.onFrame);
+            this.stopFrame = requestAnimationFrame(this.onFrame);
         }
 
         //获取地址

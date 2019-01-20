@@ -6,7 +6,7 @@ require.config({
 });
 define(['orbitControl'], function (orbitController) {
     class OrbitController {
-        constructor(renderer, scene, camera, model, modelSize) {
+        constructor({renderer, scene, camera, model, modelSize}) {
             //three.js
             this.renderer = renderer;
             this.scene = scene;
@@ -28,6 +28,8 @@ define(['orbitControl'], function (orbitController) {
 
             this.model = model;
             this.modelSize = modelSize;
+
+            this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
             this.init();
         }
@@ -42,7 +44,7 @@ define(['orbitControl'], function (orbitController) {
         onFrame() {
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
-            requestAnimationFrame(this.onFrame);
+            this.stopFrame = requestAnimationFrame(this.onFrame);
         }
     }
 

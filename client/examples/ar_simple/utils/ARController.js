@@ -169,9 +169,14 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._baseControlType = baseControlType;//若不支持webxr，采用的基础控制类型
             this._baseControlParam = baseControlParam;//若采用基础控制类，设定的参数
 
+            this.stopFrame = null;//用于停止帧
+            this.stopXRFrame = null;
+
             this.handleARUnable = this.handleARUnable.bind(this);
+            this.handleAREnable = this.handleAREnable.bind(this);
             this.onXRFrame = this.onXRFrame.bind(this);
             this.enterAR = this.enterAR.bind(this);
+            this.detectARFeatures = this.detectARFeatures.bind(this);
             this.init();
 
         }
@@ -208,9 +213,13 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
-        //若检测到xr设备，准备渲染session的容器
+        /**
+         * 若检测到xr设备，准备渲染session的容器
+         * @param event {detail:XRDevice}
+         */
         handleAREnable(event) {
             this._device = event.detail;
+
             this._sessionEls = document.createElement('div')
             this._sessionEls.setAttribute('class', 'webxr-sessions')
 
@@ -237,7 +246,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
         }
 
-        // 当不支持AR时，进入基本控制模式
+        /**
+         * 当不支持AR时
+         * 创建渲染增强内容的DOM容器
+         * 创建渲染视频流的DOM容器
+         * 进入基本控制模式
+         */
         handleARUnable() {
             this._sessionEls = document.createElement('div')
             this._sessionEls.setAttribute('class', 'webxr-sessions')
@@ -334,7 +348,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
 
                 // 在渲染前指定要进行循环的方法
-                requestAnimationFrame(this.onXRFrame)
+                this.stopFrame = requestAnimationFrame(this.onXRFrame)
 
                 // 通过监听原生的resize方法，调整元素大小
                 window.addEventListener('resize', function () {
@@ -345,13 +359,15 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
                 // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
                 if (this.useSelect) {
-                    session.addEventListener('select', this._handleSelect.bind(this));
-                    session.addEventListener('selectstart', this.handleSelectStart.bind(this));
-                    session.addEventListener('selectend', this.handleSelectEnd.bind(this));
-                } else {
-                    //若是没有开启对select事件的监听，默认监听touchstart和click事件
-                    window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
-                    window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                    if (this.useReticle) {
+                        session.addEventListener('select', this._handleSelect.bind(this));
+                        session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                        session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                    } else {
+                        //若是没有开启对select事件的监听，默认监听touchstart和click事件
+                        window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                        window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                    }
                 }
 
 
@@ -389,7 +405,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._frameOfRef = await this._session.requestFrameOfReference('eye-level');
 
                 // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
-                this._session.requestAnimationFrame(this.onXRFrame);
+                this.stopXRFrame = this._session.requestAnimationFrame(this.onXRFrame);
 
 
                 // 若是使用了reticle，即需要为其添加击中检测方法。在scene中添加reticle元素，监听原生click事件
@@ -516,18 +532,47 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 case ARControllerBase.IMAGECONTROLLER:
                     console.log('IMAGECONTROLLER');
                     // debugger
-                    this._baseController = new ImageController(this._sessionEls, this.renderer, this.scene, this.camera, this.model, this._videoEl, this.modelSize, this._videoFrameCanvas, this._baseControlParam);
+                    this._baseController = new ImageController({
+                        sessionEls: this._sessionEls,
+                        renderer: this.renderer,
+                        scene: this.scene,
+                        camera: this.camera,
+                        model: this.model,
+                        video: this._videoEl,
+                        modelSize: this.modelSize,
+                        videoFrameCanvas: this._videoFrameCanvas,
+                        param: this._baseControlParam
+                    });
                     break;
                 case ARControllerBase.ORBITCONTROLLER:
-                    this._baseController = new OrbitController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
+                    this._baseController = new OrbitController(
+                        {
+                            renderer: this.renderer,
+                            scene: this.scene,
+                            camera: this.camera,
+                            model: this.model,
+                            modelSize: this.modelSize
+                        });
                     console.log('ORBITCONTROLLER')
                     break;
                 case ARControllerBase.ORIENTATIONCONTROLLER:
-                    this._baseController = new OrientationController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
+                    this._baseController = new OrientationController({
+                        renderer: this.renderer,
+                        scene: this.scene,
+                        camera: this.camera,
+                        model: this.model,
+                        modelSize: this.modelSize
+                    });
                     console.log('ORIENTATIONCONTROLLER')
                     break;
                 case ARControllerBase.GPSCONTROLLER:
-                    this._baseController = new GPSController(this.renderer, this.scene, this.camera, this.model, this.modelSize)
+                    this._baseController = new GPSController({
+                        renderer: this.renderer,
+                        scene: this.scene,
+                        camera: this.camera,
+                        model: this.model,
+                        modelSize: this.modelSize
+                    });
                     console.log('GPSCONTROLLER');
                     break;
                 default:
@@ -568,7 +613,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             }
 
             // 在渲染前，排队下一帧动画调用
-            session.requestAnimationFrame(this.onXRFrame);
+            this.stopXRFrame = session.requestAnimationFrame(this.onXRFrame);
 
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._session.baseLayer.framebuffer);
 
@@ -704,10 +749,14 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
 
+        /**
+         * 监听ARFeature检测结果
+         * @private
+         */
         _addlisteners() {
             this.addEventListener(ARControllerBase.ARENABLE, this.handleAREnable.bind(this));
             this.addEventListener(ARControllerBase.ARUNABLE, this.handleARUnable.bind(this));
-            this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetDevice.bind(this));
+            // this.addEventListener(ARControllerBase.XRDEVICE, this.handleGetDevice.bind(this));
             // this.addEventListener(ARControllerBase.VIDEOSTREAM, this.handleVideoStream.bind(this));
             // this.addEventListener(ARControllerBase.VIDEOREADY, this.handleVideoReady.bind(this));
         }
@@ -807,7 +856,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this._videoFrameCanvas.height = height;
                 this._adjustVideoSize();
 
-                this._addlisteners(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
+                this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustVideoSize.bind(this))
                 this.dispatchEvent(new CustomEvent(ARControllerBase.VIDEOREADY, {detail: this._videoEl}));
                 // this.handleVideoReady();
             });
@@ -916,12 +965,33 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             return this._frameOfRef;
         }
 
+        /**
+         *  停止会话
+         */
+        exitSession() {
+            if (this._session) {
+                this._session.end();
+            }
+
+            if (this._videoEl) {
+                this._videoEl.stop();
+            }
+
+            if (this.stopXRFrame) {
+                this._session.cancelAnimationFrame(this.stopXRFrame);
+            }
+
+            if (this._baseController && this._baseController.stopFrame) {
+                window.cancelAnimationFrame(this._baseController.stopFrame);
+            }
+
+        }
+
 
     }
 
     ARControllerBase.ARUNABLE = 'unsupportXR';
     ARControllerBase.ARENABLE = 'supportXR';
-    ARControllerBase.XRDEVICE = 'xrdevice';
     ARControllerBase.SESSIONSTART = 'SESSIONSTART';
     ARControllerBase.VIDEOSTREAM = 'video';
     ARControllerBase.VIDEOREADY = 'video_ready';

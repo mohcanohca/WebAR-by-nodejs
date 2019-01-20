@@ -3,7 +3,7 @@ define(function () {
      * 方向传感器控制，操控的是three.js中模型的位置
      */
     class OrientationController {
-        constructor(renderer, scene, camera, model, modelSize) {
+        constructor({renderer, scene, camera, model, modelSize}) {
             //three.js
             this.renderer = renderer;
             this.scene = scene;
@@ -25,6 +25,7 @@ define(function () {
 
             this.model = model;
             this.modelSize = modelSize;
+            this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
             this.init();
         }
@@ -73,7 +74,7 @@ define(function () {
         onFrame() {
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
-            requestAnimationFrame(this.onFrame);
+            this.stopFrame = requestAnimationFrame(this.onFrame);
 
         }
     }
