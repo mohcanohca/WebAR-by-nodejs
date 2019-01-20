@@ -169,9 +169,10 @@ define(['ARController'], function (ARControllerBase) {
 
     class ModelExample extends ARControllerBase {
         constructor() {
-            super(true, true, ARControllerBase.ORIENTATIONCONTROLLER)
+            super(false, true, ARControllerBase.ORIENTATIONCONTROLLER)
         }
 
+        // 自定义虚拟场景
         initScene() {
             this.scene = new THREE.Scene();
             initModel(this.scene);
@@ -200,9 +201,9 @@ define(['ARController'], function (ARControllerBase) {
 
          若是开启平面检测，返回的是hittest的结果
          intersects: Array(1)
-            0: XRHitResult
-            hitMatrix: Float32Array(16) [0.7732632160186768, 0, -0.6340852379798889, 0, 0, 1, 0, 0, 0.6340852379798889, 0, 0.7732632160186768, 0, 1.7730376720428467, -0.5927649736404419, -0.5793924927711487, 1]
-            __proto__: XRHitResult
+         0: XRHitResult
+         hitMatrix: Float32Array(16) [0.7732632160186768, 0, -0.6340852379798889, 0, 0, 1, 0, 0, 0.6340852379798889, 0, 0.7732632160186768, 0, 1.7730376720428467, -0.5927649736404419, -0.5793924927711487, 1]
+         __proto__: XRHitResult
 
          *
          *

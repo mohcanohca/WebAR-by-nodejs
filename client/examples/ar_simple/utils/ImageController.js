@@ -48,9 +48,17 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             this.canvas = canvas;
             this.corners = null;
             this.video = video;
+            this.ableSend = false;
             this.start()
             this.stop = this.stop.bind(this)
 
+        }
+
+        handleFrameCorners(data) {
+            console.log('receive:' + (new Date()).getTime())
+            let corners = data.corners;
+            if (!corners) return;
+            this.corners = corners;
         }
 
         // 开始图像识别
@@ -61,11 +69,10 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             if (!socket) {
                 //连接服务器端，传输数据
                 socket = io.connect(this.serverPath);
-                socket.on('frame', function (data) {
-                    let corners = data.corners;
-                    if (!corners) return;
-                    _self.corners = corners;
+                socket.on('connect', function () {
+                    _self.ableSend = true;
                 });
+                socket.on('frame', this.handleFrameCorners.bind(this));
             }
 
             //定时向后端传输图像数据
@@ -75,6 +82,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
 
             //发送视频帧
             function sendVideoData(socket, video) {
+                if (!_self.ableSend) return;
                 let videoWidth = video.videoWidth;
                 let videoHeight = video.videoHeight;
 
@@ -99,6 +107,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
                 let data = {
                     imgData: theDataURL,
                 };
+                console.log('emit VIDEO_MESS:' + (new Date()).getTime())
                 //使用websocket进行图像传输
                 socket.emit('VIDEO_MESS', JSON.stringify(data));
             }
@@ -200,10 +209,12 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             } else {
                 this.corners = null;
             }
+            console.log('get corners:'+(new Date()).getTime())
         }
 
         // 图像识别
         recognize() {
+            console.log('start:'+(new Date()).getTime())
             this._describeFrame();
             this._match();
         }

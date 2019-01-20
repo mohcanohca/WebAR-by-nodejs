@@ -144,7 +144,7 @@ define(['ARController'], function (ARControllerBase) {
 
     class ModelExample extends ARControllerBase {
         constructor() {
-            super(true, ARControllerBase.ORIENTATIONCONTROLLER)
+            super(true, false, ARControllerBase.ORIENTATIONCONTROLLER)
         }
 
         initScene() {
@@ -152,13 +152,13 @@ define(['ARController'], function (ARControllerBase) {
             const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
             const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
             const MODEL_SCALE = 0.1;
-             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
-                 this.model = model;
-                 this.modelSize = MODEL_SCALE;
-                 // Every model is different -- you may have to adjust the scale
-                 // of a model depending on the use.
-                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
-             });
+            loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
+                this.model = model;
+                this.modelSize = MODEL_SCALE;
+                // Every model is different -- you may have to adjust the scale
+                // of a model depending on the use.
+                this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+            });
 
         }
     }

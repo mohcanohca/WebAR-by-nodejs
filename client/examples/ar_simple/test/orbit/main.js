@@ -46,6 +46,7 @@ define(['ARController'], function (ARControllerBase) {
 
         return scene;
     }
+
     // 创建一个正方体
     function createCube(width, height, deep) {
         //正方体
@@ -126,7 +127,7 @@ define(['ARController'], function (ARControllerBase) {
                 }*/
 
         constructor() {
-            super(true, ARControllerBase.ORBITCONTROLLER)
+            super(true, false, ARControllerBase.ORBITCONTROLLER)
         }
 
         initScene() {

@@ -100,7 +100,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          *
          * @param {XRCoordinateSystem} frameOfRef
          */
-        async update(/*frameOfRef*/) {
+        update(/*frameOfRef*/) {
             this.raycaster = this.raycaster || new THREE.Raycaster();
 
             // 在屏幕中心执行检测
@@ -126,7 +126,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         this.visible = true;
                     }
                 }).catch(e => {
-                console.log(e.message)
+                console.log('hit test failed')
             })
 
         }
@@ -264,6 +264,10 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.enterAR();
         }
 
+        /**
+         * 进入AR会话，会话包括两种形式，一种是支持AR的浏览器提供的XRSession，一种是通过WebRTC请求视频流创建的AR
+         * @returns {Promise<void>}
+         */
         async enterAR() {
             // 如果检测到XRDevice，继续请求XRSession
             if (this._device) {
@@ -299,39 +303,51 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          * 启动循环渲染（render loop）
          */
         async onSessionStarted(session) {
+
+            // 将页面样式切换至ar会话状态
             document.body.classList.add('ar');
 
             this._session = session;
-            this.renderer = new THREE.WebGLRenderer({alpha: true});
-            this.renderer.autoClear = false;
-            this.camera = new THREE.PerspectiveCamera();
-            this.camera.matrixAutoUpdate = false;
 
             if (!this._session) {
                 //如果没有请求到session，或者当前是基础控制类型
-                // TODO 基础控制类型
-                // this.renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-                // this.renderer.autoClear = false;
+
+                this.renderer = new THREE.WebGLRenderer({alpha: true});
+                this.renderer.autoClear = false;
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setClearColor(0xEEEEEE, 0.0);
 
+                this.camera = new THREE.PerspectiveCamera();
+                this.camera.matrixAutoUpdate = false;
+
+                // 创建基础控制类
                 this.createBaseController();
 
+                // 调整窗口大小
                 this._adjustWindowsSize();
+
+                // 监听窗口大小变化
                 this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
 
+                // 在渲染前指定要进行循环的方法
                 requestAnimationFrame(this.onXRFrame)
 
+                // 通过监听原生的resize方法，调整元素大小
                 window.addEventListener('resize', function () {
                     this.dispatchEvent(ARControllerBase.WINDOW_RESIZE_EVENT)
                 }, false);
 
             } else {
+
                 // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
                 if (this.useSelect) {
                     session.addEventListener('select', this._handleSelect.bind(this));
                     session.addEventListener('selectstart', this.handleSelectStart.bind(this));
                     session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                } else {
+                    //若是没有开启对select事件的监听，默认监听touchstart和click事件
+                    window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                    window.addEventListener('click', this._handleMouseClick.bind(this), false);
                 }
 
 
@@ -371,13 +387,19 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
                 this._session.requestAnimationFrame(this.onXRFrame);
 
+
+                // 若是使用了reticle，即需要为其添加击中检测方法。在scene中添加reticle元素，监听原生click事件
                 if (this.useReticle) {
                     this._reticle = new Reticle(this._session, this.camera, this._frameOfRef);
                     this.scene.add(this._reticle)
-                    let reticleContainer = document.createElement('div');
-                    reticleContainer.setAttribute('id', 'stabilization');
-                    document.body.appendChild(reticleContainer);
-                    // window.addEventListener('click', this.hitTest.bind(this));
+
+
+                    // 手型引导
+                    let tipContainer = document.createElement('div');
+                    tipContainer.setAttribute('id', 'stabilization');
+
+                    document.body.appendChild(tipContainer);
+                    window.addEventListener('click', this.hitTest.bind(this));
                 }
             }
 
@@ -395,16 +417,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             if (!inputPose) {
                 return;
             }
-            /*            // If our model is not yet loaded, abort
-                        if (!this.model) {
-                            return;
-                        }*/
-
-            /*            // 缩放模型大小使其能被观察到全貌
-                        if (this.modelSize && this.modelSize > 1) {
-                            this.modelSize = this.modelSize % 4 / 10;
-                            this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
-                        }*/
 
             // We're going to be firing a ray from the center of the screen.
             // The requestHitTest function takes an x and y coordinate in
@@ -413,11 +425,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             const x = 0;
             const y = 0;
 
+            // 检查输入姿态的targetRay对象是否存在，通过targetRay进行击中检测
             if (inputPose.targetRay) {
-                // this.raycaster = this.raycaster || new THREE.Raycaster();
-                // this.raycaster.setFromCamera({x, y}, this.camera);
-                // const origin = new Float32Array(ray.origin.toArray());
-                // const direction = new Float32Array(ray.direction.toArray());
                 const ray = inputPose.targetRay;
                 const origin = Float32Array.from((new THREE.Vector3(ray.origin.x, ray.origin.y, ray.origin.z)).toArray());
                 const direction = Float32Array.from((new THREE.Vector3(ray.direction.x, ray.direction.y, ray.direction.z)).toArray());
@@ -430,48 +439,19 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         // If we found at least one hit...
                         this.handleSelect(hits);
 
-                        // 响应击中检测结果，添加模型
-                        /*if (hits.length) {
-                            // We can have multiple collisions per hit test. Let's just take the
-                            // first hit, the nearest, for now.
-                            const hit = hits[0];
-
-                            const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
-
-                            // If our model is not yet loaded, abort
-                            if (!this.model) {
-                                return;
-                            }
-
-                            // 缩放模型大小使其能被观察到全貌
-                            if (this.modelSize && this.modelSize > 1) {
-                                this.modelSize = this.modelSize % 4 / 10;
-                                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
-                            }
-
-                            // Now apply the position from the hitMatrix onto our model.
-                            this.model.position.setFromMatrixPosition(hitMatrix);
-
-                            // Rather than using the rotation encoded by the `modelMatrix`,
-                            // rotate the model to face the camera. Use this utility to
-                            // rotate the model only on the Y axis.
-                            lookAtOnY(this.model, this.camera);
-
-                            // Ensure our model has been added to the scene.
-                            this.scene.add(this.model);
-                        } else {
-                            console.log('没有击中物体')
-                        }*/
                     } catch (e) {
                         console.log('hit test failed')
                     }
-                } else {
-                    window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
-                    window.addEventListener('click', this._handleMouseClick.bind(this), false);
                 }
             }
         }
 
+
+        /**
+         * 响应用户触控事件，使用Three.js的Raycaster方法创建射线，对场景中的物体进行击中测试
+         * @param ev
+         * @private
+         */
         _handleTouchStart(ev) {
             let touch = ev.touches[0];
             let raycaster = new THREE.Raycaster();
@@ -485,6 +465,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.handleSelect(intersects);
         }
 
+        /**
+         * 响应鼠标点击事件，使用Three.js的Raycaster方法创建射线，对场景中的物体进行击中测试
+         * @param ev
+         * @private
+         */
         _handleMouseClick(ev) {
             let raycaster = new THREE.Raycaster();
             let mouse = new THREE.Vector2();
@@ -619,7 +604,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             // 缩放模型大小使其能被观察到全貌
             if (this.modelSize && this.modelSize > 1) {
-                this.modelSize = this.modelSize % 10 / 10;
+                this.modelSize = this.modelSize % 3 / 10;
                 this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
             }
 
@@ -647,6 +632,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             // https://github.com/immersive-web/hit-test
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
+
             const hits = await this._session.requestHitTest(origin,
                 direction,
                 this._frameOfRef);
