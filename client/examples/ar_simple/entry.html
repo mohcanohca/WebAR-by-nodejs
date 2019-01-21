@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebAR 交互体验平台</title>
+    <style>
+        html, body {
+            width: 100%;
+            overflow: scroll;
+            padding: 0;
+            margin: 0;
+            font-family: "Helvetica", "Arial", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
+            background-color: rgb(69, 90, 100);
+        }
+
+        .container {
+            width: 90%;
+            height: 100%;
+            margin: 20px auto;
+
+            font-size: 16px;
+            font-weight: 400;
+            min-height: 200px;
+
+            overflow: scroll;
+            z-index: 1;
+            position: relative;
+            border-radius: 2px;
+            box-sizing: border-box;
+
+            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+
+        }
+
+        .box {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12), 0 2px 4px -1px rgba(0, 0, 0, .2);
+        }
+
+        .title {
+            color: #fff;
+            height: 20px;
+            background-color: rgb(96, 125, 139);
+            text-align: center;
+
+            line-height: normal;
+            padding: 16px;
+
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .introduction {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 5px 10px;
+            font-size: 14px;
+            font-weight: 400;
+            min-height: 50px;
+        }
+
+        .action {
+            border-top: 1px solid rgba(0, 0, 0, .1);
+            font-size: 16px;
+            line-height: normal;
+            width: 100%;
+            background-color: transparent;
+            padding: 8px;
+            box-sizing: border-box;
+            height: 50px;
+        }
+
+        .action .button {
+            color: rgb(255, 255, 255);
+            background-color: rgb(255, 64, 129);
+            border-radius: 3px;
+            padding: 10px;
+            width: 60px;
+            text-align: center;
+            line-height: 100%;
+            text-decoration: none;
+            display: block;
+            margin: 0 auto;
+
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <div class="box">
+        <div class="title">平面检测</div>
+        <div class="introduction">浏览器利用底层AR平台的能力，进行平面检测，对检测到的平面会添加原型平面标定板，点击该标定板可向该位置添加模型</div>
+        <div class="action"><a href="hit_test" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">击中测试</div>
+        <div class="introduction">利用Session的select方法，自定义select的响应效果，此处为点击变色</div>
+        <div class="action"><a href="select_test" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">前端图像识别</div>
+        <div class="introduction">采集视频帧在前端图像识别</div>
+        <div class="action"><a href="image_front" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">后端图像识别</div>
+        <div class="introduction">采集视频帧传送到服务器端识别，前端接收到后端返回的位置信息后姿态估计</div>
+        <div class="action"><a href="image_server" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">传感器控制</div>
+        <div class="introduction">旋转</div>
+        <div class="action"><a href="orientation" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">触控交互</div>
+        <div class="introduction">旋转、缩放</div>
+        <div class="action"><a href="orbit" class="button">体验</a></div>
+    </div>
+    <div class="box">
+        <div class="title">GPS</div>
+        <div class="introduction">GPS说明</div>
+        <div class="action"><a href="gps" class="button">体验</a></div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

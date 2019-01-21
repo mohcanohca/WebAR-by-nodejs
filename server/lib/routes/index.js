@@ -38,4 +38,8 @@ exports.serveIndex = function (app, staticFolder) {
         res.sendFile('/examples/ar_simple/test/select_test/index.html', {root: staticFolder});
     });
 
+    app.get('/examples/ar_simple/entry', function (req, res) {
+        res.sendFile('/examples/ar_simple/entry.html', {root: staticFolder});
+    });
+
 };
