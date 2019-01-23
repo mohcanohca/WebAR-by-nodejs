@@ -1,10 +1,18 @@
 require.config({
-    baseUrl: '/examples/ar_simple',
+    baseUrl: '/examples/ar_simple/libs/',
     paths: {
-        orbitControl: 'libs/OrbitControls',
+        // orbitControls: 'libs/OrbitControls',
+        // DragControls: 'libs/DragControls',
+        // TrackballControls: 'libs/TrackballControls',
+    },
+    shim: {
+        'libs/OrbitControls': {exports: 'THREE.OrbitControls'},
+        'libs/DragControls': {exports: 'THREE.DragControls'},
+        'libs/TrackballControls': {exports: 'THREE.TrackballControls'},
+        'libs/TransformControls': {exports: 'THREE.TransformControls'},
     }
 });
-define(['orbitControl'], function (orbitController) {
+define(['OrbitControls', 'DragControls', 'TrackballControls', 'TransformControls'], function (OrbitControls, DragControls, TrackballControls, TransformControls) {
     class OrbitController {
         constructor({renderer, scene, camera, model, modelSize}) {
             //three.js
@@ -18,13 +26,13 @@ define(['orbitControl'], function (orbitController) {
             this.camera.near = 1;
             this.camera.far = 1000;
             this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.up.x = 0;
-            this.camera.up.y = 1;
-            this.camera.up.z = 0;
+            /*      this.camera.up.x = 0;
+                  this.camera.up.y = 1;
+                  this.camera.up.z = 0;*/
             this.camera.position.x = 0;
-            this.camera.position.y = 0;
-            this.camera.position.z = 10;
-            this.camera.lookAt(this.scene.position);
+            this.camera.position.y = 400;
+            this.camera.position.z = 600;
+            this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             this.model = model;
             this.modelSize = modelSize;
@@ -35,15 +43,65 @@ define(['orbitControl'], function (orbitController) {
         }
 
         init() {
-            let controller = new orbitController(this.camera, this.renderer.domElement);
+            // let controller = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             if (this.model) {
                 this.scene.add(this.model)
             }
+
+            this.initControls();
+            this.initDragControls()
         }
+
+        initControls() {
+            this.controls = new THREE.TrackballControls(this.camera, this.renderer.domElement);
+        }
+
+        // 添加拖拽控件
+        initDragControls() {
+
+            let scene = this.scene;
+            let renderer = this.renderer;
+            let camera = this.camera;
+
+            let _self = this;
+            // 添加平移控件
+            // var transformControls = new THREE.TransformControls(camera, renderer.domElement);
+            // scene.add(transformControls);
+
+            // 过滤不是 Mesh 的物体,例如辅助网格对象
+            let objects = [];
+            for (let i = 0; i < scene.children.length; i++) {
+                let child = scene.children[i];
+                if (child.isMesh && child.dragable !== false) {
+                    objects.push(scene.children[i]);
+                }
+            }
+
+            // 初始化拖拽控件
+            let dragControls = new THREE.DragControls(objects, camera, renderer.domElement);
+
+            /*// 鼠标略过
+            dragControls.addEventListener('hoveron', function (event) {
+                // debugger
+                transformControls.attach(event.object);
+            });*/
+
+            // 开始拖拽
+            dragControls.addEventListener('dragstart', function (event) {
+                // debugger
+                _self.controls.enabled = false;
+            });
+            // 拖拽结束
+            dragControls.addEventListener('dragend', function (event) {
+                _self.controls.enabled = true;
+            });
+        }
+
 
         onFrame() {
             this.renderer.clear();
             this.renderer.render(this.scene, this.camera);
+            this.controls.update();
             this.stopFrame = requestAnimationFrame(this.onFrame);
         }
     }

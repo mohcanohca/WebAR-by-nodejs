@@ -175,21 +175,16 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             if (navigator.xr && XRSession.prototype.requestHitTest) {
                 this._xr = navigator.xr;
-                this.requestXRDevice();
+                this._xr.requestDevice().then((device) => {
+                    this._device = device;
+                    this.dispatchEvent(new CustomEvent(ARControllerBase.XRDEVICE, device))
+                }).catch(e => {
+                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE));
+                });
             } else {
                 this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE));
             }
 
-        }
-
-        // 请求XRDevice
-        requestXRDevice() {
-            this._xr.requestDevice().then(device => {
-                this._device = device;
-                this.dispatchEvent(new CustomEvent(ARControllerBase.XRDEVICE))
-            }).catch(e => {
-                this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE));
-            });
         }
 
         // 当不支持AR时，进入基本控制模式
@@ -486,8 +481,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
 
         // 获取XR设备后请求XRSession
-        handleGetXRDevice(/*device*/) {
-            // this._device = device;
+        handleGetXRDevice() {
             this.requestXRSession();
         }
 
@@ -501,14 +495,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this._xrPresentCanvas = outputCanvas;
             try {
                 // 请求XRSession，XRSession暴露设备姿态、用户环境，并处理到设备的渲染
-                this._device.requestSession({
-                    outputContext: ctx,
-                    environmentIntegration: true,//表示使用AR模式
-                }).then((session) => {
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.XRSESSION, {detail: session}));
-                }).catch(e => {
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
-                });
+
+
             } catch (e) {
                 this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
             }

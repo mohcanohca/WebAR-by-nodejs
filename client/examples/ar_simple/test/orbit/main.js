@@ -44,6 +44,13 @@ define(['ARController'], function (ARControllerBase) {
         scene.add(light);
         scene.add(directionalLight);
 
+        let cubeGeometry = new THREE.BoxGeometry(100, 100, 100);
+        let cubeMaterial = new THREE.MeshLambertMaterial({color: 0x9370DB});
+        let cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+        // cube.dragable = false;
+        scene.add(cube);
+
         return scene;
     }
 
@@ -114,33 +121,28 @@ define(['ARController'], function (ARControllerBase) {
 
 
     class OrbitExample extends ARControllerBase {
-        /*        constructor() {
-                    super(true, ARControllerBase.ORBITCONTROLLER)
-                }
-
-                initScene() {
-                    this.scene = new THREE.Scene();
-                    this.model = createCube(2, 2, 2);
-                    this.model.position.set(0, 0, 0);
-                    this.model.position.multiplyScalar(1);
-                    this.modelSize = 2;
-                }*/
-
         constructor() {
             super(true, false, ARControllerBase.ORBITCONTROLLER)
         }
 
         initScene() {
             this.scene = createLitScene();
+
+
+        }
+
+        initModel() {
             const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
             const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
-            const MODEL_SCALE = 0.1;
+            const MODEL_SCALE = 20;
+
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
                 this.modelSize = MODEL_SCALE;
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+
             });
         }
     }

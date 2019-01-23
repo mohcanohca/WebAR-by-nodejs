@@ -2,11 +2,14 @@ require.config({
     baseUrl: '/examples/ar_simple',
     paths: {
         io: 'libs/socket.io/socket.io',
-        orbitControl: 'libs/OrbitControls',
+        OrbitControls: 'libs/OrbitControls',
         eventHandlerBase: 'utils/eventHandlerBase',
+    },
+    shim:{
+        OrbitControls:{exports:'THREE.OrbitControls'}
     }
 });
-define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, EventHandlerBase) {
+define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls, EventHandlerBase) {
     class GPSController extends EventHandlerBase {
         constructor({renderer, scene, camera, model, modelSize}) {
             super()
@@ -122,7 +125,7 @@ define(['io', 'orbitControl', 'eventHandlerBase'], function (io, OrbitControl, E
         //根据天气情况，渲染不同的场景
         _showWeather(weather) {
             this.scene.add(this.model)
-            let controller = new OrbitControl(this.camera, this.renderer.domElement);
+            let controller = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         }
 
         /* 数据更新 */
