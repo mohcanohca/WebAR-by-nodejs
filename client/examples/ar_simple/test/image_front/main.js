@@ -49,7 +49,7 @@ define(['ARController'], function (ARControllerBase) {
 
     class EarthExample extends ARControllerBase {
         constructor() {
-            super(true, false, ARControllerBase.IMAGECONTROLLER, {method: 'front'});
+            super(true, false, ARControllerBase.IMAGECONTROLLER, {method: 'front', patternImg: 'pattern'});
         }
 
         initScene() {

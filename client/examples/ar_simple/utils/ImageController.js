@@ -13,12 +13,13 @@ require.config({
         FeatTrainer: {exports: 'FeatTrainer'},
         CV: {exports: 'CV'},
         svd: {exports: 'svd'},
-        POS: {exports: 'POS'}
+        POS: {exports: 'POS'},
+        jquery: {exports: '$'}
 
     }
 });
 
-define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, jsfeat, featTrainer, svd, POS) {
+define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', '$'], function (io, CV, jsfeat, featTrainer, svd, POS, $) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
 
@@ -39,9 +40,10 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
 
     //图像识别定位
     class ServerRecognizer {
-        constructor(video, canvas) {
+        constructor(video, canvas, serverPath, protocol) {
             this.socket = null;
-            this.serverPath = 'https://10.28.161.133:8081';
+            this.serverPath = serverPath;
+            this.protocol = protocol;
             // this.serverPath = 'https://10.208.25.196:8081';
             // this.serverPath = 'https://10.28.201.198:8081';
             this.timer = null;
@@ -62,27 +64,51 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
         }
 
         // 开始图像识别
-        start(socket) {
+        start() {
             let default_video_period = 100;
             let video_period = 100;
             let _self = this;
-            if (!socket) {
-                //连接服务器端，传输数据
-                socket = io.connect(this.serverPath);
-                socket.on('connect', function () {
-                    _self.ableSend = true;
-                });
-                socket.on('frame', this.handleFrameCorners.bind(this));
+            if (this.protocol === 'ws') {
+                //若是采用websoc通信协议
+                if (!this.socket) {
+                    //连接服务器端，传输数据
+                    this.socket = io.connect(this.serverPath);
+                    this.socket.on('connect', function () {
+                        _self.ableSend = true;
+                    });
+                    this.socket.on('frame', this.handleFrameCorners.bind(this));
+                }
             }
 
             //定时向后端传输图像数据
             this.timer = setInterval(function () {
-                sendVideoData(socket, _self.video);
+                //发送视频帧
+                if (_self.protocol === 'ws' && _self.ableSend) {
+                    let imgData = drawImage(_self.video);
+
+                    let data = {
+                        imgData: imgData,
+                    };
+                    console.log('emit VIDEO_MESS:' + (new Date()).getTime())
+                    //使用websocket进行图像传输
+                    _self.socket.emit('VIDEO_MESS', JSON.stringify(data));
+                } else {
+                    //通过ajax发送数据
+                    //在收到响应后调用this.handleFrameCorners
+                    $.ajax({
+                        url: _self.serverPath,
+                        dataType: 'jsonp',
+                        success: function (data) {
+                            _self.handleFrameCorners(data.data);
+                        }
+                    });
+                }
+
             }, video_period || default_video_period);
 
-            //发送视频帧
-            function sendVideoData(socket, video) {
-                if (!_self.ableSend) return;
+
+            //绘制图像
+            function drawImage(video) {
                 let videoWidth = video.videoWidth;
                 let videoHeight = video.videoHeight;
 
@@ -103,13 +129,8 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
                 context.drawImage(video, startPosX, startPosY, width, height, 0, 0, width, height);
 
                 let jpgQuality = 0.6;
-                let theDataURL = _self.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
-                let data = {
-                    imgData: theDataURL,
-                };
-                console.log('emit VIDEO_MESS:' + (new Date()).getTime())
-                //使用websocket进行图像传输
-                socket.emit('VIDEO_MESS', JSON.stringify(data));
+                let imageDataURL = _self.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
+                return imageDataURL;
             }
         }
 
@@ -255,19 +276,41 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS'], function (io, CV, js
             this.init();
         }
 
+        // 初始化图像识别器
         init() {
             let _self = this;
-            if (this.param && this.param.method === 'front') {
-                let patternImg = new Image();
-                patternImg.src = './assets/pattern.jpg';
-
-                patternImg.onload = function () {
-                    _self.patternImg = patternImg;
-                    _self.recognizer = new FrontRecognizer(_self.video, _self.canvas, _self.patternImg);
-                }
-            } else {
-                _self.recognizer = new ServerRecognizer(_self.video, _self.canvas)
+            if (!this.param) {
+                console.log('没有设置图像识别相关参数')
             }
+
+            if (this.param.method === 'server' && this.param.serverPath) {
+                this.recognizer = new ServerRecognizer(this.video, this.canvas, this.param.serverPath, this.param.protocol);
+                return;
+            }
+
+            // 如果没有传递参数，默认是前端识别，若是指定识别方式是前端，采用前端图像识别
+
+            if (!this.param.patternImg) {
+                console.log('采用前端识别必须指定目标图像id');
+                return;
+            }
+            let patternImgId = this.param.patternImg;
+            try {
+                this.patternImg = document.getElementById(patternImgId);
+            } catch (e) {
+                console.log(e)
+                return;
+            }
+
+            this.recognizer = new FrontRecognizer(this.video, this.canvas, this.patternImg);
+            /*let patternImg = new Image();
+            patternImg.src = './assets/pattern.jpg';
+
+            patternImg.onload = function () {
+                _self.patternImg = patternImg;
+                _self.recognizer = new FrontRecognizer(_self.video, _self.canvas, _self.patternImg);
+            }*/
+
 
         }
 
