@@ -49,10 +49,20 @@ define(['ARController'], function (ARControllerBase) {
 
     class EarthExample extends ARControllerBase {
         constructor() {
-            super(true, false, ARControllerBase.IMAGECONTROLLER, {
+/*            super(true, false, ARControllerBase.IMAGECONTROLLER, {
                 method: 'server',
                 serverPath: 'https://10.28.161.133:8081',
                 protocol: 'ws',
+            });*/
+            super({
+                useReticle: true,
+                useSelect: false,
+                baseControlType: ARControllerBase.IMAGECONTROLLER,
+                baseControlParam: {
+                    method: 'server',
+                    serverPath: 'https://10.28.161.133:8081',
+                    protocol: 'ws',
+                }
             });
         }
 

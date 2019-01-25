@@ -144,7 +144,8 @@ define(['ARController'], function (ARControllerBase) {
 
     class ModelExample extends ARControllerBase {
         constructor() {
-            super(true, false, ARControllerBase.ORIENTATIONCONTROLLER)
+            // super(true, false, ARControllerBase.ORIENTATIONCONTROLLER)
+            super({useReticle: false, useSelect: false, baseControlType: ARControllerBase.ORIENTATIONCONTROLLER})
         }
 
         initScene() {

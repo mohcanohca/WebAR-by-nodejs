@@ -9,6 +9,7 @@ require.config({
         OrbitControls:{exports:'THREE.OrbitControls'}
     }
 });
+
 define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls, EventHandlerBase) {
     class GPSController extends EventHandlerBase {
         constructor({renderer, scene, camera, model, modelSize}) {

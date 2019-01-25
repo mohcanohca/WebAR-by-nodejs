@@ -1,7 +1,7 @@
 require.config({
     baseUrl: '/examples/ar_simple',
     paths: {
-        io: 'libs/socket.io/socket.io',
+        // io: 'libs/socket.io/socket.io',
         mediaDevices: 'utils/webrtc',
         eventHandlerBase: 'utils/eventHandlerBase',
         ImageController: 'utils/ImageController',
@@ -141,9 +141,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
      * @param {Object} baseControlParam：表示基础控制类型的参数，例如对于图像控制，可选择前端识别和后端识别
      */
     class ARControllerBase extends EventHandlerBase {
-        constructor(useReticle = false, useSelect = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam) {
+        constructor({useReticle = false, useSelect = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam}) {
             super();
-
             // three.js
             this.renderer = null;
             this.scene = null;

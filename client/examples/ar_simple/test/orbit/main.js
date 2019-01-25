@@ -122,7 +122,12 @@ define(['ARController'], function (ARControllerBase) {
 
     class OrbitExample extends ARControllerBase {
         constructor() {
-            super(true, false, ARControllerBase.ORBITCONTROLLER)
+            // super(true, false, ARControllerBase.ORBITCONTROLLER)
+            super({
+                useReticle: true,
+                useSelect: false,
+                baseControlType: ARControllerBase.ORBITCONTROLLER,
+            });
         }
 
         initScene() {

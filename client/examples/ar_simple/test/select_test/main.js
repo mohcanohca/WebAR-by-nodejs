@@ -169,7 +169,12 @@ define(['ARController'], function (ARControllerBase) {
 
     class ModelExample extends ARControllerBase {
         constructor() {
-            super(false, true, ARControllerBase.ORIENTATIONCONTROLLER)
+            // super(false, true, ARControllerBase.ORIENTATIONCONTROLLER)
+            super({
+                useReticle: false,
+                useSelect: true,
+                baseControlType: ARControllerBase.ORIENTATIONCONTROLLER,
+            });
         }
 
         // 自定义虚拟场景

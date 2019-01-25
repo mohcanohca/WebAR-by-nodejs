@@ -55,7 +55,12 @@ define(['ARController'], function (ARControllerBase) {
 
     class OrientationExample extends ARControllerBase {
         constructor() {
-            super(true, true, ARControllerBase.ORIENTATIONCONTROLLER);
+            // super(true, true, ARControllerBase.ORIENTATIONCONTROLLER);
+            super({
+                useReticle: true,
+                useSelect: true,
+                baseControlType: ARControllerBase.ORIENTATIONCONTROLLER,
+            });
         }
 
         initScene() {
@@ -70,7 +75,12 @@ define(['ARController'], function (ARControllerBase) {
 
     class OrientationCubeSea extends ARControllerBase {
         constructor() {
-            super(false, true, ARControllerBase.ORIENTATIONCONTROLLER);
+            // super(false, true, ARControllerBase.ORIENTATIONCONTROLLER);
+            super({
+                useReticle: false,
+                useSelect: true,
+                baseControlType: ARControllerBase.ORIENTATIONCONTROLLER,
+            });
         }
 
         initScene() {

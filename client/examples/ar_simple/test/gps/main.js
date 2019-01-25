@@ -8,7 +8,7 @@ define(['ARController'], function (ARControllerBase) {
 
     class GPSExample extends ARControllerBase {
         constructor() {
-            super(true, ARControllerBase.GPSCONTROLLER)
+            super({useReticle: false, useSelect: false, baseControlType: ARControllerBase.GPSCONTROLLER})
         }
 
         initScene() {

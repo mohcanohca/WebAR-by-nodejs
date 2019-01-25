@@ -6,7 +6,8 @@ require.config({
         jsfeat: 'libs/jsfeat',
         FeatTrainer: 'utils/FeatTrainer',
         svd: 'libs/svd',
-        POS: 'libs/posit'
+        POS: 'libs/posit',
+        // jquery: 'libs/jquery-3.3.1.min'
     },
     shim: {
         jsfeat: {exports: 'jsfeat'},
@@ -14,12 +15,12 @@ require.config({
         CV: {exports: 'CV'},
         svd: {exports: 'svd'},
         POS: {exports: 'POS'},
-        jquery: {exports: '$'}
+        // jquery: {exports: '$'}
 
     }
 });
 
-define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', '$'], function (io, CV, jsfeat, featTrainer, svd, POS, $) {
+define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (io, CV, jsfeat, featTrainer, svd, POS/*, $*/) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
 
@@ -95,13 +96,13 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', '$'], function (io, C
                 } else {
                     //通过ajax发送数据
                     //在收到响应后调用this.handleFrameCorners
-                    $.ajax({
+                    /*$.ajax({
                         url: _self.serverPath,
                         dataType: 'jsonp',
                         success: function (data) {
                             _self.handleFrameCorners(data.data);
                         }
-                    });
+                    });*/
                 }
 
             }, video_period || default_video_period);
