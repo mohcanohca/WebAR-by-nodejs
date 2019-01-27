@@ -177,6 +177,17 @@ define(['ARController'], function (ARControllerBase) {
             });
         }
 
+        setAREntrance(callback) {
+            document.querySelector('#enter-ar').addEventListener('click', callback, false);
+        }
+
+        addListeners() {
+            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                // 将页面样式切换至ar会话状态
+                document.body.classList.add('ar');
+            });
+        }
+
         // 自定义虚拟场景
         initScene() {
             this.scene = new THREE.Scene();

@@ -11,6 +11,17 @@ define(['ARController'], function (ARControllerBase) {
             super({useReticle: false, useSelect: false, baseControlType: ARControllerBase.GPSCONTROLLER})
         }
 
+        setAREntrance(callback) {
+            document.querySelector('#enter-ar').addEventListener('click', callback, false);
+        }
+
+        addListeners() {
+            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                // 将页面样式切换至ar会话状态
+                document.body.classList.add('ar');
+            });
+        }
+
         initScene() {
             this.scene = new THREE.Scene();
             let texture = new THREE.TextureLoader().load('./assets/snow-32.png');

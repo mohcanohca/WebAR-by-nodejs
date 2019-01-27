@@ -148,6 +148,17 @@ define(['ARController'], function (ARControllerBase) {
             super({useReticle: false, useSelect: false, baseControlType: ARControllerBase.ORIENTATIONCONTROLLER})
         }
 
+        setAREntrance(callback) {
+            document.querySelector('#enter-ar').addEventListener('click', callback, false);
+        }
+
+        addListeners() {
+            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                // 将页面样式切换至ar会话状态
+                document.body.classList.add('ar');
+            });
+        }
+
         initScene() {
             this.scene = createLitScene();
             const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';

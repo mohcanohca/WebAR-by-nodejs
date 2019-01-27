@@ -58,6 +58,17 @@ define(['ARController'], function (ARControllerBase) {
             });
         }
 
+        setAREntrance(callback) {
+            document.querySelector('#enter-ar').addEventListener('click', callback, false);
+        }
+
+        addListeners() {
+            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                // 将页面样式切换至ar会话状态
+                document.body.classList.add('ar');
+            });
+        }
+
         initScene() {
             this.scene = createLitScene();
             let object = new THREE.Object3D(),
@@ -73,6 +84,8 @@ define(['ARController'], function (ARControllerBase) {
             this.modelSize = 35;
             // this.scene.add(this.model);
         }
+
+
 
     }
 

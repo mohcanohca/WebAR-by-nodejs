@@ -183,7 +183,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         // 初始化，添加用户配置
         init() {
             this._addlisteners();
-            this.setAREntrance();
+            this.setAREntrance(this.detectARFeatures.bind(this));
             this.addListeners();
             this.initScene();
             this.initModel();
@@ -200,7 +200,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             if (navigator.xr && XRSession.prototype.requestHitTest) {
                 try {
                     let device = await navigator.xr.requestDevice();
-                    this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE, {detail: device}))
+                    let outputCanvas = document.createElement('canvas');
+                    let ctx = outputCanvas.getContext('xrpresent');//创建XRPresentationContext，在XRDevice上展示
+                    device.supportsSession({environmentIntegration: true, outputContext: ctx}).then(() => {
+                        this.dispatchEvent(new CustomEvent(ARControllerBase.ARENABLE, {detail: device}))
+                    });
+
                 } catch (e) {
                     // this.onNoXRDevice();
                     this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
@@ -281,6 +286,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             }
 
             this.enterAR();
+
         }
 
         /**
@@ -717,20 +723,19 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         }
 
         // 设置AR入口，即如何开始AR流程，例如点击按钮
-        setAREntrance() {
+        setAREntrance(callback) {
             //TODO 应该由具体类设置
             // 若要请求XRSession，必须是用户手动触发，例如按钮点击
-            document.querySelector('#enter-ar').addEventListener('click', this.detectARFeatures.bind(this));
+            // document.querySelector('#enter-ar').addEventListener('click', callback, false);
         }
 
         // 开发者设定的监听器
         addListeners() {
             //TODO 应该由具体类设置监听
-
-            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
-                // 将页面样式切换至ar会话状态
-                document.body.classList.add('ar');
-            });
+            /*            this.addEventListener(ARControllerBase.SESSIONSTART, function () {
+                            // 将页面样式切换至ar会话状态
+                            document.body.classList.add('ar');
+                        });*/
 
         }
 

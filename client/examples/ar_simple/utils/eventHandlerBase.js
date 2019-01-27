@@ -2,6 +2,24 @@ define(function () {
     class EventHandlerBase {
         constructor() {
             this._listeners = new Map() // string type -> [listener, ...]
+            this.polyfillCustomEvent();
+        }
+
+        // 兼容处理自定义事件
+        polyfillCustomEvent() {
+            if (typeof window !== "undefined" && typeof window.CustomEvent !== "function") {
+
+                //对于不支持Customevent的老式浏览器，通过document.createEvent方法创建事件
+                let CustomEvent = function (event, params = {bubbles: false, cancelable: false, detail: undefined}) {
+                    let evt = document.createEvent('CustomEvent');
+                    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+                    return evt;
+                };
+
+                CustomEvent.prototype = window.Event.prototype;
+
+                window.CustomEvent = CustomEvent;
+            }
         }
 
         addEventListener(type, listener) {
