@@ -8,7 +8,7 @@ require.config({
         // webxr: '../libs/webxr-polyfill'
     }
 });
-define(['io', 'utils/OrbitController', 'eventManager', 'mediaDevices', 'posit', /*'webxr'*/], function (io, orbitController, eventManager, mediaDevices, POS/*, WebXR*/) {
+define(['io', 'utils/TouchMouseController', 'eventManager', 'mediaDevices', 'posit', /*'webxr'*/], function (io, orbitController, eventManager, mediaDevices, POS/*, WebXR*/) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
     let video;

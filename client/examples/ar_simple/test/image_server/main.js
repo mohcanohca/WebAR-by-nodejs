@@ -60,7 +60,7 @@ define(['ARController'], function (ARControllerBase) {
                 baseControlType: ARControllerBase.IMAGECONTROLLER,
                 baseControlParam: {
                     method: 'server',
-                    serverPath: 'https://10.28.161.133:8081',
+                    serverPath: 'https://192.168.0.116:8081',
                     protocol: 'ws',
                 }
             });

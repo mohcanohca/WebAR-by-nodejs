@@ -1,5 +1,5 @@
 require.config({
-    baseUrl: '/examples/ar_simple',
+    // baseUrl: '/examples/ar_simple',
     paths: {
         io: 'libs/socket.io/socket.io',
         CV: 'libs/cv',
@@ -20,7 +20,7 @@ require.config({
     }
 });
 
-define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (io, CV, jsfeat, featTrainer, svd, POS/*, $*/) {
+define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, jsfeat, featTrainer, svd, POS) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
 
@@ -58,7 +58,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (i
         }
 
         handleFrameCorners(data) {
-            console.log('receive:' + (new Date()).getTime())
+            // console.log('receive:' + (new Date()).getTime())
             let corners = data.corners;
             if (!corners) return;
             this.corners = corners;
@@ -67,7 +67,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (i
         // 开始图像识别
         start() {
             let default_video_period = 100;
-            let video_period = 100;
+            let video_period = 50;
             let _self = this;
             if (this.protocol === 'ws') {
                 //若是采用websoc通信协议
@@ -90,7 +90,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (i
                     let data = {
                         imgData: imgData,
                     };
-                    console.log('emit VIDEO_MESS:' + (new Date()).getTime())
+                    // console.log('emit VIDEO_MESS:' + (new Date()).getTime())
                     //使用websocket进行图像传输
                     _self.socket.emit('VIDEO_MESS', JSON.stringify(data));
                 } else {
@@ -236,7 +236,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (i
 
         // 图像识别
         recognize() {
-            console.log('start:' + (new Date()).getTime())
+            // console.log('start:' + (new Date()).getTime())
             this._describeFrame();
             this._match();
         }
@@ -244,9 +244,9 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS', /*'$'*/], function (i
     }
 
     class ImageController {
-        constructor({sessionEls, renderer, scene, camera, model, video, modelSize, videoFrameCanvas, param}) {
+        constructor({/*sessionEls,*/ renderer, scene, camera, model, video, modelSize, videoFrameCanvas, param}) {
             // 绘制视频帧
-            this.sessionEls = sessionEls;
+            // this.sessionEls = sessionEls;
             this.canvas = videoFrameCanvas;
 
             //three.js

@@ -126,7 +126,7 @@ define(['ARController'], function (ARControllerBase) {
             super({
                 useReticle: true,
                 useSelect: false,
-                baseControlType: ARControllerBase.ORBITCONTROLLER,
+                baseControlType: ARControllerBase.TouchMouseController,
             });
         }
 

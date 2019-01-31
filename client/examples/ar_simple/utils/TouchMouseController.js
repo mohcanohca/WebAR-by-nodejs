@@ -1,19 +1,19 @@
 require.config({
-    baseUrl: '/examples/ar_simple/libs/',
+    baseUrl: '/examples/ar_simple/',
     paths: {
-        // orbitControls: 'libs/OrbitControls',
-        // DragControls: 'libs/DragControls',
-        // TrackballControls: 'libs/TrackballControls',
+        orbitControls: 'libs/OrbitControls',
+        DragControls: 'libs/DragControls',
+        TrackballControls: 'libs/TrackballControls',
     },
     shim: {
-        'libs/OrbitControls': {exports: 'THREE.OrbitControls'},
-        'libs/DragControls': {exports: 'THREE.DragControls'},
-        'libs/TrackballControls': {exports: 'THREE.TrackballControls'},
-        'libs/TransformControls': {exports: 'THREE.TransformControls'},
+        'OrbitControls': {exports: 'THREE.OrbitControls'},
+        'DragControls': {exports: 'THREE.DragControls'},
+        'TrackballControls': {exports: 'THREE.TrackballControls'},
+        // 'TransformControls': {exports: 'THREE.TransformControls'},
     }
 });
-define(['OrbitControls', 'DragControls', 'TrackballControls', 'TransformControls'], function (OrbitControls, DragControls, TrackballControls, TransformControls) {
-    class OrbitController {
+define(['OrbitControls', 'DragControls', 'TrackballControls'/*, 'TransformControls'*/], function (OrbitControls, DragControls, TrackballControls,/* TransformControls*/) {
+    class TouchMouseController {
         constructor({renderer, scene, camera, model, modelSize}) {
             //three.js
             this.renderer = renderer;
@@ -54,6 +54,7 @@ define(['OrbitControls', 'DragControls', 'TrackballControls', 'TransformControls
 
         initControls() {
             this.controls = new THREE.TrackballControls(this.camera, this.renderer.domElement);
+            // this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         }
 
         // 添加拖拽控件
@@ -106,5 +107,5 @@ define(['OrbitControls', 'DragControls', 'TrackballControls', 'TransformControls
         }
     }
 
-    return OrbitController;
+    return TouchMouseController;
 });

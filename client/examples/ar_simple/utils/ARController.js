@@ -6,11 +6,11 @@ require.config({
         eventHandlerBase: 'utils/eventHandlerBase',
         ImageController: 'utils/ImageController',
         OrientationController: 'utils/OrientationController',
-        OrbitController: 'utils/OrbitController',
+        TouchMouseController: 'utils/TouchMouseController',
         GPSController: 'utils/GPSController',
     }
 });
-define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'OrbitController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, OrbitController, GPSController) {
+define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'TouchMouseController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, TouchMouseController, GPSController) {
 
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only
@@ -174,6 +174,9 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.handleARUnable = this.handleARUnable.bind(this);
             this.handleAREnable = this.handleAREnable.bind(this);
             this.onXRFrame = this.onXRFrame.bind(this);
+            this.initScene = this.initScene.bind(this);
+            this.initModel = this.initModel.bind(this);
+            this.handleSelect = this.handleSelect.bind(this);
             this.enterAR = this.enterAR.bind(this);
             this.detectARFeatures = this.detectARFeatures.bind(this);
             this.init();
@@ -196,7 +199,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
          * @returns {Promise<void>}
          */
         async detectARFeatures() {
-            // 检查navigator.xr是否存在，其实WebXR Device API的入口 XRSession.prototype.requestHitTest需要浏览器开启webxr-hit-test标志保证AR功能可用
+            // 检查navigator.xr是否存在，其实WebXR Device API的入口
             if (navigator.xr && XRSession.prototype.requestHitTest) {
                 try {
                     let device = await navigator.xr.requestDevice();
@@ -207,15 +210,15 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     });
 
                 } catch (e) {
-                    // this.onNoXRDevice();
                     this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
                 }
             } else {
-                // this.onNoXRDevice();
                 this.dispatchEvent(new CustomEvent(ARControllerBase.ARUNABLE))
             }
         }
 
+
+        // XRSession.prototype.requestHitTest需要浏览器开启webxr-hit-test标志保证AR功能可用
 
         /**
          * 若检测到xr设备，准备渲染session的容器
@@ -353,6 +356,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this.addEventListener(ARControllerBase.WINDOW_RESIZE_EVENT, this._adjustWindowsSize.bind(this));
 
                 // 在渲染前指定要进行循环的方法
+                this._baseController.onFrame();
                 this.stopFrame = requestAnimationFrame(this.onXRFrame)
 
                 // 通过监听原生的resize方法，调整元素大小
@@ -396,9 +400,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // 告诉session，使用上下文gl（来自three.js）绘制scene，显示在用于创建XRPresentationContext的canvas（显示视频流）上层，
                 this._session.baseLayer = new XRWebGLLayer(this._session, this._gl);
 
-
-                //TODO 应该由具体类创建场景
-                // this.scene = createCubeScene();
 
                 /*// 若进行平面检测
                 if (this.useReticle) {
@@ -531,7 +532,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         createBaseController() {
             this._sessionEls.appendChild(this.renderer.domElement);
 
-            let baseControlType = this._baseControlType || ARControllerBase.ORBITCONTROLLER;
+            let baseControlType = this._baseControlType || ARControllerBase.TouchMouseController;
             switch (baseControlType) {
 
                 case ARControllerBase.IMAGECONTROLLER:
@@ -549,8 +550,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         param: this._baseControlParam
                     });
                     break;
-                case ARControllerBase.ORBITCONTROLLER:
-                    this._baseController = new OrbitController(
+                case ARControllerBase.TouchMouseController:
+                    this._baseController = new TouchMouseController(
                         {
                             renderer: this.renderer,
                             scene: this.scene,
@@ -558,7 +559,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                             model: this.model,
                             modelSize: this.modelSize
                         });
-                    console.log('ORBITCONTROLLER')
+                    console.log('TouchMouseController')
                     break;
                 case ARControllerBase.ORIENTATIONCONTROLLER:
                     this._baseController = new OrientationController({
@@ -576,7 +577,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         scene: this.scene,
                         camera: this.camera,
                         model: this.model,
-                        modelSize: this.modelSize
+                        modelSize: this.modelSize,
+                        param: this._baseControlParam,
                     });
                     console.log('GPSCONTROLLER');
                     break;
@@ -824,6 +826,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
             this._videoEl.style.width = '100%'
             this._videoEl.style.height = '100%'
+
             if ("srcObject" in this._videoEl) {
                 this._videoEl.srcObject = event.detail;
             } else {
@@ -1001,7 +1004,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
     ARControllerBase.VIDEOREADY = 'video_ready';
     ARControllerBase.VIDEOFAILED = 'video_failed';
     ARControllerBase.IMAGECONTROLLER = 'image';
-    ARControllerBase.ORBITCONTROLLER = 'orbit';
+    ARControllerBase.TouchMouseController = 'touch_mouse';
     ARControllerBase.ORIENTATIONCONTROLLER = 'orientation';
     ARControllerBase.GPSCONTROLLER = 'GPS';
     ARControllerBase.WINDOW_RESIZE_EVENT = 'window-resize';

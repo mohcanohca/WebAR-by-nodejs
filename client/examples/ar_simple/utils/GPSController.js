@@ -5,14 +5,14 @@ require.config({
         OrbitControls: 'libs/OrbitControls',
         eventHandlerBase: 'utils/eventHandlerBase',
     },
-    shim:{
-        OrbitControls:{exports:'THREE.OrbitControls'}
+    shim: {
+        OrbitControls: {exports: 'THREE.OrbitControls'}
     }
 });
 
 define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls, EventHandlerBase) {
     class GPSController extends EventHandlerBase {
-        constructor({renderer, scene, camera, model, modelSize}) {
+        constructor({renderer, scene, camera, model, modelSize, param}) {
             super()
             //three.js
             this.renderer = renderer;
@@ -27,20 +27,26 @@ define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls,
             this.model = model;
             this.modelSize = modelSize;
 
+            this.param = param;
+
             this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
             this.init();
         }
 
         init() {
-            this._addListeners()
+            if (!this.param) return;
+            this.update = this.param.update ? this.param.update.bind(this) : this.update;
+            this.handleAddress = this.param.handleAddress ? this.param.handleAddress.bind(this) : this.handleAddress;
+            // this.socket = io.connect(this.param.serverPath);
+            this._addListeners();
             /*let baidyAPI = document.createElement('script');
             baidyAPI.type = 'text/javascript';
             baidyAPI.src = 'https://api.map.baidu.com/api?v=2.0&ak=8z63nTSBBiK7k0sVVZ77rHaaRgMszV2P';
             document.body.appendChild(baidyAPI);*/
 
-            this.serverPath = 'https://10.28.161.133:8081';
-            this.socket = io.connect(this.serverPath)
+            // this.serverPath = 'https://10.28.161.133:8081';
+
             try {
                 this._geoFindMe();
             } catch (e) {
@@ -103,12 +109,14 @@ define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls,
         }
 
         _addListeners() {
-            this.addEventListener(GPSController.ADDRESS, this.handleAddress.bind(this))
+            this.addEventListener(GPSController.ADDRESS, function (event) {
+                this.handleAddress(event.detail);
+            }.bind(this));
         }
 
         // 处理获取的地点信息
-        handleAddress(event) {
-            let _self = this;
+        handleAddress(loc) {
+            /*let _self = this;
             if (!this.socket) {
                 //连接服务器端，传输数据
                 this.socket = io.connect(this.serverPath);
@@ -120,31 +128,13 @@ define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls,
             // debugger
 
             //使用websocket传输地理位置信息
-            this.socket.emit('LOC_MESS', JSON.stringify(event.detail));
+            this.socket.emit('LOC_MESS', JSON.stringify(event.detail));*/
         }
 
-        //根据天气情况，渲染不同的场景
-        _showWeather(weather) {
-            this.scene.add(this.model)
-            let controller = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-        }
 
         /* 数据更新 */
         update() {
-            // debugger
-            let vertices = this.model.geometry.vertices;
-            vertices.forEach(function (v) {
 
-                v.y = v.y - (v.velocityY);
-                v.x = v.x - (v.velocityX);
-
-                if (v.y <= 0) v.y = 60;
-                if (v.x <= -20 || v.x >= 20) v.velocityX = v.velocityX * -1;
-
-            });
-
-            /* 顶点变动之后需要更新，否则无法实现雨滴特效 */
-            this.model.geometry.verticesNeedUpdate = true;
         }
 
 

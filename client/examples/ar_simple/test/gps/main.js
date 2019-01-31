@@ -8,7 +8,133 @@ define(['ARController'], function (ARControllerBase) {
 
     class GPSExample extends ARControllerBase {
         constructor() {
-            super({useReticle: false, useSelect: false, baseControlType: ARControllerBase.GPSCONTROLLER})
+            super({
+                useReticle: false,
+                useSelect: false,
+                baseControlType: ARControllerBase.GPSCONTROLLER,
+                baseControlParam: {
+                    update: function () {
+                        if (!this.weatherContent) return;
+                        let vertices = this.weatherContent.geometry.vertices;
+                        vertices.forEach(function (v) {
+
+                            v.y = v.y - (v.velocityY);
+                            v.x = v.x - (v.velocityX);
+
+                            if (v.y <= 0) v.y = 60;
+                            if (v.x <= -20 || v.x >= 20) v.velocityX = v.velocityX * -1;
+
+                        });
+
+                        /* 顶点变动之后需要更新，否则无法实现雨滴特效 */
+                        this.weatherContent.geometry.verticesNeedUpdate = true;
+                    },
+                    handleAddress: function (loc) {
+                        let socket = io.connect('https://192.168.0.116:8081');
+
+                        //创建天气场景
+                        function initWeatherContent(texture) {
+                            let geometry = new THREE.Geometry();
+                            let pointsMaterial = new THREE.PointsMaterial({
+                                size: 2,
+                                transparent: true,
+                                opacity: 0.8,
+                                map: texture,
+                                blending: THREE.AdditiveBlending,
+                                sizeAttenuation: true,
+                                depthTest: false
+                            });
+
+                            let range = 100;
+                            for (let i = 0; i < 1500; i++) {
+
+                                let vertice = new THREE.Vector3(
+                                    Math.random() * range - range / 2,
+                                    Math.random() * range * 1.5,
+                                    Math.random() * range - range / 2);
+                                /* 纵向移动速度 */
+                                vertice.velocityY = 0.1 + Math.random() / 3;
+                                /* 横向移动速度 */
+                                vertice.velocityX = (Math.random() - 0.5) / 3;
+
+                                /* 将顶点加入几何 */
+                                geometry.vertices.push(vertice);
+                            }
+
+                            geometry.center();
+
+                            let points = new THREE.Points(geometry, pointsMaterial);
+                            points.position.y = -30;
+
+                            return points;
+                        }
+
+                        //由于存在跨域问题，由server获取天气并返回
+                        socket.on('weather', function (data) {
+
+                            //根据天气情况，渲染不同的场景
+                            let weather = data.weather;
+                            let cur = weather.now.code;
+                            // let imgs = this.param.imgs;
+                            let imgs = {
+                                'sun': './assets/snow-32.png',
+                                'cloud': './assets/snow-32.png',
+                                'overcast': './assets/snow-32.png',
+                                'rain': './assets/snow-32.png',
+                                'snow': './assets/snow-32.png',
+                                'wind': './assets/snow-32.png',
+                            };
+                            let curImg = null;
+                            cur = 22;
+                            if (cur >= 0 && cur <= 4) {
+                                curImg = imgs['sun'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+
+                                //晴天
+                                console.log(weather.now.text);
+                            } else if (cur > 4 && cur < 9) {
+                                curImg = imgs['cloud'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+                                //多云
+                                console.log(weather.now.text);
+
+                            } else if (cur === 9) {
+                                curImg = imgs['overcast'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+                                //阴天
+                                console.log(weather.now.text);
+
+                            } else if (cur > 9 && cur < 20) {
+                                curImg = imgs['rain'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+                                //雨天
+                                console.log(weather.now.text);
+                            } else if (cur >= 20 && cur <= 25) {
+                                curImg = imgs['snow'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+                                //雪天
+                                console.log(weather.now.text);
+
+                            } else {
+                                curImg = imgs['wind'];
+                                let texture = new THREE.TextureLoader().load(curImg);
+                                this.weatherContent = initWeatherContent(texture);
+                                //其他天气
+                                console.log(weather.now.text);
+                            }
+                            this.scene.add(this.weatherContent);
+                        }.bind(this));
+
+                        //使用websocket传输地理位置信息
+                        socket.emit('LOC_MESS', JSON.stringify(loc));
+                    }
+                }
+            })
         }
 
         setAREntrance(callback) {
@@ -24,6 +150,10 @@ define(['ARController'], function (ARControllerBase) {
 
         initScene() {
             this.scene = new THREE.Scene();
+
+        }
+
+        initModel() {
             let texture = new THREE.TextureLoader().load('./assets/snow-32.png');
 
             //场景中的内容
@@ -63,7 +193,7 @@ define(['ARController'], function (ARControllerBase) {
                 return points;
             }
 
-            this.model = initWeatherContent(texture);
+            // this.model = initWeatherContent(texture);
         }
     }
 
