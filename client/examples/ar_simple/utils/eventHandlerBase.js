@@ -1,12 +1,14 @@
 define(function () {
     class EventHandlerBase {
         constructor() {
-            this._listeners = new Map() // string type -> [listener, ...]
-            this.polyfillCustomEvent();
+            this._listeners = new Map(); // string type -> [listener, ...]
+            this._polyfillCustomEvent();
         }
 
-        // 兼容处理自定义事件
-        polyfillCustomEvent() {
+        /**
+         * 兼容处理自定义事件
+         */
+        _polyfillCustomEvent() {
             if (typeof window !== "undefined" && typeof window.CustomEvent !== "function") {
 
                 //对于不支持Customevent的老式浏览器，通过document.createEvent方法创建事件
@@ -22,6 +24,21 @@ define(function () {
             }
         }
 
+        /**
+         * 创建自定义事件
+         * @param event
+         * @param params
+         * @returns {CustomEvent<any>}
+         */
+        createEvent(event, params = {detail: undefined}) {
+            return new CustomEvent(event, params)
+        }
+
+        /**
+         * 监听事件
+         * @param type
+         * @param listener
+         */
         addEventListener(type, listener) {
             let listeners = this._listeners.get(type)
             if (Array.isArray(listeners) === false) {
@@ -31,10 +48,18 @@ define(function () {
             listeners.push(listener)
         }
 
+        /**
+         * 移除事件监听
+         * @param type
+         * @param listener
+         */
         removeEventListener(type, listener) {
             let listeners = this._listeners.get(type)
             if (Array.isArray(listeners) === false) {
                 return
+            }
+            if (!listener) {
+                this._listeners.delete(type);
             }
             for (let i = 0; i < listeners.length; i++) {
                 if (listeners[i] === listener) {
@@ -44,6 +69,10 @@ define(function () {
             }
         }
 
+        /**
+         * 派遣事件
+         * @param event
+         */
         dispatchEvent(event) {
             let listeners = this._listeners.get(event.type)
             if (Array.isArray(listeners) === false) return

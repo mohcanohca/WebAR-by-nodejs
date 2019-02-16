@@ -120,13 +120,13 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    class OrbitExample extends ARControllerBase {
+    class TouchMouseTest extends ARControllerBase {
         constructor() {
             // super(true, false, ARControllerBase.ORBITCONTROLLER)
             super({
                 useReticle: true,
                 useSelect: false,
-                baseControlType: ARControllerBase.TouchMouseController,
+                baseControlType: ARControllerBase.TOUCHMOUSECONTROLLER,
             });
         }
 
@@ -162,37 +162,13 @@ define(['ARController'], function (ARControllerBase) {
         }
     }
 
-    document.body.innerHTML = document.body.innerHTML + `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Augmented Reality with the WebXR Device API</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        This is an experiment using augmented reality features with the WebXR Device API.
-        Upon entering AR, you will be surrounded by a world of cubes.
-        Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-    <div class="mdl-card__actions mdl-card--border">
-        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
-            Start augmented reality
-        </a>
-    </div>
-</div>
-<div id="unsupported-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Unsupported Browser</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        Your browser does not support AR features with WebXR. Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-</div>
-`
 
     // window.app = new ARSea();
     // window.app = new ModelExample();
     // window.app = new EarthExample();//图像识别控制
     // window.app = new OrientationExample();//orientation控制模型
     // window.app = new OrientationCubeSea();//orientation控制相机
-    window.app = new OrbitExample();
+    window.app = new TouchMouseTest();
     // window.app = new GPSExample();
 
 })

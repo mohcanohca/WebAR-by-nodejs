@@ -5,8 +5,55 @@ require.config({
 });
 
 define(['ARController'], function (ARControllerBase) {
+    const opacityRemap = mat => {
+        if (mat.opacity === 0) {
+            mat.opacity = 1;
+        }
+    };
 
-    class GPSExample extends ARControllerBase {
+    // 加载模型
+    function loadModel(objURL, mtlURL) {
+        // OBJLoader and MTLLoader are not a part of three.js core, and
+        // must be included as separate scripts.
+        const objLoader = new THREE.OBJLoader();
+        const mtlLoader = new THREE.MTLLoader();
+
+        // Set texture path so that the loader knows where to find
+        // linked resources
+        mtlLoader.setTexturePath(mtlURL.substr(0, mtlURL.lastIndexOf('/') + 1));
+
+        // remaps ka, kd, & ks values of 0,0,0 -> 1,1,1, models from
+        // Poly benefit due to how they were encoded.
+        mtlLoader.setMaterialOptions({ignoreZeroRGBs: true});
+
+        // OBJLoader and MTLLoader provide callback interfaces; let's
+        // return a Promise and resolve or reject based off of the asset
+        // downloading.
+        return new Promise((resolve, reject) => {
+            mtlLoader.load(mtlURL, materialCreator => {
+                // We have our material package parsed from the .mtl file.
+                // Be sure to preload it.
+                materialCreator.preload();
+
+                // Remap opacity values in the material to 1 if they're set as
+                // 0; this is another peculiarity of Poly models and some
+                // MTL materials.
+                for (let material of Object.values(materialCreator.materials)) {
+                    opacityRemap(material);
+                }
+
+                // Give our OBJ loader our materials to apply it properly to the model
+                objLoader.setMaterials(materialCreator);
+
+                // Finally load our OBJ, and resolve the promise once found.
+                objLoader.load(objURL, resolve, function () {
+                }, reject);
+            }, function () {
+            }, reject);
+        });
+    }
+
+    class GPSTest extends ARControllerBase {
         constructor() {
             super({
                 useReticle: false,
@@ -150,78 +197,26 @@ define(['ARController'], function (ARControllerBase) {
 
         initScene() {
             this.scene = new THREE.Scene();
-
         }
 
         initModel() {
-            let texture = new THREE.TextureLoader().load('./assets/snow-32.png');
-
-            //场景中的内容
-            function initWeatherContent(texture) {
-                let geometry = new THREE.Geometry();
-                let pointsMaterial = new THREE.PointsMaterial({
-                    size: 2,
-                    transparent: true,
-                    opacity: 0.8,
-                    map: texture,
-                    blending: THREE.AdditiveBlending,
-                    sizeAttenuation: true,
-                    depthTest: false
-                });
-
-                let range = 100;
-                for (let i = 0; i < 1500; i++) {
-
-                    let vertice = new THREE.Vector3(
-                        Math.random() * range - range / 2,
-                        Math.random() * range * 1.5,
-                        Math.random() * range - range / 2);
-                    /* 纵向移动速度 */
-                    vertice.velocityY = 0.1 + Math.random() / 3;
-                    /* 横向移动速度 */
-                    vertice.velocityX = (Math.random() - 0.5) / 3;
-
-                    /* 将顶点加入几何 */
-                    geometry.vertices.push(vertice);
-                }
-
-                geometry.center();
-
-                let points = new THREE.Points(geometry, pointsMaterial);
-                points.position.y = -30;
-
-                return points;
-            }
+            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
+            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
+            const MODEL_SCALE = 1;
+            loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
+                this.model = model;
+                this.modelSize = MODEL_SCALE;
+                // Every model is different -- you may have to adjust the scale
+                // of a model depending on the use.
+                this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+            });
 
             // this.model = initWeatherContent(texture);
         }
     }
 
 
-    document.body.innerHTML = document.body.innerHTML + `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Augmented Reality with the WebXR Device API</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        This is an experiment using augmented reality features with the WebXR Device API.
-        Upon entering AR, you will be surrounded by a world of cubes.
-        Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-    <div class="mdl-card__actions mdl-card--border">
-        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
-            Start augmented reality
-        </a>
-    </div>
-</div>
-<div id="unsupported-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Unsupported Browser</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        Your browser does not support AR features with WebXR. Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-</div>
-`
+
 
     // window.app = new ARSea();
     // window.app = new ModelExample();
@@ -229,7 +224,7 @@ define(['ARController'], function (ARControllerBase) {
     // window.app = new OrientationExample();//orientation控制模型
     // window.app = new OrientationCubeSea();//orientation控制相机
     // window.app = new OrbitExample();
-    window.app = new GPSExample();
+    window.app = new GPSTest();
 
 })
 

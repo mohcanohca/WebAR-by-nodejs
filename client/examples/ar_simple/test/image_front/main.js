@@ -47,7 +47,55 @@ define(['ARController'], function (ARControllerBase) {
         return scene;
     }
 
-    class EarthExample extends ARControllerBase {
+
+    const opacityRemap = mat => {
+        if (mat.opacity === 0) {
+            mat.opacity = 1;
+        }
+    };
+
+    // 加载模型
+    function loadModel(objURL, mtlURL) {
+        // OBJLoader and MTLLoader are not a part of three.js core, and
+        // must be included as separate scripts.
+        const objLoader = new THREE.OBJLoader();
+        const mtlLoader = new THREE.MTLLoader();
+
+        // Set texture path so that the loader knows where to find
+        // linked resources
+        mtlLoader.setTexturePath(mtlURL.substr(0, mtlURL.lastIndexOf('/') + 1));
+
+        // remaps ka, kd, & ks values of 0,0,0 -> 1,1,1, models from
+        // Poly benefit due to how they were encoded.
+        mtlLoader.setMaterialOptions({ignoreZeroRGBs: true});
+
+        // OBJLoader and MTLLoader provide callback interfaces; let's
+        // return a Promise and resolve or reject based off of the asset
+        // downloading.
+        return new Promise((resolve, reject) => {
+            mtlLoader.load(mtlURL, materialCreator => {
+                // We have our material package parsed from the .mtl file.
+                // Be sure to preload it.
+                materialCreator.preload();
+
+                // Remap opacity values in the material to 1 if they're set as
+                // 0; this is another peculiarity of Poly models and some
+                // MTL materials.
+                for (let material of Object.values(materialCreator.materials)) {
+                    opacityRemap(material);
+                }
+
+                // Give our OBJ loader our materials to apply it properly to the model
+                objLoader.setMaterials(materialCreator);
+
+                // Finally load our OBJ, and resolve the promise once found.
+                objLoader.load(objURL, resolve, function () {
+                }, reject);
+            }, function () {
+            }, reject);
+        });
+    }
+    class HitTest extends ARControllerBase {
         constructor() {
             // super(true, false, ARControllerBase.IMAGECONTROLLER, {method: 'front', patternImg: 'pattern'});
             super({
@@ -71,51 +119,37 @@ define(['ARController'], function (ARControllerBase) {
 
         initScene() {
             this.scene = createLitScene();
-            let object = new THREE.Object3D(),
-                geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
-                loader = new THREE.TextureLoader();
-            loader.load("./assets/earth.jpg", function (texture) {
-                let material = new THREE.MeshBasicMaterial({map: texture});
-                let mesh = new THREE.Mesh(geometry, material);
-                object.add(mesh);
-            });
-            //场景添加模型，实际添加以地图图像为贴图的球体
-            this.model = object;
-            this.modelSize = 35;
             // this.scene.add(this.model);
         }
+        initModel() {
+            /* let object = new THREE.Object3D(),
+                 geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
+                 loader = new THREE.TextureLoader();
+             loader.load("./assets/earth.jpg", function (texture) {
+                 let material = new THREE.MeshBasicMaterial({map: texture});
+                 let mesh = new THREE.Mesh(geometry, material);
+                 object.add(mesh);
+             });
+             //场景添加模型，实际添加以地图图像为贴图的球体
+             this.model = object;
+             this.modelSize = 35;*/
 
+            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
+            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
+            const MODEL_SCALE = 0.5;
+            loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
+                this.model = model;
+                this.modelSize = MODEL_SCALE;
+                // Every model is different -- you may have to adjust the scale
+                // of a model depending on the use.
+                this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+            });
+        }
 
 
     }
 
-    document.body.innerHTML = document.body.innerHTML + `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Augmented Reality with the WebXR Device API</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        This is an experiment using augmented reality features with the WebXR Device API.
-        Upon entering AR, you will be surrounded by a world of cubes.
-        Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-    <div class="mdl-card__actions mdl-card--border">
-        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
-            Start augmented reality
-        </a>
-    </div>
-</div>
-<div id="unsupported-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Unsupported Browser</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        Your browser does not support AR features with WebXR. Learn more about these features from the <a href="https://codelabs.developers.google.com/codelabs/ar-with-webxr">Building an augmented reality application with the WebXR Device API</a> Code Lab.
-    </div>
-</div>
-`
-
-
-    window.app = new EarthExample();//图像识别控制
+    window.app = new HitTest();//图像识别控制
 })
 
 

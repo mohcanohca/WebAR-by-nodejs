@@ -167,7 +167,7 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    class ModelExample extends ARControllerBase {
+    class SelectTest extends ARControllerBase {
         constructor() {
             // super(false, true, ARControllerBase.ORIENTATIONCONTROLLER)
             super({
@@ -269,34 +269,9 @@ define(['ARController'], function (ARControllerBase) {
         }
     }
 
-    document.body.innerHTML = document.body.innerHTML +
-        `<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Augmented Reality with WebAR FrameWork</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-        This is an experiment using WebAR FrameWork.
-        Upon entering AR, if your Device support WebXR, you will see an Earth in the world you are in. 
-        Or you show the pattern in the camera, an Earth will display upon the pattern.    
-    </div>
-    <div class="mdl-card__actions mdl-card--border">
-        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
-            Start AR Experiment
-        </a>
-    </div>
-</div>
-<div id="unsupported-info" class="demo-card mdl-card mdl-shadow--4dp">
-    <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Unsupported Browser</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-    </div>
-</div>
-`
 
-    window.app = new ModelExample();
+    window.app = new SelectTest();
 
-})
-;
+});
 
 

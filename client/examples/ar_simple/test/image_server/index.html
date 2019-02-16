@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Hit test example</title>
+    <title>HitTest体验</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
@@ -11,6 +11,20 @@
     <script src="./libs/webxr-version-shim.js"></script>
 </head>
 <body>
+<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
+    <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">HitTest体验</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        若出现手型引导，按照手型引导，对准有纹理的平面，出现圆形标定板后可点击添加3D模型；
+        若没有手型引导，可将镜头对准准待识别图片，3D模型会出现出现在图像上方。
+    </div>
+    <div class="mdl-card__actions mdl-card--border">
+        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
+            开始AR体验
+        </a>
+    </div>
+</div>
 <!--<img id="pattern" src="../../assets/pattern.jpg" alt="" style="display: none;">-->
 <script src="./shared/three.js/three.js"></script>
 <script src="./shared/three.js/OBJLoader.js"></script>

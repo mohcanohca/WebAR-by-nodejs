@@ -364,19 +364,26 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     this.dispatchEvent(ARControllerBase.WINDOW_RESIZE_EVENT)
                 }, false);
 
+                // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
+                if (this.useSelect) {
+                    //若是没有开启对select事件的监听，默认监听touchstart和click事件
+                    window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                    window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                }
+
             } else {
 
                 // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
                 if (this.useSelect) {
-                    if (this.useReticle) {
+                    // if (this.useReticle) {
                         session.addEventListener('select', this._handleSelect.bind(this));
                         session.addEventListener('selectstart', this.handleSelectStart.bind(this));
                         session.addEventListener('selectend', this.handleSelectEnd.bind(this));
-                    } else {
+                    // } else {
                         //若是没有开启对select事件的监听，默认监听touchstart和click事件
-                        window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
-                        window.addEventListener('click', this._handleMouseClick.bind(this), false);
-                    }
+                        // window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                        // window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                    // }
                 }
 
 
@@ -468,6 +475,12 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     } catch (e) {
                         console.log('hit test failed')
                     }
+                }else{
+                    //TODO 未测试，
+                    let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef);
+
+                    // If we found at least one hit...
+                    this.handleSelect(hits);
                 }
             }
         }
@@ -532,7 +545,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
         createBaseController() {
             this._sessionEls.appendChild(this.renderer.domElement);
 
-            let baseControlType = this._baseControlType || ARControllerBase.TouchMouseController;
+            let baseControlType = this._baseControlType || ARControllerBase.TOUCHMOUSECONTROLLER;
             switch (baseControlType) {
 
                 case ARControllerBase.IMAGECONTROLLER:
@@ -550,7 +563,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         param: this._baseControlParam
                     });
                     break;
-                case ARControllerBase.TouchMouseController:
+                case ARControllerBase.TOUCHMOUSECONTROLLER:
                     this._baseController = new TouchMouseController(
                         {
                             renderer: this.renderer,
@@ -559,7 +572,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                             model: this.model,
                             modelSize: this.modelSize
                         });
-                    console.log('TouchMouseController')
+                    console.log('TOUCHMOUSECONTROLLER')
                     break;
                 case ARControllerBase.ORIENTATIONCONTROLLER:
                     this._baseController = new OrientationController({
@@ -583,7 +596,15 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     console.log('GPSCONTROLLER');
                     break;
                 default:
-                    console.log('no basecontroller')
+                    this._baseController = new TOUCHMOUSECONTROLLER(
+                        {
+                            renderer: this.renderer,
+                            scene: this.scene,
+                            camera: this.camera,
+                            model: this.model,
+                            modelSize: this.modelSize
+                        });
+                    console.log('TouchMouseController')
                     break;
 
             }
@@ -994,7 +1015,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
         }
 
-
     }
 
     ARControllerBase.ARUNABLE = 'unsupportXR';
@@ -1004,7 +1024,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
     ARControllerBase.VIDEOREADY = 'video_ready';
     ARControllerBase.VIDEOFAILED = 'video_failed';
     ARControllerBase.IMAGECONTROLLER = 'image';
-    ARControllerBase.TouchMouseController = 'touch_mouse';
+    ARControllerBase.TOUCHMOUSECONTROLLER = 'touch_mouse';
     ARControllerBase.ORIENTATIONCONTROLLER = 'orientation';
     ARControllerBase.GPSCONTROLLER = 'GPS';
     ARControllerBase.WINDOW_RESIZE_EVENT = 'window-resize';

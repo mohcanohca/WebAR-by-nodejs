@@ -2,15 +2,15 @@ require.config({
     baseUrl: '/examples/ar_simple',
     paths: {
         io: 'libs/socket.io/socket.io',
-        OrbitControls: 'libs/OrbitControls',
+        // OrbitControls: 'libs/OrbitControls',
         eventHandlerBase: 'utils/eventHandlerBase',
     },
     shim: {
-        OrbitControls: {exports: 'THREE.OrbitControls'}
+        // OrbitControls: {exports: 'THREE.OrbitControls'}
     }
 });
 
-define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls, EventHandlerBase) {
+define(['io', /*'OrbitControls', */'eventHandlerBase'], function (io, /*OrbitControls,*/ EventHandlerBase) {
     class GPSController extends EventHandlerBase {
         constructor({renderer, scene, camera, model, modelSize, param}) {
             super()
@@ -31,10 +31,10 @@ define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls,
 
             this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
-            this.init();
+            this._init();
         }
 
-        init() {
+        _init() {
             if (!this.param) return;
             this.update = this.param.update ? this.param.update.bind(this) : this.update;
             this.handleAddress = this.param.handleAddress ? this.param.handleAddress.bind(this) : this.handleAddress;
@@ -142,7 +142,6 @@ define(['io', 'OrbitControls', 'eventHandlerBase'], function (io, OrbitControls,
 
 
     GPSController.ADDRESS = 'address';
-    GPSController.POSITION = 'position';
 
     return GPSController;
 });

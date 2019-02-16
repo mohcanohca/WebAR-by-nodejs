@@ -20,7 +20,7 @@ app.use(express.static(configServer.staticFolder));
 app.use(morgan('dev'));
 
 // serve index
-require('./lib/routes').serveIndex(app, configServer.staticFolder);
+require('./routes').serveIndex(app, configServer.staticFolder);
 
 // HTTP server
 var server = http.createServer(app);
@@ -31,7 +31,7 @@ server.listen(8080, function () {
 
 // WebSocket server
 var io = require('socket.io')(server);
-io.on('connection', require('./lib/routes/socket'));
+io.on('connection', require('./routes/socket'));
 
 
 let sserver = https.createServer(options, app);
@@ -41,6 +41,6 @@ sserver.listen(8081, function () {
 
 // WebSocket server
 var sio = require('socket.io')(sserver);
-sio.on('connection', require('./lib/routes/socket'));
+sio.on('connection', require('./routes/socket'));
 
 module.exports.app = app;

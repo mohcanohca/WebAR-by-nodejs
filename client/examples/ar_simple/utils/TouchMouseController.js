@@ -1,18 +1,18 @@
 require.config({
     baseUrl: '/examples/ar_simple/',
     paths: {
-        orbitControls: 'libs/OrbitControls',
+        // orbitControls: 'libs/OrbitControls',
         DragControls: 'libs/DragControls',
         TrackballControls: 'libs/TrackballControls',
     },
     shim: {
-        'OrbitControls': {exports: 'THREE.OrbitControls'},
+        // 'OrbitControls': {exports: 'THREE.OrbitControls'},
         'DragControls': {exports: 'THREE.DragControls'},
         'TrackballControls': {exports: 'THREE.TrackballControls'},
         // 'TransformControls': {exports: 'THREE.TransformControls'},
     }
 });
-define(['OrbitControls', 'DragControls', 'TrackballControls'/*, 'TransformControls'*/], function (OrbitControls, DragControls, TrackballControls,/* TransformControls*/) {
+define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformControls'*/], function (/*OrbitControls, */DragControls, TrackballControls,/* TransformControls*/) {
     class TouchMouseController {
         constructor({renderer, scene, camera, model, modelSize}) {
             //three.js

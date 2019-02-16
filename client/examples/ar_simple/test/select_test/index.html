@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Hit test example</title>
+    <title>SelectTest体验</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
@@ -11,6 +11,22 @@
     <script src="./libs/webxr-version-shim.js"></script>
 </head>
 <body>
+<div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
+    <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">SelectTest体验</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        点击"开始AR体验"后，会出现多个彩色立方体与现实世界融合的场景。
+        若浏览器支持AR，则即使手机移动，立方体仍保持其在现实世界中位置，点击立方体，立方体会变成红色；
+        若浏览器不支持AR，则可旋转手机从不同角度观测立方体，点击立方体，立方体会变成红色。
+    </div>
+    <div class="mdl-card__actions mdl-card--border">
+        <a id="enter-ar" class="mdl-button mdl-button--raised mdl-button--accent">
+            开始AR体验
+        </a>
+    </div>
+</div>
+
 <!--<img id="pattern" src="../../assets/pattern.jpg" alt="" style="display: none;">-->
 <script src="./shared/three.js/three.js"></script>
 <script src="./shared/three.js/OBJLoader.js"></script>
