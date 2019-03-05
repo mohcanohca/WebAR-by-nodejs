@@ -95,7 +95,16 @@ define(['ARController'], function (ARControllerBase) {
         }
 
         initScene() {
-            this.scene = createCubeScene()
+            this.scene = new THREE.Scene();
+        }
+
+        initModel() {
+            //正方体
+            this.model = createCube(2, 2, 2);
+            this.model.position.set(0, 0, 0);
+            this.model.position.multiplyScalar(1);
+            this.modelSize = 2;
+
         }
     }
 

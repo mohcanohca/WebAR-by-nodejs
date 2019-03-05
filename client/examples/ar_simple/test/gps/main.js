@@ -53,7 +53,7 @@ define(['ARController'], function (ARControllerBase) {
         });
     }
 
-    class GPSTest extends ARControllerBase {
+    class WeatherAPP extends ARControllerBase {
         constructor() {
             super({
                 useReticle: false,
@@ -224,7 +224,7 @@ define(['ARController'], function (ARControllerBase) {
     // window.app = new OrientationExample();//orientation控制模型
     // window.app = new OrientationCubeSea();//orientation控制相机
     // window.app = new OrbitExample();
-    window.app = new GPSTest();
+    window.app = new WeatherAPP();
 
 })
 

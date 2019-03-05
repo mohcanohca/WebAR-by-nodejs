@@ -354,7 +354,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
                 //根据目标图像四个角点的位置计算出相机的当前姿态
                 pose = this.posit.pose(corners);
 
-                //更新模型的姿态
+                //更新模型的姿态s
                 // updateObject(model, pose.bestRotation, pose.bestTranslation);
                 this.updateModel(this.modelSize, pose.bestRotation, pose.bestTranslation);
             }

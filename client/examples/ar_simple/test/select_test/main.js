@@ -167,7 +167,7 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    class SelectTest extends ARControllerBase {
+    class CubeSeaAPP extends ARControllerBase {
         constructor() {
             // super(false, true, ARControllerBase.ORIENTATIONCONTROLLER)
             super({
@@ -185,6 +185,7 @@ define(['ARController'], function (ARControllerBase) {
             this.addEventListener(ARControllerBase.SESSIONSTART, function () {
                 // 将页面样式切换至ar会话状态
                 document.body.classList.add('ar');
+
             });
         }
 
@@ -270,7 +271,7 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    window.app = new SelectTest();
+    window.app = new CubeSeaAPP();
 
 });
 

@@ -180,7 +180,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             this.enterAR = this.enterAR.bind(this);
             this.detectARFeatures = this.detectARFeatures.bind(this);
             this.init();
-
         }
 
         // 初始化，添加用户配置
@@ -277,7 +276,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             let prependElements = () => {
                 document.body.style.width = '100%';
                 document.body.style.height = '100%';
-                // 通过先添加Session的DOM，再添加现实的DOM，保证Session位于现实的上层
+                // 通过先添加Session的DOM，再添加现实的DOM，保证Session位r于现实的上层
                 document.body.prepend(this._sessionEls);
                 document.body.prepend(this._realityEls); // realities must render behind the sessions
             }
@@ -338,7 +337,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             if (!this._session) {
                 //如果没有请求到session，或者当前是基础控制类型
 
-                this.renderer = new THREE.WebGLRenderer({alpha: true});
+                this.renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+
                 this.renderer.autoClear = false;
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setClearColor(0xEEEEEE, 0.0);
@@ -376,13 +376,13 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
                 if (this.useSelect) {
                     // if (this.useReticle) {
-                        session.addEventListener('select', this._handleSelect.bind(this));
-                        session.addEventListener('selectstart', this.handleSelectStart.bind(this));
-                        session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                    session.addEventListener('select', this._handleSelect.bind(this));
+                    session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                    session.addEventListener('selectend', this.handleSelectEnd.bind(this));
                     // } else {
-                        //若是没有开启对select事件的监听，默认监听touchstart和click事件
-                        // window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
-                        // window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                    //若是没有开启对select事件的监听，默认监听touchstart和click事件
+                    // window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                    // window.addEventListener('click', this._handleMouseClick.bind(this), false);
                     // }
                 }
 
@@ -475,7 +475,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                     } catch (e) {
                         console.log('hit test failed')
                     }
-                }else{
+                } else {
                     //TODO 未测试，
                     let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef);
 

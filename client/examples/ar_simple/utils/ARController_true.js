@@ -10,7 +10,7 @@ require.config({
         GPSController: 'utils/GPSController',
     }
 });
-define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'OrbitController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, OrbitController, GPSController) {
+define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationController', 'utils/TouchMouseController', 'GPSController'], function (EventHandlerBase, mediaDevices, ImageController, OrientationController, OrbitController, GPSController) {
 
     /**
      * Similar to THREE.Object3D's `lookAt` function, except we only

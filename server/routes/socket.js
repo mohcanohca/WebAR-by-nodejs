@@ -69,9 +69,11 @@ const matchFeatures = ({img1, img2, matchFunc}) => {
             //计算img2和img1的单应性变换矩阵homo
             let transform = cv.findHomography(points1, points2, {
                 method: cv.RANSAC,
-                ransacReprojThreshold: 5,
+                ransacReprojThreshold: 20,
                 mask: mask
             });
+
+            if (!transform) return transform;
 
             videoHomoGraphy = transform.homography;
 
@@ -130,7 +132,25 @@ module.exports = function (socket) {
         frame_count++;//收到的帧的数量递增
 
         //3.四个特征点在图像上的对应点坐标，需要与特征点的世界坐标相对应
-        let dstPosition = processBase64(json.imgData);
+        // let dstPosition = processBase64(json.imgData);
+
+        //解码得到视频帧
+        let frame = imgcodecs.decodeFromBase64(json.imgData);
+
+        let matchFunc = cv.matchBruteForceHamming;
+        if (frame_count === 20) {
+            matchFunc = cv.matchFlannBased;
+        }
+        // let orbMatchesImg = matchFeatures({
+
+        //获取点的世界坐标在图像上的对应点坐标
+        let dstPosition = matchFeatures({
+            img1: pattern,
+            img2: frame,
+            // matchFunc: cv.matchFlannBased//找到最近邻近似匹配，需要找到一个相对好的匹配但是不需要最佳匹配的时使用
+            // matchFunc: cv.matchBruteForceHamming//找最佳匹配
+            matchFunc,
+        });
 
         if (!dstPosition)
             return;
@@ -153,7 +173,9 @@ module.exports = function (socket) {
             }
         }
 
-        let rotation;
+      //  注释掉求取相机姿态部分，只进行图像识别
+
+      /*  let rotation;
 
         if (dstPosition) {
 
@@ -161,6 +183,7 @@ module.exports = function (socket) {
             pose = cv.solvePnP(patternCorners3D, imageCorners, camera.param.matrix, camera.param.dist, false, cv.SOLVEPNP_P3P);
             // pose = cv.solvePnP(patternCorners3D, testImgCorners, camera.param.matrix, camera.param.dist);
 
+            console.log(pose);
             //由于rodrigues是Mat的方法，需要先将Vec转换成Mat
             let tempMat = new cv.Mat(1, 3, cv.CV_64F);//1x3的矩阵
             tempMat.set(0, 0, pose.rvec.x);
@@ -182,9 +205,9 @@ module.exports = function (socket) {
                 // console.log(pose.tvec);
             }
 
-            /*for (let i = 0; i < 3; i++) {
+            /!*for (let i = 0; i < 3; i++) {
                 console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
-            }*/
+            }*!/
 
             // console.log(rmat.jacobian);//jacobian矩阵
 
@@ -214,11 +237,11 @@ module.exports = function (socket) {
             let p2 = rotateFunc.rotate.byY(p1, -thetay);
             let p3 = rotateFunc.rotate.byX(p2, -thetax);
 
-            /*console.log("平移向量：")
+            /!*console.log("平移向量：")
             console.log(pose.tvec);
             //世界坐标系中相机的位置坐标为(-p3.x,-p3.y,-p3.z)
             console.log("位置：")
-            console.log(-p3.x, -p3.y, -p3.z);*/
+            console.log(-p3.x, -p3.y, -p3.z);*!/
         }
 
         let rotation_matrix = [
@@ -228,13 +251,13 @@ module.exports = function (socket) {
         ];
         let transition_arr = [
             pose.tvec.x, pose.tvec.y, pose.tvec.z
-        ];
+        ];*/
 
         socket.emit('frame', {
             corners: corners,
-            pose: pose,
-            rotation: rotation,
-            transition: pose.tvec//平移向量
+            // pose: pose,
+            // rotation: rotation,
+            // transition: pose.tvec//平移向量
         });
     });
 
@@ -252,10 +275,10 @@ module.exports = function (socket) {
 
 
         var api = new Api(UID, KEY);
-        api.getWeatherNow(argv.l).then(function(data) {
+        api.getWeatherNow(argv.l).then(function (data) {
             console.log(JSON.stringify(data, null, 4));
-            socket.emit('weather',{weather:data.results[0]})
-        }).catch(function(err) {
+            socket.emit('weather', {weather: data.results[0]})
+        }).catch(function (err) {
             console.log(err.error.status);
         });
 

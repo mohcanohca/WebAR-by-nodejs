@@ -95,7 +95,7 @@ define(['ARController'], function (ARControllerBase) {
         });
     }
 
-    class HitTest extends ARControllerBase {
+    class EnvironmentAPP extends ARControllerBase {
         constructor() {
             /*            super(true, false, ARControllerBase.IMAGECONTROLLER, {
                             method: 'server',
@@ -108,7 +108,7 @@ define(['ARController'], function (ARControllerBase) {
                 baseControlType: ARControllerBase.IMAGECONTROLLER,
                 baseControlParam: {
                     method: 'server',
-                    serverPath: 'https://192.168.0.116:8081',
+                    serverPath: 'https://10.28.231.184:8081',
                     protocol: 'ws',
                 }
             });
@@ -122,6 +122,7 @@ define(['ARController'], function (ARControllerBase) {
             this.addEventListener(ARControllerBase.SESSIONSTART, function () {
                 // 将页面样式切换至ar会话状态
                 document.body.classList.add('ar');
+
             });
         }
 
@@ -157,7 +158,8 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    window.app = new HitTest();//图像识别控制
+    window.app = new EnvironmentAPP();//图像识别控制
+
 })
 
 

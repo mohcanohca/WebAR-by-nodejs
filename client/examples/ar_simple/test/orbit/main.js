@@ -49,7 +49,7 @@ define(['ARController'], function (ARControllerBase) {
         let cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
         // cube.dragable = false;
-        scene.add(cube);
+        // scene.add(cube);
 
         return scene;
     }
@@ -120,7 +120,7 @@ define(['ARController'], function (ARControllerBase) {
     }
 
 
-    class TouchMouseTest extends ARControllerBase {
+    class TouchMouseAPP extends ARControllerBase {
         constructor() {
             // super(true, false, ARControllerBase.ORBITCONTROLLER)
             super({
@@ -144,6 +144,7 @@ define(['ARController'], function (ARControllerBase) {
         initScene() {
             this.scene = createLitScene();
 
+            // this.scene=new THREE.Scene();
         }
 
         initModel() {
@@ -159,6 +160,10 @@ define(['ARController'], function (ARControllerBase) {
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
 
             });
+
+            this.model.position.x=0;
+            this.model.position.y=0;
+            this.model.position.z=0;
         }
     }
 
@@ -168,7 +173,7 @@ define(['ARController'], function (ARControllerBase) {
     // window.app = new EarthExample();//图像识别控制
     // window.app = new OrientationExample();//orientation控制模型
     // window.app = new OrientationCubeSea();//orientation控制相机
-    window.app = new TouchMouseTest();
+    window.app = new TouchMouseAPP();
     // window.app = new GPSExample();
 
 })
