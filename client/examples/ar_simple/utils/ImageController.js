@@ -231,7 +231,6 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             } else {
                 this.corners = null;
             }
-            console.log('get corners:' + (new Date()).getTime())
         }
 
         // 图像识别
@@ -244,9 +243,8 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
     }
 
     class ImageController {
-        constructor({/*sessionEls,*/ renderer, scene, camera, model, video, modelSize, videoFrameCanvas, param}) {
-            // 绘制视频帧
-            // this.sessionEls = sessionEls;
+        constructor({renderer, scene, camera, model, video, modelScale, patternSize, videoFrameCanvas, param}) {
+
             this.canvas = videoFrameCanvas;
 
             //three.js
@@ -260,17 +258,15 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             this.camera.position.set(0, 0, 10);
             this.camera.lookAt(this.scene.position);
             this.model = model;
-            this.modelSize = modelSize;
 
+            this.modelScale = modelScale;
             this.recognizer = null;
-            this.posit = new POS.Posit(modelSize || 35, Math.max(defaultWidth, defaultHeight));
+            this.posit = new POS.Posit(patternSize, defaultWidth);
             this.video = video;
 
             this.param = param;
 
             this.stopFrame = null;
-
-            // this.patternImg = param.patternImg;
 
             this.onFrame = this.onFrame.bind(this);
             this.update = this.update.bind(this);
@@ -279,10 +275,11 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
 
         // 初始化图像识别器
         init() {
-            let _self = this;
             if (!this.param) {
                 console.log('没有设置图像识别相关参数')
             }
+
+            this.model.scale.set(0.1, 0.1, 0.1);
 
             if (this.param.method === 'server' && this.param.serverPath) {
                 this.recognizer = new ServerRecognizer(this.video, this.canvas, this.param.serverPath, this.param.protocol);
@@ -304,15 +301,6 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             }
 
             this.recognizer = new FrontRecognizer(this.video, this.canvas, this.patternImg);
-            /*let patternImg = new Image();
-            patternImg.src = './assets/pattern.jpg';
-
-            patternImg.onload = function () {
-                _self.patternImg = patternImg;
-                _self.recognizer = new FrontRecognizer(_self.video, _self.canvas, _self.patternImg);
-            }*/
-
-
         }
 
         update() {
@@ -335,12 +323,13 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
         //定位模型
         locateModel(position) {
             if (!this.model) {
-                return
+                return;
             }
             let markers = [{corners: position}];
             let corners, corner, pose, i;
 
-            let size = this.renderer.getSize();
+            // let size = this.renderer.getSize();
+            let size = this.canvas;
 
             if (markers.length > 0) {
                 corners = markers[0].corners;
@@ -356,22 +345,19 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
 
                 //更新模型的姿态s
                 // updateObject(model, pose.bestRotation, pose.bestTranslation);
-                this.updateModel(this.modelSize, pose.bestRotation, pose.bestTranslation);
+                this.updateModel(this.modelScale, pose.bestRotation, pose.bestTranslation);
             }
         }
 
-        updateModel(modelSize, rotation, translation) {
-            if (modelSize) {
-                this.model.scale.x = modelSize;
-                this.model.scale.y = modelSize;
-                this.model.scale.z = modelSize;
-            }
+        updateModel(modelScale, rotation, translation) {
+            this.model.scale.x = this.modelScale;
+            this.model.scale.y = this.modelScale;
+            this.model.scale.z = this.modelScale;
 
             if (rotation) {
                 this.model.rotation.x = -Math.asin(-rotation[1][2]);
                 this.model.rotation.y = -Math.atan2(rotation[0][2], rotation[2][2]);
                 this.model.rotation.z = Math.atan2(rotation[1][0], rotation[1][1]);
-
             }
 
             if (translation) {

@@ -140,7 +140,7 @@ define(['ARController'], function (ARControllerBase) {
      */
     function initModel(scene) {
 
-        var s = 15;
+        var s = 10;
 
         var cube = new THREE.CubeGeometry(s, s, s);
 
@@ -150,9 +150,9 @@ define(['ARController'], function (ARControllerBase) {
 
             var mesh = new THREE.Mesh(cube, material);
 
-            mesh.position.x = 100 * (2.0 * Math.random() - 1.0);
-            mesh.position.y = 100 * (2.0 * Math.random() - 1.0);
-            mesh.position.z = 100 * (2.0 * Math.random() - 1.0);
+            mesh.position.x = 80 * (2.0 * Math.random() - 1.0);
+            mesh.position.y = 80 * (2.0 * Math.random() - 1.0);
+            mesh.position.z = -80 * (2.0 * Math.random() - 1.0);
 
             mesh.rotation.x = Math.random() * Math.PI;
             mesh.rotation.y = Math.random() * Math.PI;
@@ -228,7 +228,6 @@ define(['ARController'], function (ARControllerBase) {
          *
          */
         handleSelect(intersects) {
-
             if (intersects.length) {
                 // We can have multiple collisions per hit test. Let's just take the
                 // first hit, the nearest, for now.

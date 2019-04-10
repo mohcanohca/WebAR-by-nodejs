@@ -47,9 +47,10 @@ define(['ARController'], function (ARControllerBase) {
         let cubeGeometry = new THREE.BoxGeometry(100, 100, 100);
         let cubeMaterial = new THREE.MeshLambertMaterial({color: 0x9370DB});
         let cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.x = -50;
 
         // cube.dragable = false;
-        // scene.add(cube);
+        scene.add(cube);
 
         return scene;
     }
@@ -148,22 +149,23 @@ define(['ARController'], function (ARControllerBase) {
         }
 
         initModel() {
-            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
-            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
-            const MODEL_SCALE = 20;
+            const MODEL_OBJ_URL = './assets/beagle/Mesh_Beagle.obj';
+            const MODEL_MTL_URL = './assets/beagle/Mesh_Beagle.mtl';
+            // const MODEL_SCALE = 0.005;
+            const MODEL_SCALE = 2;
 
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-                this.modelSize = MODEL_SCALE;
+                this.modelScale = MODEL_SCALE;
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
-
+                this.model.position.x = 50;
+                this.model.position.y = 0;
+                this.model.position.z = 0;
             });
 
-            this.model.position.x=0;
-            this.model.position.y=0;
-            this.model.position.z=0;
+
         }
     }
 

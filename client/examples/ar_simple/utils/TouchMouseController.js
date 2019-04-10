@@ -12,9 +12,9 @@ require.config({
         // 'TransformControls': {exports: 'THREE.TransformControls'},
     }
 });
-define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformControls'*/], function (/*OrbitControls, */DragControls, TrackballControls,/* TransformControls*/) {
+define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformControls'*/], function (/*OrbitControls, */DragControls, TrackballControls, /* TransformControls*/) {
     class TouchMouseController {
-        constructor({renderer, scene, camera, model, modelSize}) {
+        constructor({renderer, scene, camera, model, modelScale}) {
             //three.js
             this.renderer = renderer;
             this.scene = scene;
@@ -35,7 +35,7 @@ define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformCo
             this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             this.model = model;
-            this.modelSize = modelSize;
+            this.modelScale = modelScale;
 
             this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
@@ -46,6 +46,11 @@ define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformCo
             // let controller = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             if (this.model) {
                 this.scene.add(this.model)
+   /*             while (this.modelScale < 1) {
+                    this.modelScale *= 5;
+                    this.model.scale.set(this.modelScale, this.modelScale, this.modelScale);
+                }*/
+                this.model.scale.set(this.modelScale, this.modelScale, this.modelScale);
             }
 
             this.initControls();

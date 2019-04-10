@@ -141,7 +141,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
      * @param {Object} baseControlParam：表示基础控制类型的参数，例如对于图像控制，可选择前端识别和后端识别
      */
     class ARControllerBase extends EventHandlerBase {
-        constructor({useReticle = false, useSelect = false, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam}) {
+        constructor({useReticle = false, useSelect = false, useLight = true, baseControlType = ARControllerBase.IMAGECONTROLLER, baseControlParam}) {
             super();
             // three.js
             this.renderer = null;
@@ -343,7 +343,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setClearColor(0xEEEEEE, 0.0);
 
-                this.camera = new THREE.PerspectiveCamera();
+                var fov = 40;//拍摄距离
+                var near = 1;//最小范围
+                var far = 1000;//最大范围
+
+                this.camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, near, far);
                 this.camera.matrixAutoUpdate = false;
 
                 // 创建基础控制类
@@ -372,20 +376,6 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 }
 
             } else {
-
-                // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
-                if (this.useSelect) {
-                    // if (this.useReticle) {
-                    session.addEventListener('select', this._handleSelect.bind(this));
-                    session.addEventListener('selectstart', this.handleSelectStart.bind(this));
-                    session.addEventListener('selectend', this.handleSelectEnd.bind(this));
-                    // } else {
-                    //若是没有开启对select事件的监听，默认监听touchstart和click事件
-                    // window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
-                    // window.addEventListener('click', this._handleMouseClick.bind(this), false);
-                    // }
-                }
-
 
                 // 创建一个WebGLRenderer，其包含要使用的第二个canvas
                 this.renderer = new THREE.WebGLRenderer({
@@ -420,24 +410,45 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 // 类似于window.requestAnimationFrame，可挂载本机XRDevice的刷新率，标准网页是60FPS，非独占AR会话也是60FPS，但设备的姿势和视图信息只能在会话的requestAnimationFrame中访问。
                 this.stopXRFrame = this._session.requestAnimationFrame(this.onXRFrame);
 
+                // 若用户开启了对XRSession的select事件的监听，则对Session添加监听器，各个事件处理函数可被子类覆写
+                if (this.useSelect) {
+                    if (this.useReticle) {
+                        session.addEventListener('select', this._handleSelect.bind(this));
+                        session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                        session.addEventListener('selectend', this.handleSelectEnd.bind(this));
+                    } else {
+                        // 若是没有开启对select事件的监听，默认监听touchstart和click事件
+                        window.addEventListener('touchstart', this._handleTouchStart.bind(this), false);
+                        window.addEventListener('click', this._handleMouseClick.bind(this), false);
+                    }
+                }
 
                 // 若是使用了reticle，即需要为其添加击中检测方法。在scene中添加reticle元素，监听原生click事件
                 if (this.useReticle) {
                     this._reticle = new Reticle(this._session, this.camera, this._frameOfRef);
-                    this.scene.add(this._reticle)
+                    this.scene.add(this._reticle);
 
+                    // session.addEventListener('select', this.hitTest.bind(this));
+                    // session.addEventListener('selectstart', this.handleSelectStart.bind(this));
+                    // session.addEventListener('selectend', this.handleSelectEnd.bind(this));
 
                     // 手型引导
-                    let tipContainer = document.createElement('div');
-                    tipContainer.setAttribute('id', 'stabilization');
+                    // let tipContainer = document.createElement('div');
+                    // tipContainer.setAttribute('id', 'stabilization');
 
-                    document.body.appendChild(tipContainer);
+                    // document.body.appendChild(tipContainer);
+                    window.addEventListener('click', this.hitTest.bind(this));
+                }
+
+                if (!this.useSelect && !this.useReticle) {
+                    //若两个功能都关闭，则默认进行平面检测
                     window.addEventListener('click', this.hitTest.bind(this));
                 }
             }
 
 
         }
+
 
         /**
          *  响应XRSession的select事件
@@ -467,16 +478,19 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 if (this.useReticle) {
                     // 若是使用了平面检测，就在检测到的平面上添加物体
                     try {
-                        let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef)
+                        this.hitTest();
+                        // let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef)
 
                         // If we found at least one hit...
-                        this.handleSelect(hits);
+                        // this.handleSelect(hits);
 
                     } catch (e) {
                         console.log('hit test failed')
                     }
                 } else {
-                    //TODO 未测试，
+
+                    //如果没有开启平面检测，就使用当前姿态构造射线，进行HitTest获取用户选中的虚拟物体，并调用开发者自定义的击中检测反馈
+                    //TODO 未测试，待修改
                     let hits = await this._session.requestHitTest(origin, direction, this._frameOfRef);
 
                     // If we found at least one hit...
@@ -551,6 +565,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 case ARControllerBase.IMAGECONTROLLER:
                     console.log('IMAGECONTROLLER');
                     // debugger
+
                     this._baseController = new ImageController({
                         sessionEls: this._sessionEls,
                         renderer: this.renderer,
@@ -558,7 +573,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         camera: this.camera,
                         model: this.model,
                         video: this._videoEl,
-                        modelSize: this.modelSize,
+                        modelScale: this.modelScale,
+                        patternSize: this.patternSize,
                         videoFrameCanvas: this._videoFrameCanvas,
                         param: this._baseControlParam
                     });
@@ -570,7 +586,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                             scene: this.scene,
                             camera: this.camera,
                             model: this.model,
-                            modelSize: this.modelSize
+                            modelScale: this.modelScale
                         });
                     console.log('TOUCHMOUSECONTROLLER')
                     break;
@@ -580,7 +596,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         scene: this.scene,
                         camera: this.camera,
                         model: this.model,
-                        modelSize: this.modelSize
+                        modelScale: this.modelScale
                     });
                     console.log('ORIENTATIONCONTROLLER')
                     break;
@@ -590,7 +606,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         scene: this.scene,
                         camera: this.camera,
                         model: this.model,
-                        modelSize: this.modelSize,
+                        modelScale: this.modelScale,
                         param: this._baseControlParam,
                     });
                     console.log('GPSCONTROLLER');
@@ -602,7 +618,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                             scene: this.scene,
                             camera: this.camera,
                             model: this.model,
-                            modelSize: this.modelSize
+                            modelScale: this.modelScale
                         });
                     console.log('TouchMouseController')
                     break;
@@ -679,11 +695,11 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                 return;
             }
 
-            // 缩放模型大小使其能被观察到全貌
-            if (this.modelSize && this.modelSize > 1) {
-                this.modelSize = this.modelSize % 3 / 10;
-                this.model.scale.set(this.modelSize, this.modelSize, this.modelSize);
-            }
+            /*            // 缩放模型大小使其能被观察到全貌
+                        if (this.modelScale && this.modelScale > 1) {
+                            this.modelScale = this.modelScale % 3 / 10;
+                            this.model.scale.set(this.modelScale, this.modelScale, this.modelScale);
+                        }*/
 
             // We're going to be firing a ray from the center of the screen.
             // The requestHitTest function takes an x and y coordinate in
@@ -710,7 +726,14 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
             const origin = new Float32Array(ray.origin.toArray());
             const direction = new Float32Array(ray.direction.toArray());
 
-            const hits = await this._session.requestHitTest(origin,
+            this._session.requestHitTest(origin, direction, this._frameOfRef).then(hits => {
+                const hit = hits[0];
+                const hitMatrix = new THREE.Matrix4().fromArray(hit.hitMatrix);
+                this.model.position.setFromMatrixPosition(hitMatrix);
+                lookAtOnY(this.model, this.camera);
+                this.scene.add(this.model);
+            });
+            /*const hits = await this._session.requestHitTest(origin,
                 direction,
                 this._frameOfRef);
 
@@ -737,7 +760,7 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
 
                 // Ensure our model has been added to the scene.
                 this.scene.add(this.model);
-            }
+            }*/
         }
 
 

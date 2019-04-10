@@ -108,9 +108,14 @@ define(['ARController'], function (ARControllerBase) {
                 baseControlType: ARControllerBase.IMAGECONTROLLER,
                 baseControlParam: {
                     method: 'server',
-                    serverPath: 'https://10.28.231.184:8081',
+                    serverPath: 'https://10.108.166.67:8081',
                     protocol: 'ws',
-                }
+                },
+                /*baseControlParam: {
+                    method: 'front',
+                    patternImg: 'pattern',
+                    // protocol: 'ws',
+                }*/
             });
         }
 
@@ -131,27 +136,27 @@ define(['ARController'], function (ARControllerBase) {
         }
 
         initModel() {
-            /* let object = new THREE.Object3D(),
-                 geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
-                 loader = new THREE.TextureLoader();
-             loader.load("./assets/earth.jpg", function (texture) {
-                 let material = new THREE.MeshBasicMaterial({map: texture});
-                 let mesh = new THREE.Mesh(geometry, material);
-                 object.add(mesh);
-             });
-             //场景添加模型，实际添加以地图图像为贴图的球体
-             this.model = object;
-             this.modelSize = 35;*/
 
-            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
-            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
+            const MODEL_OBJ_URL = './assets/beagle/Mesh_Beagle.obj';
+            const MODEL_MTL_URL = './assets/beagle/Mesh_Beagle.mtl';
             const MODEL_SCALE = 1;
+            // const MODEL_SCALE = 0.05;
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-                this.modelSize = MODEL_SCALE;
+
+                this.patternSize = 213;
+                this.modelScale = MODEL_SCALE;
+
+
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
-                this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+                // this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+                this.model.scale.x = 1;
+                this.model.scale.y = 1;
+                this.model.scale.z = 1;
+
+            }).catch(e => {
+                console.log(e)
             });
         }
 
@@ -160,6 +165,6 @@ define(['ARController'], function (ARControllerBase) {
 
     window.app = new EnvironmentAPP();//图像识别控制
 
-})
+});
 
 

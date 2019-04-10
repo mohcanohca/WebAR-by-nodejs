@@ -77,7 +77,7 @@ define(['ARController'], function (ARControllerBase) {
                         this.weatherContent.geometry.verticesNeedUpdate = true;
                     },
                     handleAddress: function (loc) {
-                        let socket = io.connect('https://192.168.0.116:8081');
+                        let socket = io.connect('https://10.28.254.113:8081');
 
                         //创建天气场景
                         function initWeatherContent(texture) {

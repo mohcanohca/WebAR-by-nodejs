@@ -161,8 +161,8 @@ define(['ARController'], function (ARControllerBase) {
 
         initScene() {
             this.scene = createLitScene();
-            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
-            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
+            const MODEL_OBJ_URL = './assets/beagle/Mesh_Beagle.obj';
+            const MODEL_MTL_URL = './assets/beagle/Mesh_Beagle.mtl';
             const MODEL_SCALE = 0.1;
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
