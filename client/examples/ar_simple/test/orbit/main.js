@@ -156,7 +156,8 @@ define(['ARController'], function (ARControllerBase) {
 
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-                this.modelScale = MODEL_SCALE;
+                // this.modelScale = MODEL_SCALE;
+                this.modelState = {scale_size: MODEL_SCALE};
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);

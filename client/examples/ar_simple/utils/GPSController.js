@@ -12,7 +12,7 @@ require.config({
 
 define(['io', /*'OrbitControls', */'eventHandlerBase'], function (io, /*OrbitControls,*/ EventHandlerBase) {
     class GPSController extends EventHandlerBase {
-        constructor({renderer, scene, camera, model, modelScale, param}) {
+        constructor({renderer, scene, camera, model, modelState, param}) {
             super()
             //three.js
             this.renderer = renderer;
@@ -25,7 +25,7 @@ define(['io', /*'OrbitControls', */'eventHandlerBase'], function (io, /*OrbitCon
             this.camera.lookAt(this.scene.position);
 
             this.model = model;
-            this.modelScale = modelScale;
+            this.modelState = modelState;
 
             this.param = param;
 

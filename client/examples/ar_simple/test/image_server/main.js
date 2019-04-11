@@ -108,7 +108,7 @@ define(['ARController'], function (ARControllerBase) {
                 baseControlType: ARControllerBase.IMAGECONTROLLER,
                 baseControlParam: {
                     method: 'server',
-                    serverPath: 'https://10.108.166.67:8081',
+                    serverPath: 'https://10.28.254.113:8081',
                     protocol: 'ws',
                 },
                 /*baseControlParam: {
@@ -145,7 +145,10 @@ define(['ARController'], function (ARControllerBase) {
                 this.model = model;
 
                 this.patternSize = 213;
-                this.modelScale = MODEL_SCALE;
+                this.modelState = {
+                    scale_size: MODEL_SCALE,
+                }
+                // this.modelScale = MODEL_SCALE;
 
 
                 // Every model is different -- you may have to adjust the scale

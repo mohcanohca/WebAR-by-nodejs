@@ -243,7 +243,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
     }
 
     class ImageController {
-        constructor({renderer, scene, camera, model, video, modelScale, patternSize, videoFrameCanvas, param}) {
+        constructor({renderer, scene, camera, model, modelState, video, /*modelScale,*/ patternSize, videoFrameCanvas, param}) {
 
             this.canvas = videoFrameCanvas;
 
@@ -258,8 +258,9 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             this.camera.position.set(0, 0, 10);
             this.camera.lookAt(this.scene.position);
             this.model = model;
+            this.modelState = modelState;
 
-            this.modelScale = modelScale;
+            // this.modelScale = modelScale;
             this.recognizer = null;
             this.posit = new POS.Posit(patternSize, defaultWidth);
             this.video = video;
@@ -301,6 +302,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             }
 
             this.recognizer = new FrontRecognizer(this.video, this.canvas, this.patternImg);
+
         }
 
         update() {
@@ -343,22 +345,57 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
                 //根据目标图像四个角点的位置计算出相机的当前姿态
                 pose = this.posit.pose(corners);
 
-                //更新模型的姿态s
+                /*           let r = pose.bestRotation;
+                           let t = pose.bestTranslation;
+                           let r_m = new THREE.Matrix3();
+                           r_m.set(
+                               r[0][0], r[0][1], r[0][2],
+                               r[1][0], r[1][1], r[1][2],
+                               r[2][0], r[2][1], r[2][2]
+                           );
+
+                           let r_t = new THREE.Matrix3();
+                           r_t.set(
+                               1, 0, t[0],
+                               0, 1, t[1],
+                               0, 0, t[2],
+                           );
+                           console.log(r_m);
+
+                           let m = new THREE.Matrix3();
+
+                           m.multiply(r_m, r_t);
+                           console.log(m);
+           */
+                // poseMatrix.multiplyMatrices(pose.bestRotation, pose.bestTranslation);
+                //
+                // this.updateModel2(this.modelScale, poseMatrix)
+
+                //更新模型的姿态
                 // updateObject(model, pose.bestRotation, pose.bestTranslation);
-                this.updateModel(this.modelScale, pose.bestRotation, pose.bestTranslation);
+                // this.updateModel(this.modelScale, pose.bestRotation, pose.bestTranslation);
+                this.updateModel(this.modelState.scale_size, pose.bestRotation, pose.bestTranslation);
             }
         }
 
+        updateModel2(modelScale, poseMatrix) {
+            this.model.scale.set(modelScale, modelScale, modelScale);
+            this.model.setFromMatrix(poseMatrix);
+        }
+
         updateModel(modelScale, rotation, translation) {
-            this.model.scale.x = this.modelScale;
-            this.model.scale.y = this.modelScale;
-            this.model.scale.z = this.modelScale;
+            this.model.scale.x = modelScale;
+            this.model.scale.y = modelScale;
+            this.model.scale.z = modelScale;
 
             if (rotation) {
                 this.model.rotation.x = -Math.asin(-rotation[1][2]);
                 this.model.rotation.y = -Math.atan2(rotation[0][2], rotation[2][2]);
                 this.model.rotation.z = Math.atan2(rotation[1][0], rotation[1][1]);
             }
+            // this.model.setFromRotationMatrix(rotat)
+
+            this.model.rotateX(Math.PI / 2);
 
             if (translation) {
                 this.model.position.x = translation[0];

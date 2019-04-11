@@ -205,7 +205,8 @@ define(['ARController'], function (ARControllerBase) {
             const MODEL_SCALE = 1;
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-                this.modelSize = MODEL_SCALE;
+                // this.modelSize = MODEL_SCALE;
+                this.modelState = {scale_size: MODEL_SCALE};
                 // Every model is different -- you may have to adjust the scale
                 // of a model depending on the use.
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
@@ -214,8 +215,6 @@ define(['ARController'], function (ARControllerBase) {
             // this.model = initWeatherContent(texture);
         }
     }
-
-
 
 
     // window.app = new ARSea();

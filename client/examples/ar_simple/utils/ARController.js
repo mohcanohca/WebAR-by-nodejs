@@ -573,7 +573,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         camera: this.camera,
                         model: this.model,
                         video: this._videoEl,
-                        modelScale: this.modelScale,
+                        // modelScale: this.modelScale,
+                        modelState: this.modelState,
                         patternSize: this.patternSize,
                         videoFrameCanvas: this._videoFrameCanvas,
                         param: this._baseControlParam
@@ -586,7 +587,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                             scene: this.scene,
                             camera: this.camera,
                             model: this.model,
-                            modelScale: this.modelScale
+                            // modelScale: this.modelScale,
+                            modelState: this.modelState,
                         });
                     console.log('TOUCHMOUSECONTROLLER')
                     break;
@@ -596,7 +598,8 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         scene: this.scene,
                         camera: this.camera,
                         model: this.model,
-                        modelScale: this.modelScale
+                        // modelScale: this.modelScale,
+                        modelState: this.modelState,
                     });
                     console.log('ORIENTATIONCONTROLLER')
                     break;
@@ -606,19 +609,21 @@ define(['eventHandlerBase', 'mediaDevices', 'ImageController', 'OrientationContr
                         scene: this.scene,
                         camera: this.camera,
                         model: this.model,
-                        modelScale: this.modelScale,
+                        // modelScale: this.modelScale,
+                        modelState: this.modelState,
                         param: this._baseControlParam,
                     });
                     console.log('GPSCONTROLLER');
                     break;
                 default:
-                    this._baseController = new TOUCHMOUSECONTROLLER(
+                    this._baseController = new TouchMouseController(
                         {
                             renderer: this.renderer,
                             scene: this.scene,
                             camera: this.camera,
                             model: this.model,
-                            modelScale: this.modelScale
+                            // modelScale: this.modelScale,
+                            modelState: this.modelState,
                         });
                     console.log('TouchMouseController')
                     break;

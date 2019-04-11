@@ -13,7 +13,7 @@ define(['DeviceOrientationControls'], function (DeviceOrientationControls) {
      * 方向传感器控制，操控的是three.js中模型的位置
      */
     class OrientationController {
-        constructor({renderer, scene, camera, model, modelScale}) {
+        constructor({renderer, scene, camera, model, modelState}) {
             //three.js
             this.renderer = renderer;
             this.scene = scene;
@@ -35,7 +35,7 @@ define(['DeviceOrientationControls'], function (DeviceOrientationControls) {
 
             this.controls = null;
             this.model = model;
-            this.modelScale = modelScale;
+            this.modelState = modelState;
             this.stopFrame = null;
             this.onFrame = this.onFrame.bind(this);
             this.init();
