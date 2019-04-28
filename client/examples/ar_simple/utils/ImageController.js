@@ -1,6 +1,7 @@
 require.config({
     // baseUrl: '/examples/ar_simple',
     paths: {
+        eventHandlerBase: 'utils/eventHandlerBase',
         io: 'libs/socket.io/socket.io',
         CV: 'libs/cv',
         jsfeat: 'libs/jsfeat',
@@ -20,7 +21,7 @@ require.config({
     }
 });
 
-define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, jsfeat, featTrainer, svd, POS) {
+define(['eventHandlerBase', 'io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (EventHandlerBase, io, CV, jsfeat, featTrainer, svd, POS) {
     let defaultWidth = window.innerWidth;
     let defaultHeight = window.innerHeight;
 
@@ -40,34 +41,62 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
     }
 
     //图像识别定位
-    class ServerRecognizer {
-        constructor(video, canvas, serverPath, protocol) {
+    class ServerRecognizer extends EventHandlerBase {
+        constructor({video, canvas, serverPath, protocol, requestMark, receiveMark, period}) {
+            super();
             this.socket = null;
             this.serverPath = serverPath;
             this.protocol = protocol;
-            // this.serverPath = 'https://10.208.25.196:8081';
-            // this.serverPath = 'https://10.28.201.198:8081';
+            this.period = period;
             this.timer = null;
             this.canvas = canvas;
             this.corners = null;
             this.video = video;
-            this.ableSend = false;
-            this.start()
-            this.stop = this.stop.bind(this)
+            this.connected = false;
+            this.requestMark = requestMark;
+            this.receiveMark = receiveMark;
+            this.recognize = this.recognize.bind(this);
+            // this._sendFrame = this._sendFrame.bind(this);
+            this._start();
+            this.stop = this.stop.bind(this);
 
+            //创建用于绘制图像识别结果的canvas
+            /*let cornsCanvas = document.createElement('canvas');
+            cornsCanvas.setAttribute('id', 'corns');
+            document.body.appendChild(cornsCanvas);
+            cornsCanvas.width = window.innerWidth;
+            cornsCanvas.height = window.innerHeight;
+            this.cornsCanvas = cornsCanvas;*/
         }
 
-        handleFrameCorners(data) {
+        _handleFrameCorners(data) {
             // console.log('receive:' + (new Date()).getTime())
             let corners = data.corners;
             if (!corners) return;
+
+            //绘制图像识别结果
+            /*            let canvas = this.cornsCanvas;
+                        let context = canvas.getContext('2d');
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.beginPath();
+                        context.moveTo(corners[0].x, corners[0].y);//起点
+                        context.lineTo(corners[1].x, corners[1].y);//终点
+                        context.lineTo(corners[2].x, corners[2].y);//终点
+                        context.lineTo(corners[3].x, corners[3].y);//终点
+                        context.closePath();
+                        context.lineWidth = 3;//设置线条宽度
+                        context.strokeStyle = "red";//设置线条的效果，类似于CSS，需要用“”，以字符串的形式
+                        // context.fillStyle = "pink";//设置填充样式
+                        // context.fill();//填充动作
+            
+                        context.stroke();//绘制*/
             this.corners = corners;
         }
 
         // 开始图像识别
-        start() {
-            let default_video_period = 100;
-            let video_period = 50;
+        _start() {
+            let default_video_period = 40;
+            let video_period = this.period || default_video_period;
             let _self = this;
             if (this.protocol === 'ws') {
                 //若是采用websoc通信协议
@@ -75,24 +104,30 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
                     //连接服务器端，传输数据
                     this.socket = io.connect(this.serverPath);
                     this.socket.on('connect', function () {
-                        _self.ableSend = true;
+                        _self.connected = true;
                     });
-                    this.socket.on('frame', this.handleFrameCorners.bind(this));
+                    this.socket.on(this.receiveMark, this._handleFrameCorners.bind(this));
                 }
             }
 
+
+            /**
+             *
+             * 使用requestAnimationFrame的16.7ms的帧率请求图像识别结果
+             * 使用该频率请求服务器端压力过大，处理不及时，导致识别结果与图像位置存在延迟，可根据服务器端处理能力选择
+             */
             //定时向后端传输图像数据
             this.timer = setInterval(function () {
                 //发送视频帧
-                if (_self.protocol === 'ws' && _self.ableSend) {
-                    let imgData = drawImage(_self.video);
+                if (_self.protocol === 'ws' && _self.connected) {
+                    let imgData = _self._drawImage();
 
                     let data = {
                         imgData: imgData,
                     };
                     // console.log('emit VIDEO_MESS:' + (new Date()).getTime())
                     //使用websocket进行图像传输
-                    _self.socket.emit('VIDEO_MESS', JSON.stringify(data));
+                    _self.socket.emit(_self.requestMark, JSON.stringify(data));
                 } else {
                     //通过ajax发送数据
                     //在收到响应后调用this.handleFrameCorners
@@ -105,36 +140,35 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
                     });*/
                 }
 
-            }, video_period || default_video_period);
+            }, video_period);
 
-
-            //绘制图像
-            function drawImage(video) {
-                let videoWidth = video.videoWidth;
-                let videoHeight = video.videoHeight;
-
-                let width = _self.canvas.width;
-                let height = _self.canvas.height;
-                /*let windowWidth = window.innerWidth;
-                let windowHeight = window.innerHeight;*/
-
-                /*_self.canvas.width = windowWidth;
-                _self.canvas.height = windowHeight;*/
-
-                let context = _self.canvas.getContext('2d');
-
-                let startPosX = Math.floor((videoWidth - width) / 2);
-                let startPosY = Math.floor((videoHeight - height) / 2);
-
-                //绘制当前视频帧
-                context.drawImage(video, startPosX, startPosY, width, height, 0, 0, width, height);
-
-                let jpgQuality = 0.6;
-                let imageDataURL = _self.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
-                return imageDataURL;
-            }
         }
 
+        //绘制图像
+        _drawImage() {
+            let video = this.video;
+            let videoWidth = video.videoWidth;
+            let videoHeight = video.videoHeight;
+
+            let width = this.canvas.width;
+            let height = this.canvas.height;
+
+            let context = this.canvas.getContext('2d');
+
+            let startPosX = Math.floor((videoWidth - width) / 2);
+            let startPosY = Math.floor((videoHeight - height) / 2);
+
+            //绘制当前视频帧
+            context.drawImage(video, startPosX, startPosY, width, height, 0, 0, width, height);
+
+            let jpgQuality = 0.6;
+            let imageDataURL = this.canvas.toDataURL('image/jpeg', jpgQuality);//转换成base64编码
+            return imageDataURL;
+        }
+
+        /**
+         * 为与FrontRecognizer的recognize方法保持一致
+         */
         recognize() {
 
         }
@@ -145,11 +179,10 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             clearInterval(this.timer);
             this.timer = null;
         }
-
     }
 
     class FrontRecognizer {
-        constructor(video, canvas, patternImg) {
+        constructor({video, canvas, patternImg}) {
             this.timer = null;
             this.canvas = canvas;
             this.corners = null;
@@ -243,7 +276,7 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
     }
 
     class ImageController {
-        constructor({renderer, scene, camera, model, modelState, video, /*modelScale,*/ patternSize, videoFrameCanvas, param}) {
+        constructor({renderer, scene, camera, model, modelState, video, patternSize, videoFrameCanvas, param}) {
 
             this.canvas = videoFrameCanvas;
 
@@ -259,8 +292,6 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             this.camera.lookAt(this.scene.position);
             this.model = model;
             this.modelState = modelState;
-
-            // this.modelScale = modelScale;
             this.recognizer = null;
             this.posit = new POS.Posit(patternSize, defaultWidth);
             this.video = video;
@@ -283,7 +314,15 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
             this.model.scale.set(0.1, 0.1, 0.1);
 
             if (this.param.method === 'server' && this.param.serverPath) {
-                this.recognizer = new ServerRecognizer(this.video, this.canvas, this.param.serverPath, this.param.protocol);
+                this.recognizer = new ServerRecognizer({
+                    video: this.video,
+                    canvas: this.canvas,
+                    serverPath: this.param.serverPath,
+                    requestMark: this.param.requestMark,
+                    receiveMark: this.param.receiveMark,
+                    protocol: this.param.protocol,
+                    period: this.param.period || 50,
+                });
                 return;
             }
 
@@ -301,7 +340,11 @@ define(['io', 'CV', 'jsfeat', 'FeatTrainer', 'svd', 'POS',], function (io, CV, j
                 return;
             }
 
-            this.recognizer = new FrontRecognizer(this.video, this.canvas, this.patternImg);
+            this.recognizer = new FrontRecognizer({
+                video: this.video,
+                canvas: this.canvas,
+                patternImg: this.patternImg
+            });
 
         }
 

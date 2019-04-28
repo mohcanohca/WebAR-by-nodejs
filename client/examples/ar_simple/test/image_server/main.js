@@ -110,6 +110,9 @@ define(['ARController'], function (ARControllerBase) {
                     method: 'server',
                     serverPath: 'https://10.28.254.113:8081',
                     protocol: 'ws',
+                    period: 40,
+                    requestMark:'VIDEO_MESS',
+                    receiveMark:'frame',
                 },
                 /*baseControlParam: {
                     method: 'front',

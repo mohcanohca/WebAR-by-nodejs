@@ -9,6 +9,12 @@
 
     <script src="./libs/webxr-polyfill.js"></script>
     <script src="./libs/webxr-version-shim.js"></script>
+    <style>
+        #cornsCanvas {
+            position: absolute;
+            z-index: 10000;
+        }
+    </style>
 </head>
 <body>
 <div id="enter-ar-info" class="demo-card mdl-card mdl-shadow--4dp">
@@ -26,6 +32,9 @@
     </div>
 </div>
 <img id="pattern" src="./assets/pattern.jpg" alt="" style="display: none;">
+<div id="time" style="position: absolute;z-index: 10000">
+
+</div>
 <!--<img id="pattern" src="../../assets/pattern.jpg" alt="" style="display: none;">-->
 <script src="./shared/three.js/three.js"></script>
 <script src="./shared/three.js/OBJLoader.js"></script>

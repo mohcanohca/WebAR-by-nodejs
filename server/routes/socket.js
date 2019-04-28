@@ -118,10 +118,10 @@ const processBase64 = (base64) => {
 
 module.exports = function (socket) {
     //旋转矩阵
-    let rmat = null;//视觉跟踪计算出的世界坐标系到相机坐标系的旋转矩阵
-    let initial_flag = true;
-    let initial_rotation = null;
-    let initial_transition = null;
+    // let rmat = null;//视觉跟踪计算出的世界坐标系到相机坐标系的旋转矩阵
+    // let initial_flag = true;
+    // let initial_rotation = null;
+    // let initial_transition = null;
 
     /* let pre_time = null;//上一次收到imu信息的时间
      let pre_imu = null;//上一次收到的imu信息*/
@@ -173,85 +173,85 @@ module.exports = function (socket) {
             }
         }
 
-      //  注释掉求取相机姿态部分，只进行图像识别
+        //  注释掉求取相机姿态部分，只进行图像识别
 
-      /*  let rotation;
+        /*  let rotation;
 
-        if (dstPosition) {
+          if (dstPosition) {
 
-            //4. 求出旋转向量rvec和平移向量tvec
-            pose = cv.solvePnP(patternCorners3D, imageCorners, camera.param.matrix, camera.param.dist, false, cv.SOLVEPNP_P3P);
-            // pose = cv.solvePnP(patternCorners3D, testImgCorners, camera.param.matrix, camera.param.dist);
+              //4. 求出旋转向量rvec和平移向量tvec
+              pose = cv.solvePnP(patternCorners3D, imageCorners, camera.param.matrix, camera.param.dist, false, cv.SOLVEPNP_P3P);
+              // pose = cv.solvePnP(patternCorners3D, testImgCorners, camera.param.matrix, camera.param.dist);
 
-            console.log(pose);
-            //由于rodrigues是Mat的方法，需要先将Vec转换成Mat
-            let tempMat = new cv.Mat(1, 3, cv.CV_64F);//1x3的矩阵
-            tempMat.set(0, 0, pose.rvec.x);
-            tempMat.set(0, 1, pose.rvec.y);
-            tempMat.set(0, 2, pose.rvec.z);
+              console.log(pose);
+              //由于rodrigues是Mat的方法，需要先将Vec转换成Mat
+              let tempMat = new cv.Mat(1, 3, cv.CV_64F);//1x3的矩阵
+              tempMat.set(0, 0, pose.rvec.x);
+              tempMat.set(0, 1, pose.rvec.y);
+              tempMat.set(0, 2, pose.rvec.z);
 
 
-            //5. 将输出的旋转向量转变为旋转矩阵
-            rmat = tempMat.rodrigues();
-            if (initial_flag) {
-                initial_rotation = rmat;
-                initial_transition = pose.rvec;
-                initial_flag = false;
-                // console.log("视觉得到初始旋转矩阵为：");
-                for (let i = 0; i < 3; i++) {
-                    // console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
-                }
-                // console.log("视觉得到初始平移向量为：");
-                // console.log(pose.tvec);
-            }
+              //5. 将输出的旋转向量转变为旋转矩阵
+              rmat = tempMat.rodrigues();
+              if (initial_flag) {
+                  initial_rotation = rmat;
+                  initial_transition = pose.rvec;
+                  initial_flag = false;
+                  // console.log("视觉得到初始旋转矩阵为：");
+                  for (let i = 0; i < 3; i++) {
+                      // console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
+                  }
+                  // console.log("视觉得到初始平移向量为：");
+                  // console.log(pose.tvec);
+              }
 
-            /!*for (let i = 0; i < 3; i++) {
-                console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
-            }*!/
+              /!*for (let i = 0; i < 3; i++) {
+                  console.log(rmat.dst.at(i, 0), rmat.dst.at(i, 1), rmat.dst.at(i, 2));//旋转矩阵
+              }*!/
 
-            // console.log(rmat.jacobian);//jacobian矩阵
+              // console.log(rmat.jacobian);//jacobian矩阵
 
-            //根据旋转矩阵R和平移矩阵T，求相机在世界坐标系中的位置
-            let r11 = rmat.dst.at(0, 0),
-                r21 = rmat.dst.at(1, 0),
-                r31 = rmat.dst.at(2, 0),
-                r32 = rmat.dst.at(2, 1),
-                r33 = rmat.dst.at(2, 2);
+              //根据旋转矩阵R和平移矩阵T，求相机在世界坐标系中的位置
+              let r11 = rmat.dst.at(0, 0),
+                  r21 = rmat.dst.at(1, 0),
+                  r31 = rmat.dst.at(2, 0),
+                  r32 = rmat.dst.at(2, 1),
+                  r33 = rmat.dst.at(2, 2);
 
-            //6. 求出相机的三个旋转角
-            let thetaz = Math.atan2(r21, r11) / Math.PI * 180;
-            let thetay = Math.atan2(-1 * r31, Math.sqrt(r32 * r32 + r33 * r33)) / Math.PI * 180;
-            let thetax = Math.atan2(r32, r33) / Math.PI * 180;
+              //6. 求出相机的三个旋转角
+              let thetaz = Math.atan2(r21, r11) / Math.PI * 180;
+              let thetay = Math.atan2(-1 * r31, Math.sqrt(r32 * r32 + r33 * r33)) / Math.PI * 180;
+              let thetax = Math.atan2(r32, r33) / Math.PI * 180;
 
-            rotation = {
-                thetax: thetax,
-                thetay: thetay,
-                thetaz: thetaz,
-            };
+              rotation = {
+                  thetax: thetax,
+                  thetay: thetay,
+                  thetaz: thetaz,
+              };
 
-            //根据旋转角度求相机在世界坐标系中的位置
-            //相机在世界坐标系中的初始位置
-            // let p0=new cv.Point3(0,0,50);
-            let p0 = new cv.Point3(pose.tvec.x, pose.tvec.y, pose.tvec.z);
-            let p1 = rotateFunc.rotate.byZ(p0, -thetaz);
-            let p2 = rotateFunc.rotate.byY(p1, -thetay);
-            let p3 = rotateFunc.rotate.byX(p2, -thetax);
+              //根据旋转角度求相机在世界坐标系中的位置
+              //相机在世界坐标系中的初始位置
+              // let p0=new cv.Point3(0,0,50);
+              let p0 = new cv.Point3(pose.tvec.x, pose.tvec.y, pose.tvec.z);
+              let p1 = rotateFunc.rotate.byZ(p0, -thetaz);
+              let p2 = rotateFunc.rotate.byY(p1, -thetay);
+              let p3 = rotateFunc.rotate.byX(p2, -thetax);
 
-            /!*console.log("平移向量：")
-            console.log(pose.tvec);
-            //世界坐标系中相机的位置坐标为(-p3.x,-p3.y,-p3.z)
-            console.log("位置：")
-            console.log(-p3.x, -p3.y, -p3.z);*!/
-        }
+              /!*console.log("平移向量：")
+              console.log(pose.tvec);
+              //世界坐标系中相机的位置坐标为(-p3.x,-p3.y,-p3.z)
+              console.log("位置：")
+              console.log(-p3.x, -p3.y, -p3.z);*!/
+          }
 
-        let rotation_matrix = [
-            [rmat.dst.at(0, 0), rmat.dst.at(0, 1), rmat.dst.at(0, 2)],
-            [rmat.dst.at(1, 0), rmat.dst.at(1, 1), rmat.dst.at(1, 2)],
-            [rmat.dst.at(2, 0), rmat.dst.at(2, 1), rmat.dst.at(2, 2)],
-        ];
-        let transition_arr = [
-            pose.tvec.x, pose.tvec.y, pose.tvec.z
-        ];*/
+          let rotation_matrix = [
+              [rmat.dst.at(0, 0), rmat.dst.at(0, 1), rmat.dst.at(0, 2)],
+              [rmat.dst.at(1, 0), rmat.dst.at(1, 1), rmat.dst.at(1, 2)],
+              [rmat.dst.at(2, 0), rmat.dst.at(2, 1), rmat.dst.at(2, 2)],
+          ];
+          let transition_arr = [
+              pose.tvec.x, pose.tvec.y, pose.tvec.z
+          ];*/
 
         socket.emit('frame', {
             corners: corners,
@@ -262,8 +262,8 @@ module.exports = function (socket) {
     });
 
     socket.on('LOC_MESS', function (data) {
-        let json = JSON.parse(data);
-        console.log(json.address)
+        // let json = JSON.parse(data);
+        console.log("地址信息：" + JSON.stringify(data, null, 4));
 
         var UID = "U763605444"; // 测试用 用户ID，请更换成您自己的用户ID
         var KEY = "re7kkhugkl3jhdwm"; // 测试用key，请更换成您自己的 Key
@@ -276,7 +276,7 @@ module.exports = function (socket) {
 
         var api = new Api(UID, KEY);
         api.getWeatherNow(argv.l).then(function (data) {
-            console.log(JSON.stringify(data, null, 4));
+            console.log("天气数据：" + JSON.stringify(data, null, 4));
             socket.emit('weather', {weather: data.results[0]})
         }).catch(function (err) {
             console.log(err.error.status);
