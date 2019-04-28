@@ -26,9 +26,6 @@ define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformCo
             this.camera.near = 1;
             this.camera.far = 1000;
             this.camera.aspect = window.innerWidth / window.innerHeight;
-            /*      this.camera.up.x = 0;
-                  this.camera.up.y = 1;
-                  this.camera.up.z = 0;*/
             this.camera.position.x = 0;
             this.camera.position.y = 400;
             this.camera.position.z = 600;
@@ -43,7 +40,6 @@ define([/*'OrbitControls', */'DragControls', 'TrackballControls'/*, 'TransformCo
         }
 
         init() {
-            // let controller = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             if (this.model) {
                 this.scene.add(this.model);
                 let scale_size = this.modelState.scale_size;
