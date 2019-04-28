@@ -53,6 +53,47 @@ define(['ARController'], function (ARControllerBase) {
         });
     }
 
+    // 创建一个包含光源的场景
+    function createLitScene() {
+        const scene = new THREE.Scene();
+
+        // The materials will render as a black mesh
+        // without lights in our scenes. Let's add an ambient light
+        // so our material can be visible, as well as a directional light
+        // for the shadow.
+        const light = new THREE.AmbientLight(0xffffff, 1);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
+        directionalLight.position.set(10, 15, 10);
+
+        // We want this light to cast shadow.
+        directionalLight.castShadow = true;
+
+        // Make a large plane to receive our shadows
+        const planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+        // Rotate our plane to be parallel to the floor
+        planeGeometry.rotateX(-Math.PI / 2);
+
+        // Create a mesh with a shadow material, resulting in a mesh
+        // that only renders shadows once we flip the `receiveShadow` property.
+        const shadowMesh = new THREE.Mesh(planeGeometry, new THREE.ShadowMaterial({
+            color: 0x111111,
+            opacity: 0.2,
+        }));
+
+        // Give it a name so we can reference it later, and set `receiveShadow`
+        // to true so that it can render our model's shadow.
+        shadowMesh.name = 'shadowMesh';
+        shadowMesh.receiveShadow = true;
+        shadowMesh.position.y = 10000;
+
+        // Add lights and shadow material to scene.
+        scene.add(shadowMesh);
+        scene.add(light);
+        scene.add(directionalLight);
+
+        return scene;
+    }
+
     class WeatherAPP extends ARControllerBase {
         constructor() {
             super({
@@ -78,6 +119,10 @@ define(['ARController'], function (ARControllerBase) {
                     },
                     handleAddress: function (loc) {
                         let socket = io.connect('https://10.28.254.113:8081');
+                        socket.on('connect', function () {
+                            //使用websocket传输地理位置信息
+                            socket.emit('LOC_MESS', loc);
+                        });
 
                         //创建天气场景
                         function initWeatherContent(texture) {
@@ -118,67 +163,97 @@ define(['ARController'], function (ARControllerBase) {
 
                         //由于存在跨域问题，由server获取天气并返回
                         socket.on('weather', function (data) {
+                            let content = document.getElementById('weather');
 
                             //根据天气情况，渲染不同的场景
                             let weather = data.weather;
-                            let cur = weather.now.code;
-                            // let imgs = this.param.imgs;
-                            let imgs = {
-                                'sun': './assets/snow-32.png',
-                                'cloud': './assets/snow-32.png',
-                                'overcast': './assets/snow-32.png',
-                                'rain': './assets/snow-32.png',
-                                'snow': './assets/snow-32.png',
-                                'wind': './assets/snow-32.png',
-                            };
-                            let curImg = null;
-                            cur = 22;
-                            if (cur >= 0 && cur <= 4) {
-                                curImg = imgs['sun'];
-                                let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+                            let cur = weather.now.code;//天气代码
+                            content.innerText = weather.location.name + '\n' + weather.now.temperature + '°C\n' + weather.now.text;
 
+                            let MODEL_OBJ_URL = './assets/sun/model.obj';
+                            let MODEL_MTL_URL = './assets/sun/materials.mtl';
+                            let MODEL_SCALE = 1;
+                            let MODEL_POS = null;
+                            if (cur >= 0 && cur < 4) {
+                                /* curImg = imgs['sun'];
+                                 let texture = new THREE.TextureLoader().load(curImg);
+                                 this.weatherContent = initWeatherContent(texture);
+ */
+                                MODEL_OBJ_URL = './assets/archive/Sun_483.obj';
+                                MODEL_MTL_URL = './assets/archive/Sun_483.mtl';
+                                MODEL_SCALE = 0.2;
+                                MODEL_POS = {position: {x: 0, y: 10, z: -100}, rotation: {x: 0, y: 0, z: 0}};
                                 //晴天
-                                console.log(weather.now.text);
-                            } else if (cur > 4 && cur < 9) {
-                                curImg = imgs['cloud'];
+                                console.log(weather);
+                            } else if (cur >= 4 && cur < 9) {
+                                /*curImg = imgs['cloud'];
                                 let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+                                this.weatherContent = initWeatherContent(texture);*/
+                                MODEL_OBJ_URL = './assets/cloudy/model.obj';
+                                MODEL_MTL_URL = './assets/cloudy/materials.mtl';
+                                MODEL_SCALE = 10;
+                                MODEL_POS = {
+                                    position: {x: 8, y: 18, z: -80},
+                                    rotation: {x: 1.25 * Math.PI, y: 0.25 * Math.PI, z: 0}
+                                };
+
                                 //多云
-                                console.log(weather.now.text);
+                                console.log(weather);
 
                             } else if (cur === 9) {
-                                curImg = imgs['overcast'];
-                                let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+                                /* curImg = imgs['overcast'];
+                                 let texture = new THREE.TextureLoader().load(curImg);
+                                 this.weatherContent = initWeatherContent(texture);*/
+                                MODEL_OBJ_URL = './assets/cloudy/model.obj';
+                                MODEL_MTL_URL = './assets/cloudy/materials.mtl';
+                                MODEL_SCALE = 1;
+
                                 //阴天
                                 console.log(weather.now.text);
 
                             } else if (cur > 9 && cur < 20) {
-                                curImg = imgs['rain'];
+                                /*curImg = imgs['rain'];
                                 let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+                                this.weatherContent = initWeatherContent(texture);*/
+                                MODEL_OBJ_URL = './assets/rain_lightning_storm/model.obj';
+                                MODEL_MTL_URL = './assets/rain_lightning_storm/materials.mtl';
+                                MODEL_SCALE = 1;
+
                                 //雨天
                                 console.log(weather.now.text);
                             } else if (cur >= 20 && cur <= 25) {
-                                curImg = imgs['snow'];
-                                let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+
+                                MODEL_OBJ_URL = './assets/snowman/model.obj';
+                                MODEL_MTL_URL = './assets/snowman/materials.mtl';
+                                MODEL_SCALE = 1;
+
                                 //雪天
                                 console.log(weather.now.text);
 
                             } else {
-                                curImg = imgs['wind'];
-                                let texture = new THREE.TextureLoader().load(curImg);
-                                this.weatherContent = initWeatherContent(texture);
+                                MODEL_OBJ_URL = './assets/sun/model.obj';
+                                MODEL_MTL_URL = './assets/sun/materials.mtl';
+                                MODEL_SCALE = 1;
+
                                 //其他天气
                                 console.log(weather.now.text);
                             }
-                            this.scene.add(this.weatherContent);
+                            loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
+                                this.model = model;
+                                if (MODEL_POS) {
+                                    let position = MODEL_POS.position || {x: 0, y: 0, z: 0};
+                                    let rotation = MODEL_POS.rotation || {x: 0, y: 0, z: 0};
+
+                                    this.model.rotation.set(rotation.x, rotation.y, rotation.z);
+                                    this.model.position.set(position.x, position.y, position.z);
+                                }
+
+                                this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+                                this.scene.add(this.model);
+                            });
                         }.bind(this));
 
-                        //使用websocket传输地理位置信息
-                        socket.emit('LOC_MESS', JSON.stringify(loc));
+
                     }
                 }
             })
@@ -196,33 +271,23 @@ define(['ARController'], function (ARControllerBase) {
         }
 
         initScene() {
-            this.scene = new THREE.Scene();
+            this.scene = createLitScene();
         }
 
         initModel() {
-            const MODEL_OBJ_URL = './assets/ArcticFox_Posed.obj';
-            const MODEL_MTL_URL = './assets/ArcticFox_Posed.mtl';
-            const MODEL_SCALE = 1;
+            let MODEL_OBJ_URL = './assets/sun/model.obj';
+            let MODEL_MTL_URL = './assets/sun/materials.mtl';
+            let MODEL_SCALE = 1;
             loadModel(MODEL_OBJ_URL, MODEL_MTL_URL).then(model => {
                 this.model = model;
-                // this.modelSize = MODEL_SCALE;
-                this.modelState = {scale_size: MODEL_SCALE};
-                // Every model is different -- you may have to adjust the scale
-                // of a model depending on the use.
+                this.model.position.set(0, 0, -100);
                 this.model.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+                // this.scene.add(this.model);
             });
-
-            // this.model = initWeatherContent(texture);
         }
     }
 
 
-    // window.app = new ARSea();
-    // window.app = new ModelExample();
-    // window.app = new EarthExample();//图像识别控制
-    // window.app = new OrientationExample();//orientation控制模型
-    // window.app = new OrientationCubeSea();//orientation控制相机
-    // window.app = new OrbitExample();
     window.app = new WeatherAPP();
 
 })
